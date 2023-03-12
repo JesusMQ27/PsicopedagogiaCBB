@@ -1,0 +1,24 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 11/03/2023, 01:03:06 AM
+    Author     : Computer
+*/
+
+.naranja{
+    color: #d39e00;
+    cursor: pointer;
+}
+
+.rojo{
+    color: #c82333;
+    cursor: pointer;
+}
+
+.azul{
+    color: #0069d9;
+    cursor: pointer;
+}
