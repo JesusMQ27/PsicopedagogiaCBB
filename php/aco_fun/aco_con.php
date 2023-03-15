@@ -2,7 +2,7 @@
 
 function con_consulta_login($p_usua, $p_clave) {
     $sql = "SELECT usu_id as id,usu_num_doc as num_doc,usu_nombres, CONCAT(usu_paterno,' ',usu_materno) as apellidos "
-            . " FROM tb_usuario WHERE usu_num_doc='$p_usua' AND usu_clave=MD5('$p_clave');";
+            . " FROM tb_usuario WHERE usu_num_doc='$p_usua' AND usu_clave='$p_clave';";
     return $sql;
 }
 
@@ -55,5 +55,33 @@ WHERE 1=1 ";
         $sql .= " AND usu_id=$id";
     }
     $sql .= "ORDER BY 1;";
+    return $sql;
+}
+
+function con_existe_correo($correo) {
+    $sql = "SELECT usu_id,usu_num_doc,usu_correo,usu_paterno as paterno,usu_materno as materno,usu_nombres as nombres,"
+            . " CONCAT(usu_nombres,' ',usu_paterno,' ', usu_materno) as nombrecompleto,"
+            . " CONCAT(usu_paterno,' ',usu_materno,' ', usu_nombres) as fullnombre"
+            . " FROM tb_usuario WHERE usu_correo='$correo' AND usu_estado=1;";
+    return $sql;
+}
+
+function con_ultima_session($id) {
+    $sql = "UPDATE tb_usuario SET usu_ultima_session=NOW(),usu_token_clave='',usu_solicito_clave='1' WHERE usu_id='$id';";
+    return $sql;
+}
+
+function con_generate_token_contrasena($id, $token) {
+    $sql = "UPDATE tb_usuario SET usu_token_clave='$token',usu_solicito_clave='1' WHERE usu_id='$id';";
+    return $sql;
+}
+
+function con_verificar_token_pass($id, $token) {
+    $sql = "SELECT * FROM tb_usuario WHERE usu_id='$id' AND usu_token_clave='$token';";
+    return $sql;
+}
+
+function con_cambiar_pass($id, $token, $password) {
+    $sql = "UPDATE tb_usuario SET usu_clave='$password',usu_token_clave='',usu_solicito_clave='' WHERE usu_id='$id' AND usu_token_clave='$token';";
     return $sql;
 }

@@ -23,7 +23,7 @@ $sede = $userData[0]["sede"];
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Sistema de Psicopedagog&iacute;a</title>
+        <title>Sistema de acompa&ntilde;amiento al estudiante - SIAE</title>
 
         <!-- Google Font: Source Sans Pro -->
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -191,8 +191,9 @@ $sede = $userData[0]["sede"];
             <!-- Main Sidebar Container -->
             <aside class="main-sidebar sidebar-dark-primary elevation-4">
                 <!-- Brand Logo -->
-                <a href="principal.php" class="brand-link">
-                    <span class="brand-text font-weight-light">Sistema de Psicopedagog&iacute;a</span>
+                <a href="principal.php" class="brand-link" style="text-align: center;">
+                    <span class="img-circle elevation-3">SIAE</span>
+                    <span class="brand-text font-weight-light" >CBB</span>
                 </a>
 
                 <!-- Sidebar -->
@@ -355,7 +356,7 @@ $sede = $userData[0]["sede"];
 
             <!-- Main Footer -->
             <footer class="main-footer">
-                <strong>Copyright &copy; 2023-2030 <a href="javascript:void(0)">Sistema de Psicopedagog&iacute;a</a>.</strong>
+                <strong>Copyright &copy; 2023-2030 <a href="javascript:void(0)">Sistema de acompa&ntilde;amiento al estudiante - SIAE</a>.</strong>
                 Reservados todos los derechos.
                 <div class="float-right d-none d-sm-inline-block">
                     <b>Version</b> 1.0.0
@@ -368,17 +369,16 @@ $sede = $userData[0]["sede"];
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h4 class="modal-title">Large Modal</h4>
+                        <h4 class="modal-title">Registrar Nuevo Usuario</h4>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
                     <div class="modal-body">
-                        <p>One fine body&hellip;</p>
                     </div>
                     <div class="modal-footer justify-content-between">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Save changes</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-primary">Registrar Usuario</button>
                     </div>
                 </div>
                 <!-- /.modal-content -->

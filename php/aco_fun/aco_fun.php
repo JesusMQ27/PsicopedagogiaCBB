@@ -52,5 +52,58 @@ function fnc_lista_usuarios($conexion, $id) {
     return $arreglo;
 }
 
+function fnc_existe_correo($conexion, $correo) {
+    $arreglo = array();
+    $sql = con_existe_correo($correo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_generate_token() {
+    $gen = md5(uniqid(mt_rand(), false));
+    return $gen;
+}
+
+function fnc_ultima_session($conexion, $id) {
+    $sql = con_ultima_session($id);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_generate_token_contrasena($conexion, $id) {
+    $token = fnc_generate_token();
+    $sql = con_generate_token_contrasena($id, $token);
+    $conexion->exec($sql);
+    return $token;
+}
+
+function fnc_generate_random_string($length = 10) {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $charactersLength = strlen($characters);
+    $randomString = '';
+    for ($i = 0; $i < $length; $i++) {
+        $randomString .= $characters[random_int(0, $charactersLength - 1)];
+    }
+    return $randomString;
+}
+
+function fnc_verificar_token_pass($conexion, $id, $token) {
+    $arreglo = array();
+    $sql = con_verificar_token_pass($id, $token);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_cambiar_pass($conexion, $id, $token, $password){
+    $sql = con_cambiar_pass($id, $token, $password);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
 
 ?>

@@ -1,9 +1,11 @@
+<?php session_start(); 
+echo $_SESSION["usuario"];?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Sistema de Psicopedagog&iacute;a</title>
+        <title>Sistema de acompa&ntilde;amiento al estudiante - SIAE</title>
 
         <!-- Google Font: Source Sans Pro -->
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -19,13 +21,18 @@
             <!-- /.login-logo -->
             <div class="card card-outline card-primary">
                 <div class="card-header text-center">
-                    <a href="javascript:void(0)" class="h5">Bienvenido al <b>Sistema de Psicopedagog&iacute;a</b></a>
+                    <a href="javascript:void(0)" class="h5">Bienvenido al <b>Sistema de acompa&ntilde;amiento al estudiante </b><br/><b>SIAE CBB</b></a>
                 </div>
                 <div class="card-body">
                     <p class="login-box-msg">Ingresa tu usuario y contrase&ntilde;a para iniciar sesi&oacute;n</p>
 
                     <div class="input-group mb-3">
-                        <input type="text" id="txtUsuario" class="form-control" placeholder="Usuario" onkeypress="return enterLogin(event);">
+                        <input type="text" id="txtUsuario" class="form-control" placeholder="Usuario" onkeypress="return enterLogin(event);"
+                               value="<?php
+                               if (isset($_SESSION["usuario"])) {
+                                   echo $_SESSION["usuario"];
+                               }
+                               ?>" >
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-user"></span>
@@ -33,7 +40,12 @@
                         </div>
                     </div>
                     <div class="input-group mb-3">
-                        <input type="password" id="txtClave" class="form-control" placeholder="Contraseña" onkeypress="return enterLogin(event);">
+                        <input type="password" id="txtClave" class="form-control" placeholder="Contraseña" onkeypress="return enterLogin(event);"
+                               value="<?php
+                               if (isset($_SESSION["contrasena"])) {
+                                   echo $_SESSION["contrasena"];
+                               }
+                               ?>" >
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-lock"></span>
@@ -44,7 +56,7 @@
                     <div class="row">
                         <div class="col-8">
                             <div class="icheck-primary">
-                                <input type="checkbox" id="remember">
+                                <input type="checkbox" id="remember" name="remember">
                                 <label for="remember">
                                     Recordar
                                 </label>
