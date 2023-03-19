@@ -38,6 +38,10 @@ $sede = $userData[0]["sede"];
         <!-- Theme style -->
         <link rel="stylesheet" href="dist/css/adminlte.min.css">
         <link rel="stylesheet" href="php/aco_css/principal.css">
+        <!-- SweetAlert2 -->
+        <link rel="stylesheet" href="plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
+        <!-- Toastr -->
+        <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
     </head>
     <!--
     `body` tag options:
@@ -242,7 +246,7 @@ $sede = $userData[0]["sede"];
                                 $lista_submenu = fnc_submenu_x_menu($conexion, $menu);
                                 foreach ($lista_submenu as $lista_s) {
                                     $html_menu .= "<li class='nav-item'>
-                                        <a href='#' onclick='cargar_opcion(" . '"' . $lista_s["ruta"] . '"' . "," . '"' . $lista_s["submenu"] . '"' . ")' class='nav-link'>
+                                        <a href='#' onclick='cargar_opcion(" . '"' . $lista_s["id"] . '"' . "," . '"' . $lista_s["ruta"] . '"' . "," . '"' . $lista_s["submenu"] . '"' . ")' class='nav-link'>
                                             <i class='" . $lista_s["icono"] . "'></i>
                                             <p>" . $lista_s["submenu"] . "</p>
                                         </a>
@@ -365,7 +369,7 @@ $sede = $userData[0]["sede"];
         </div>
 
         <!-- Modals -->
-        <div class="modal fade" id="modal-nuevo-usuario" role="dialog" aria-hidden="true" labelledby="modal-nuevo-usuario">
+        <div class="modal fade" id="modal-nuevo-usuario" role="dialog" aria-hidden="true" aria-labelledby="modal-nuevo-usuario">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -378,30 +382,72 @@ $sede = $userData[0]["sede"];
                     </div>
                     <div class="modal-footer justify-content-between">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
-                        <button type="button" class="btn btn-primary">Registrar Usuario</button>
+                        <button type="button" id="btnRegistrarUsuario" class="btn btn-primary swalDefaultError" onclick="return registrar_usuario()">Registrar Usuario</button>
                     </div>
                 </div>
                 <!-- /.modal-content -->
             </div>
             <!-- /.modal-dialog -->
         </div>
-
-        <div class="modal fade" id="modal-nuevo-usuario" role="dialog" aria-labelledby="modal-nuevo-usuario" aria-hidden="true" >
-            <div class="modal-dialog modal-content">
-                <div class="modal-content box">
-                    <div class="modal-header modalColorCorregir">
+        <div class="modal fade" id="modal-editar-usuario" role="dialog" aria-hidden="true" aria-labelledby="modal-editar-usuario">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Editar Usuario</h4>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true" style="color:#fff">x</span>
+                            <span aria-hidden="true">&times;</span>
                         </button>
-                        <h4 class="modal-title"><i class="fa fa-file"></i>&nbsp;&nbsp;Corregir Alumno</h4></div>
-                    <div class="modal-body">                            
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" id="btnAceptarCorregir" class="btn btn-success" onclick="guardarCorregirAlumno();">Guardar</button>
-                        <button type="button" class="btn btn-default" data-dismiss="modal" style="background:#5B5B5F;color:#fff;">Cancelar</button>
+                    <div class="modal-body">
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                        <button type="button" id="btnEditarUsuario" class="btn btn-primary swalDefaultError" onclick="return editar_usuario()">Editar Usuario</button>
                     </div>
                 </div>
+                <!-- /.modal-content -->
             </div>
+            <!-- /.modal-dialog -->
+        </div>
+        <div class="modal fade" id="modal-eliminar-usuario" role="dialog" aria-hidden="true" aria-labelledby="modal-eliminar-usuario">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Eliminar Usuario</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                        <button type="button" id="btnEliminarUsuario" class="btn btn-primary swalDefaultError" onclick="return eliminar_usuario()">Eliminar Usuario</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+        <div class="modal fade" id="modal-cambiar-contrasena-usuario" role="dialog" aria-hidden="true" aria-labelledby="modal-cambiar-contrasena-usuario">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Cambiar Contrase&ntilde;a</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                        <button type="button" id="btnCambiarContrasenaUsuario" class="btn btn-primary swalDefaultError" onclick="return cambiar_contrasena_usuario()">Editar Usuario</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
         </div>
         <!-- Modals -->
 
@@ -436,6 +482,13 @@ $sede = $userData[0]["sede"];
         <script src="plugins/datatables-buttons/js/buttons.print.min.js"></script>
         <script src="plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
         <script type="text/javascript" src="php/aco_js/principal.js"></script>
+        <!-- Select2 -->
+        <script src="plugins/select2/js/select2.full.min.js"></script>
+
+        <!-- SweetAlert2 -->
+        <script src="plugins/sweetalert2/sweetalert2.min.js"></script>
+        <!-- Toastr -->
+        <script src="plugins/toastr/toastr.min.js"></script>
     </body>
 
 </html>

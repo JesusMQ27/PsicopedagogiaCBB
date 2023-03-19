@@ -42,6 +42,16 @@ function fnc_submenu_x_menu($conexion, $id) {
     return $arreglo;
 }
 
+function fnc_consultar_submenu($conexion, $id) {
+    $arreglo = array();
+    $sql = con_consultar_submenu($id);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
 function fnc_lista_usuarios($conexion, $id) {
     $arreglo = array();
     $sql = con_lista_usuarios($id);
@@ -100,8 +110,86 @@ function fnc_verificar_token_pass($conexion, $id, $token) {
     return $arreglo;
 }
 
-function fnc_cambiar_pass($conexion, $id, $token, $password){
+function fnc_cambiar_pass($conexion, $id, $token, $password) {
     $sql = con_cambiar_pass($id, $token, $password);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_lista_tipo_usuarios($conexion, $id) {
+    $arreglo = array();
+    $sql = con_lista_tipo_usuarios($id);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_tipo_documentos($conexion, $id) {
+    $arreglo = array();
+    $sql = con_lista_tipo_documentos($id);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_sede($conexion, $id) {
+    $arreglo = array();
+    $sql = con_lista_sede($id);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_validar_cantidad_digitos($conexion, $tipoDoc) {
+    $arreglo = array();
+    $sql = con_validar_cantidad_digitos($tipoDoc);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_validar_existe_nro_documento($conexion, $tipoDoc, $numDoc) {
+    $arreglo = array();
+    $sql = con_validar_existe_nro_documento($tipoDoc, $numDoc);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_validar_exite_correo($conexion, $correo) {
+    $arreglo = array();
+    $sql = con_validar_exite_correo($correo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_registrar_nuevo_usuario($conexion, $tipo_usuario, $tipo_doc, $num_doc, $paterno, $materno, $nombres, $correo, $clave, $telefono, $sede, $sexo, $token) {
+    $sql = con_registrar_nuevo_usuario($tipo_usuario, $tipo_doc, $num_doc, $paterno, $materno, $nombres, $correo, $clave, $telefono, $sede, $sexo, $token);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_editar_usuario($conexion, $id, $tipo_usuario, $tipo_doc, $num_doc, $paterno, $materno, $nombres, $correo, $telefono, $sede, $sexo, $estado) {
+    $sql = con_editar_usuario($id, $tipo_usuario, $tipo_doc, $num_doc, $paterno, $materno, $nombres, $correo, $telefono, $sede, $sexo, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_eliminar_usuario($conexion, $id) {
+    $sql = con_eliminar_usuario($id);
     $stmt = $conexion->exec($sql);
     return $stmt;
 }

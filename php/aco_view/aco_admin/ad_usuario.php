@@ -4,6 +4,7 @@ require_once '../../aco_fun/aco_fun.php';
 $con = new DB(1111);
 $conexion = $con->connect();
 $nombre = $_POST["nombre_opcion"];
+$codigo = $_POST["codigo_menu"];
 $lista_usuarios = fnc_lista_usuarios($conexion, "");
 ?>
 
@@ -30,6 +31,7 @@ $lista_usuarios = fnc_lista_usuarios($conexion, "");
             <div class="card-body">
                 <div class="row">
                     <div class="col-2">
+                        <input type="hidden" id="hdnCodiAU" value="<?php echo $codigo; ?>"/>
                         <button type="submit" class="btn btn-primary btn-block" data-toggle="modal" data-target="#modal-nuevo-usuario" data-backdrop="static">Nuevo usuario</button>
                     </div>
                 </div><br>
@@ -51,6 +53,7 @@ $lista_usuarios = fnc_lista_usuarios($conexion, "");
                         $html = "";
                         $num = 1;
                         foreach ($lista_usuarios as $lista) {
+                            $usuarioCod = fnc_generate_random_string(6) . "-" . $lista["id"] . "/" . fnc_generate_random_string(6);
                             $html .= "<tr>
                                 <td>" . $num . "</td>
                                         <td>" . $lista["perfilNombre"] . "</td>
@@ -59,9 +62,10 @@ $lista_usuarios = fnc_lista_usuarios($conexion, "");
                                         <td>" . $lista["fullnombre"] . "</td>
                                         <td>" . $lista["correo"] . "</td>
                                         <td>" . $lista["estado_nombre"] . "</td>
-                                        <td align='center'>" . "<i class='nav-icon fas fa-edit naranja' title='Editar'></i>&nbsp;&nbsp;"
-                                    . "<i class='nav-icon fas fa-trash rojo' title='Eliminar'></i>&nbsp;&nbsp;"
-                                    . "<i class='nav-icon fas fa-paper-plane azul' title='Restaurar contraseña'></i>" . "</td>
+                                        <td align='center'>"
+                                    . "<i class='nav-icon fas fa-edit naranja' title='Editar' data-toggle='modal' data-target='#modal-editar-usuario' data-backdrop='static' data-usuario='" . $usuarioCod . "'></i>&nbsp;&nbsp;"
+                                    . "<i class='nav-icon fas fa-trash rojo' title='Eliminar' data-toggle='modal' data-target='#modal-eliminar-usuario' data-backdrop='static' data-usuario='" . $usuarioCod . "'></i>&nbsp;&nbsp;"
+                                    . "<i class='nav-icon fas fa-paper-plane azul' title='Cambiar contraseña' data-toggle='modal' data-target='#modal-cambiar-contrasena-usuario' data-backdrop='static' data-usuario='" . $usuarioCod . "'></i>" . "</td>
                                       </tr>";
                             $num++;
                         }
