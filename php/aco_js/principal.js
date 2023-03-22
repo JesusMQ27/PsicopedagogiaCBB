@@ -1,9 +1,3 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 
 function cargar_opcion(codigo, ruta, nombre) {
     $.ajax({
@@ -22,31 +16,67 @@ function cargar_opcion(codigo, ruta, nombre) {
         },
         success: function (datos) {
             $("#contenido").html(datos);
+            /*Modales de Administrar Usuarios*/
             $('#modal-nuevo-usuario').on('show.bs.modal', function (event) {
                 var modal = $(this);
                 var button = $(event.relatedTarget);
                 mostrar_registra_nuevo_usuario(modal);
             });
-
             $('#modal-editar-usuario').on('show.bs.modal', function (event) {
                 var modal = $(this);
                 var button = $(event.relatedTarget);
                 var usuario = button.data('usuario');
                 mostrar_editar_usuario(modal, usuario);
             });
-
             $('#modal-eliminar-usuario').on('show.bs.modal', function (event) {
                 var modal = $(this);
                 var button = $(event.relatedTarget);
                 var usuario = button.data('usuario');
                 mostrar_eliminar_usuario(modal, usuario);
             });
-
-            $('#modal-restaurar-contrasena-usuario').on('show.bs.modal', function (event) {
+            $('#modal-cambiar-contrasena-usuario').on('show.bs.modal', function (event) {
                 var modal = $(this);
                 var button = $(event.relatedTarget);
                 var usuario = button.data('usuario');
-                cambiar_contrasena_usuario(modal, usuario);
+                cambiar_clave_usuario(modal, usuario);
+            });
+
+            /*Modales de Administrar Menus*/
+            $('#modal-nuevo-menu').on('show.bs.modal', function (event) {
+                var modal = $(this);
+                var button = $(event.relatedTarget);
+                mostrar_registra_nuevo_menu(modal);
+            });
+            $('#modal-editar-menu').on('show.bs.modal', function (event) {
+                var modal = $(this);
+                var button = $(event.relatedTarget);
+                var menu = button.data('menu');
+                mostrar_editar_menu(modal, menu);
+            });
+            $('#modal-eliminar-menu').on('show.bs.modal', function (event) {
+                var modal = $(this);
+                var button = $(event.relatedTarget);
+                var menu = button.data('menu');
+                mostrar_eliminar_menu(modal, menu);
+            });
+
+            /*Modales de Administrar Perfiles*/
+            $('#modal-nuevo-perfil').on('show.bs.modal', function (event) {
+                var modal = $(this);
+                var button = $(event.relatedTarget);
+                mostrar_registra_nuevo_perfil(modal);
+            });
+            $('#modal-editar-perfil').on('show.bs.modal', function (event) {
+                var modal = $(this);
+                var button = $(event.relatedTarget);
+                var usuario = button.data('perfil');
+                mostrar_editar_perfil(modal, usuario);
+            });
+            $('#modal-eliminar-perfil').on('show.bs.modal', function (event) {
+                var modal = $(this);
+                var button = $(event.relatedTarget);
+                var usuario = button.data('perfil');
+                mostrar_eliminar_perfil(modal, usuario);
             });
         }
     });
@@ -97,19 +127,19 @@ function registrar_usuario() {
     if ($.trim(tipoDoc.select().val()) == 0) {
         mensaje += "Ingrese el tipo de documento<br>";
     }
-    if ($.trim(numDoc.val()) == 0) {
+    if ($.trim(numDoc.val()) == "") {
         mensaje += "Ingrese el número de documento<br>";
     }
-    if ($.trim(paterno.val()) == 0) {
+    if ($.trim(paterno.val()) == "") {
         mensaje += "Ingrese el apellido paterno<br>";
     }
-    if ($.trim(materno.val()) == 0) {
+    if ($.trim(materno.val()) == "") {
         mensaje += "Ingrese el apellido materno<br>";
     }
-    if ($.trim(nombres.val()) == 0) {
+    if ($.trim(nombres.val()) == "") {
         mensaje += "Ingrese el(los) nombre(s)<br>";
     }
-    if ($.trim(correo.val()) == 0) {
+    if ($.trim(correo.val()) == "") {
         mensaje += "Ingrese el correo<br>";
     } else {
         if (valida_correo(correo)) {
@@ -205,7 +235,7 @@ function mostrar_editar_usuario(modal, codigo) {
 }
 
 function editar_usuario() {
-    $("#btnRegistrarUsuario").attr("disabled", true);
+    $("#btnEditarUsuario").attr("disabled", true);
     var Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
@@ -232,19 +262,19 @@ function editar_usuario() {
     if ($.trim(tipoDoc.select().val()) == 0) {
         mensaje += "Ingrese el tipo de documento<br>";
     }
-    if ($.trim(numDoc.val()) == 0) {
+    if ($.trim(numDoc.val()) == "") {
         mensaje += "Ingrese el número de documento<br>";
     }
-    if ($.trim(paterno.val()) == 0) {
+    if ($.trim(paterno.val()) == "") {
         mensaje += "Ingrese el apellido paterno<br>";
     }
-    if ($.trim(materno.val()) == 0) {
+    if ($.trim(materno.val()) == "") {
         mensaje += "Ingrese el apellido materno<br>";
     }
-    if ($.trim(nombres.val()) == 0) {
+    if ($.trim(nombres.val()) == "") {
         mensaje += "Ingrese el(los) nombre(s)<br>";
     }
-    if ($.trim(correo.val()) == 0) {
+    if ($.trim(correo.val()) == "") {
         mensaje += "Ingrese el correo<br>";
     } else {
         if (valida_correo(correo)) {
@@ -396,14 +426,14 @@ function eliminar_usuario() {
     });
 }
 
-function cambiar_contrasena_usuario(modal, codigo) {
+function cambiar_clave_usuario(modal, codigo) {
     $.ajax({
         url: "php/aco_php/controller.php",
         dataType: "html",
         type: "POST",
         data: {
-            opcion: "formulario_cambiar_contrasena_usuario",
-            u_e_codigo: codigo
+            opcion: "formulario_cambiar_clave_usuario",
+            u_cc_codigo: codigo
         },
         error: function (xhr, ajaxOptions, thrownError) {
             //$("#contentMenu").html(xhr.responseText);
@@ -415,6 +445,341 @@ function cambiar_contrasena_usuario(modal, codigo) {
     });
 }
 
+function envio_clave_usuario() {
+    $("#btnCambiarContrasenaUsuario").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 5000
+    });
+    var codSMenu = $("#hdnCodiAU");
+    var hdnCodiUsuaCam = $("#hdnCodiUsuaCam");
+    $.ajax({
+        url: "php/aco_php/psi_cambiar_contrasena_usuario.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            sm_codigo: $.trim(codSMenu.val()),
+            u_hdnCodiUsuaCam: $.trim(hdnCodiUsuaCam.val())
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            var resp = datos.split("***");
+            if (resp[1] === "1") {
+                var lista_sm = resp[3].split("--");
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $('#modal-cambiar-contrasena-usuario').modal('hide');
+                    $("#btnCambiarContrasenaUsuario").attr("disabled", false);
+                    cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                }, 5500);
+            } else {
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'error',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $("#btnCambiarContrasenaUsuario").attr("disabled", false);
+                }, 5500);
+            }
+        }
+    });
+}
+
+function mostrar_registra_nuevo_menu(modal) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_registro_nuevo_menu"
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+            $('#cbbImagen').selectpicker();
+        }
+    });
+}
+
+function registrar_menu() {
+    $("#btnRegistrarMenu").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiAU");
+    var descripcion = $("#txtDescripcion");
+    var imagen = $("#cbbImagen");
+    var mensaje = "";
+    if ($.trim(descripcion.val()) == "") {
+        mensaje += "Ingrese la descripción del menú<br>";
+    }
+    if ($.trim(imagen.select().val()) == 0) {
+        mensaje += "Ingrese la imagen del menú<br>";
+    }
+    if (mensaje !== "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: mensaje,
+            showConfirmButton: false
+        });
+        $("#btnRegistrarMenu").attr("disabled", false);
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "proceso_registro_nuevo_menu",
+                sm_codigo: $.trim(codSMenu.val()),
+                m_descripcion: $.trim(descripcion.val()),
+                m_imagen: $.trim(imagen.select().val())
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                var resp = datos.split("***");
+                if (resp[1] === "1") {
+                    var lista_sm = resp[3].split("--");
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $('#modal-nuevo-menu').modal('hide');
+                        $("#btnRegistrarMenu").attr("disabled", false);
+                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                    }, 4500);
+                } else {
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $("#btnRegistrarMenu").attr("disabled", false);
+                    }, 4500);
+                }
+            }
+        });
+    }
+}
+
+function mostrar_editar_menu(modal, codigo) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_editar_menu",
+            u_em_codigo: codigo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+            $('#cbbImagenEdi').selectpicker();
+        }
+    });
+}
+
+function editar_menu() {
+    $("#btnEditarMenu").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiAU");
+    var codMenu = $("#hdnCodiMenu");
+    var descripcionEdi = $("#txtDescripcionEdi");
+    var imagenEdi = $("#cbbImagenEdi");
+    var estadoMeEdi = $("#cbbEstadoMeEdi");
+    var mensaje = "";
+    if ($.trim(descripcionEdi.val()) == "") {
+        mensaje += "Ingrese la descripción del menú<br>";
+    }
+    if ($.trim(imagenEdi.select().val()) == 0) {
+        mensaje += "Ingrese la imagen del menú<br>";
+    }
+    if ($.trim(estadoMeEdi.select().val()) == -1) {
+        mensaje += "Ingrese el estado del menú<br>";
+    }
+    if (mensaje !== "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: mensaje,
+            showConfirmButton: false
+        });
+        $("#btnEditarMenu").attr("disabled", false);
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "proceso_editar_menu",
+                sm_codigo: $.trim(codSMenu.val()),
+                m_codigoEdi: $.trim(codMenu.val()),
+                m_descripcionEdi: $.trim(descripcionEdi.val()),
+                m_imagenEdi: $.trim(imagenEdi.select().val()),
+                m_estadoMeEdi: $.trim(estadoMeEdi.select().val())
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                var resp = datos.split("***");
+                if (resp[1] === "1") {
+                    var lista_sm = resp[3].split("--");
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $('#modal-editar-menu').modal('hide');
+                        $("#btnEditarMenu").attr("disabled", false);
+                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                    }, 4500);
+                } else {
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $("#btnEditarMenu").attr("disabled", false);
+                    }, 4500);
+                }
+            }
+        });
+    }
+}
+
+function mostrar_eliminar_menu(modal, codigo) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_eliminar_menu",
+            u_elmenu_codigo: codigo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            modal.find('.modal-body').html(datos);
+        }
+    });
+}
+
+function eliminar_menu() {
+    $("#btnEliminarMenu").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiAU");
+    var hdnCodiMenuEli = $("#hdnCodiMenuEli");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_eliminar_menu",
+            sm_codigo: $.trim(codSMenu.val()),
+            u_codiMenuIdEli: $.trim(hdnCodiMenuEli.val())
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            var resp = datos.split("***");
+            if (resp[1] === "1") {
+                var lista_sm = resp[3].split("--");
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $('#modal-eliminar-menu').modal('hide');
+                    $("#btnEliminarMenu").attr("disabled", false);
+                    cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                }, 4500);
+            } else {
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'error',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $("#btnEliminarMenu").attr("disabled", false);
+                }, 4500);
+            }
+        }
+    });
+}
+
+
+function mostrar_registra_nuevo_perfil() {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_registro_nuevo_usuario"
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+        }
+    });
+}
+
+function registrar_perfil() {
+
+}
 
 
 function valida_correo(id) {

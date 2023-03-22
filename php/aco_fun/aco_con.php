@@ -48,9 +48,10 @@ function con_lista_usuarios($id) {
     $sql = "SELECT usu_id as id,a.perf_id as perfId,perf_nombre as perfilNombre,a.tipo_doc_id as tipoDocId,tipo_doc_nombre as tipoDoc,
 usu_num_doc as numDoc,CONCAT(usu_paterno,' ',usu_materno,' ', usu_nombres) as fullnombre,
 usu_paterno as paterno,usu_materno as materno, usu_nombres as nombres,
+CONCAT(usu_nombres,' ',usu_paterno,' ', usu_materno) as nombrecompleto,
 usu_sexo as sexoId,CASE usu_sexo WHEN 'M' THEN 'Masculino' WHEN 'F' THEN 'Femenino' END as sexo,
 usu_correo as correo,usu_telefono as telefono,a.sed_id as sedeId, sed_nombre as sede,usu_estado as  estado,
-usu_estado as estado, CASE usu_estado WHEN '1' THEN 'Activo' WHEN '0' THEN 'Inactivo' END as estado_nombre,usu_clave as clave
+usu_estado as estado, CASE usu_estado WHEN '1' THEN 'Activo' WHEN '0' THEN 'Inactivo' END as estado_nombre,usu_clave as clave,usu_token as token
 FROM tb_usuario a
 INNER JOIN tb_perfil b ON a.perf_id=b.perf_id
 INNER JOIN tb_documento_tipo c ON a.tipo_doc_id=c.tipo_doc_id
@@ -91,8 +92,14 @@ function con_cambiar_pass($id, $token, $password) {
     return $sql;
 }
 
+function con_cambiar_contrasena_usuario($id, $token, $password) {
+    $sql = "UPDATE tb_usuario SET usu_clave='$password',usu_token_clave='',usu_solicito_clave='' WHERE usu_id='$id' AND usu_token='$token';";
+    return $sql;
+}
+
 function con_lista_tipo_usuarios($id) {
-    $sql = "SELECT perf_id as id,perf_nombre as nombre FROM tb_perfil WHERE 1=1 ";
+    $sql = "SELECT perf_id as id,perf_nombre as nombre,perf_codigo as codigo,"
+            . "CASE perf_estado WHEN 1 THEN 'Activo' WHEN 2 THEN 'Inactivo' ELSE '' END as estado FROM tb_perfil WHERE 1=1 ";
     if ($id !== "") {
         $sql .= " AND perf_id='$id' ";
     }
@@ -147,5 +154,58 @@ function con_editar_usuario($id, $tipo_usuario, $tipo_doc, $num_doc, $paterno, $
 function con_eliminar_usuario($id) {
     $sql = "UPDATE tb_usuario SET usu_estado='0' "
             . " WHERE usu_id='$id';";
+    return $sql;
+}
+
+function con_lista_menus($id, $estado) {
+    $cadena = "";
+    $sql = "SELECT men_id as id,men_codigo as codigo, men_nombre as nombre, men_icono as imagen,
+CASE men_estado WHEN 1 THEN 'Activo' WHEN 0 THEN 'Inactivo' ELSE '' END AS estado, men_codigo as codigo, men_estado as estadoId 
+FROM tb_menu WHERE 1=1 ";
+    if ($id !== "") {
+        $sql .= " AND men_id='$id' ";
+    }
+    if ($estado !== "") {
+        $cadena .= " AND men_estado=1;";
+    } else {
+        $cadena .= "  ";
+    }
+    $sql .= $cadena;
+    return $sql;
+}
+
+function con_lista_iconos($id) {
+    $sql = "SELECT icon_id as id,icon_nombre as nombre,icon_imagen as imagen,"
+            . "CASE icon_estado WHEN 1 THEN 'Activo' WHEN 0 THEN 'Inactivo' END estado "
+            . " FROM tb_iconos WHERE 1=1 ";
+    if ($id !== "") {
+        $sql .= " AND icon_estado='1' ";
+    } else {
+        $sql .= "";
+    }
+    return $sql;
+}
+
+function con_registrar_menu($codigo, $descripcion, $imagen) {
+    $sql = "INSERT INTO tb_menu(men_codigo,men_nombre,men_icono,men_estado)
+               VALUES ('" . $codigo . "','" . $descripcion . "','" . $imagen . "','1')";
+    return $sql;
+}
+
+function con_editar_menu($id, $codigo, $nombre, $icono, $estado) {
+    $sdata = "";
+    if ($codigo !== "") {
+        $sdata = " men_codigo='$codigo',";
+    } else {
+        $sdata = "";
+    }
+    $sql = "UPDATE tb_menu SET $sdata men_nombre='$nombre',men_icono='$icono',men_estado='$estado' "
+            . " WHERE men_id='$id';";
+    return $sql;
+}
+
+function con_eliminar_menu($id) {
+    $sql = "UPDATE tb_menu SET men_estado='0' "
+            . " WHERE men_id='$id';";
     return $sql;
 }

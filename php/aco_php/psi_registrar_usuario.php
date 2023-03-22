@@ -69,7 +69,7 @@ if (count($valicant_ndoc) > 0) {
                             . "Nombre de usuario: " . $u_numDoc . "<br/>"
                             . "Contraseña: " . $clave . "<br/><br/>"
                             . "También puedes ingresar haciendo clic en este enlace <a href='$url_inicio' style='color:#0051B5;cursor:pointer'>Iniciar Sesión</a>";
-//aqui se envia al correo
+                    //aqui se envia al correo
                     $mail = new PHPMailer(true);
                     //Ingresando parametros
                     $mail->SMTPDebug = SMTP::DEBUG_SERVER;
@@ -79,14 +79,14 @@ if (count($valicant_ndoc) > 0) {
                     //$mail->SMTPDebug = 1;
                     $mail->IsHTML(true);
                     $mail->Username = "jesusmq2127@gmail.com";
-                    $mail->Password = "bvymsayekgfgtekj";
+                    $mail->Password = fnc_contrasena_php_mailer();
                     $mail->SMTPSecure = "tls";
                     $mail->Port = 465; //SMTP port
                     $mail->SMTPSecure = "ssl";
 
                     // $mail->Username = 'salvaro@ich.edu.pe';
                     //$mail->Password = "995131543";
-                    $mail->Subject = utf8_decode("Sistema de acompañamiento al estudiante - SIAE");
+                    $mail->Subject = utf8_decode("Registro de usuario - Sistema de acompañamiento al estudiante - SIAE");
                     $mail->setFrom("soporteSistemaSIAE@cbb.edu.pe");
                     $mail->Body = utf8_decode($str_mensaje_correo);
                     $mail->addAttachment('../aco_img/CBB.png');

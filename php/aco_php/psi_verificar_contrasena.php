@@ -39,14 +39,14 @@ if (filter_var($p_correo, FILTER_VALIDATE_EMAIL)) {
         //$mail->SMTPDebug = 1;
         $mail->IsHTML(true);
         $mail->Username = "jesusmq2127@gmail.com";
-        $mail->Password = "bvymsayekgfgtekj";
+        $mail->Password = fnc_contrasena_php_mailer();
         $mail->SMTPSecure = "tls";
         $mail->Port = 465; //SMTP port
         $mail->SMTPSecure = "ssl";
 
         // $mail->Username = 'salvaro@ich.edu.pe';
         //$mail->Password = "995131543";
-        $mail->Subject = utf8_decode("Sistema de acompañamiento al estudiante - SIAE");
+        $mail->Subject = utf8_decode("Reinicio de contraseña - Sistema de acompañamiento al estudiante - SIAE");
         $mail->setFrom("soporteSistemaSIAE@cbb.edu.pe");
         $mail->Body = utf8_decode($str_mensaje);
         $mail->addAttachment('../aco_img/CBB.png');

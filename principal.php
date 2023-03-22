@@ -42,6 +42,8 @@ $sede = $userData[0]["sede"];
         <link rel="stylesheet" href="plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
         <!-- Toastr -->
         <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
     </head>
     <!--
     `body` tag options:
@@ -73,9 +75,9 @@ $sede = $userData[0]["sede"];
                 <ul class="navbar-nav ml-auto">
                     <!-- Navbar Search -->
                     <li class="nav-item">
-                        <a class="nav-link" data-widget="navbar-search" href="#" role="button">
+                        <!--<a class="nav-link" data-widget="navbar-search" href="#" role="button">
                             <i class="fas fa-search"></i>
-                        </a>
+                        </a>-->
                         <div class="navbar-search-block">
                             <form class="form-inline">
                                 <div class="input-group input-group-sm">
@@ -93,7 +95,7 @@ $sede = $userData[0]["sede"];
                         </div>
                     </li>
 
-                    <!-- Messages Dropdown Menu -->
+                    <!-- 
                     <li class="nav-item dropdown">
                         <a class="nav-link" data-toggle="dropdown" href="#">
                             <i class="far fa-comments"></i>
@@ -101,7 +103,6 @@ $sede = $userData[0]["sede"];
                         </a>
                         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
                             <a href="#" class="dropdown-item">
-                                <!-- Message Start -->
                                 <div class="media">
                                     <img src="dist/img/user1-128x128.jpg" alt="User Avatar" class="img-size-50 mr-3 img-circle">
                                     <div class="media-body">
@@ -113,11 +114,9 @@ $sede = $userData[0]["sede"];
                                         <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
                                     </div>
                                 </div>
-                                <!-- Message End -->
                             </a>
                             <div class="dropdown-divider"></div>
                             <a href="#" class="dropdown-item">
-                                <!-- Message Start -->
                                 <div class="media">
                                     <img src="dist/img/user8-128x128.jpg" alt="User Avatar" class="img-size-50 img-circle mr-3">
                                     <div class="media-body">
@@ -129,11 +128,9 @@ $sede = $userData[0]["sede"];
                                         <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
                                     </div>
                                 </div>
-                                <!-- Message End -->
                             </a>
                             <div class="dropdown-divider"></div>
                             <a href="#" class="dropdown-item">
-                                <!-- Message Start -->
                                 <div class="media">
                                     <img src="dist/img/user3-128x128.jpg" alt="User Avatar" class="img-size-50 img-circle mr-3">
                                     <div class="media-body">
@@ -145,13 +142,11 @@ $sede = $userData[0]["sede"];
                                         <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
                                     </div>
                                 </div>
-                                <!-- Message End -->
                             </a>
                             <div class="dropdown-divider"></div>
                             <a href="#" class="dropdown-item dropdown-footer">See All Messages</a>
                         </div>
                     </li>
-                    <!-- Notifications Dropdown Menu -->
                     <li class="nav-item dropdown">
                         <a class="nav-link" data-toggle="dropdown" href="#">
                             <i class="far fa-bell"></i>
@@ -177,7 +172,7 @@ $sede = $userData[0]["sede"];
                             <div class="dropdown-divider"></div>
                             <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
                         </div>
-                    </li>
+                    </li> -->
                     <li class="nav-item">
                         <a class="nav-link" data-widget="fullscreen" href="#" role="button">
                             <i class="fas fa-expand-arrows-alt"></i>
@@ -442,13 +437,137 @@ $sede = $userData[0]["sede"];
                     </div>
                     <div class="modal-footer justify-content-between">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
-                        <button type="button" id="btnCambiarContrasenaUsuario" class="btn btn-primary swalDefaultError" onclick="return cambiar_contrasena_usuario()">Editar Usuario</button>
+                        <button type="button" id="btnCambiarContrasenaUsuario" class="btn btn-primary swalDefaultError" onclick="return envio_clave_usuario()">Cambiar Contrase&ntilde;a</button>
                     </div>
                 </div>
                 <!-- /.modal-content -->
             </div>
             <!-- /.modal-dialog -->
         </div>
+
+        <div class="modal fade" id="modal-nuevo-menu" role="dialog" aria-hidden="true" aria-labelledby="modal-nuevo-menu">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Registrar Nuevo Men&uacute;</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                        <button type="button" id="btnRegistrarMenu" class="btn btn-primary swalDefaultError" onclick="return registrar_menu()">Registrar Men&uacute;</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+        <div class="modal fade" id="modal-editar-menu" role="dialog" aria-hidden="true" aria-labelledby="modal-editar-menu">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Editar Men&uacute;</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                        <button type="button" id="btnEditarMenu" class="btn btn-primary swalDefaultError" onclick="return editar_menu()">Editar Men&uacute;</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+        <div class="modal fade" id="modal-eliminar-menu" role="dialog" aria-hidden="true" aria-labelledby="modal-eliminar-menu">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Eliminar Men&uacute;</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                        <button type="button" id="btnEliminarMenu" class="btn btn-primary swalDefaultError" onclick="return eliminar_menu()">Eliminar Men&uacute;</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+
+        <div class="modal fade" id="modal-nuevo-perfil" role="dialog" aria-hidden="true" aria-labelledby="modal-nuevo-perfil">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Registrar Nuevo Perfil</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                        <button type="button" id="btnRegistrarPerfil" class="btn btn-primary swalDefaultError" onclick="return registrar_perfil()">Registrar Perfil</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+        <div class="modal fade" id="modal-editar-perfil" role="dialog" aria-hidden="true" aria-labelledby="modal-editar-perfil">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Editar Perfil</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                        <button type="button" id="btnEditarPerfil" class="btn btn-primary swalDefaultError" onclick="return editar_perfil()">Editar Perfil</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+        <div class="modal fade" id="modal-eliminar-perfil" role="dialog" aria-hidden="true" aria-labelledby="modal-eliminar-perfil">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Eliminar Perfil</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                        <button type="button" id="btnEliminarPerfil" class="btn btn-primary swalDefaultError" onclick="return eliminar_perfil()">Eliminar Perfil</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+
+
         <!-- Modals -->
 
         <!-- ./wrapper -->
@@ -489,6 +608,10 @@ $sede = $userData[0]["sede"];
         <script src="plugins/sweetalert2/sweetalert2.min.js"></script>
         <!-- Toastr -->
         <script src="plugins/toastr/toastr.min.js"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
+        <!-- (Optional) Latest compiled and minified JavaScript translation files -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/i18n/defaults-*.min.js"></script>
     </body>
 
 </html>

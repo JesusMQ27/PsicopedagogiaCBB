@@ -22,6 +22,11 @@ function fnc_datos_usuario($conexion, $p_usuaId) {
     return $arreglo;
 }
 
+function fnc_contrasena_php_mailer() {
+    $contrasena = "yiewhvvrmqzqsmif";
+    return $contrasena;
+}
+
 function fnc_menu_x_perfil($conexion, $id) {
     $arreglo = array();
     $sql = con_menu_x_perfil($id);
@@ -116,6 +121,12 @@ function fnc_cambiar_pass($conexion, $id, $token, $password) {
     return $stmt;
 }
 
+function fnc_cambiar_contrasena_usuario($conexion, $id, $token, $password) {
+    $sql = con_cambiar_contrasena_usuario($id, $token, $password);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
 function fnc_lista_tipo_usuarios($conexion, $id) {
     $arreglo = array();
     $sql = con_lista_tipo_usuarios($id);
@@ -193,5 +204,44 @@ function fnc_eliminar_usuario($conexion, $id) {
     $stmt = $conexion->exec($sql);
     return $stmt;
 }
+
+function fnc_lista_menus($conexion, $id, $estado) {
+    $arreglo = array();
+    $sql = con_lista_menus($id, $estado);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_iconos($conexion, $id) {
+    $arreglo = array();
+    $sql = con_lista_iconos($id);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_registrar_menu($conexion, $codigo, $descripcion, $imagen) {
+    $sql = con_registrar_menu($codigo, $descripcion, $imagen);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_editar_menu($conexion, $id, $codigo, $nombre, $icono, $estado) {
+    $sql = con_editar_menu($id, $codigo, $nombre, $icono, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_eliminar_menu($conexion, $id) {
+    $sql = con_eliminar_menu($id);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
 
 ?>
