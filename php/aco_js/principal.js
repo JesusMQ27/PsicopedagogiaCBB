@@ -16,68 +16,6 @@ function cargar_opcion(codigo, ruta, nombre) {
         },
         success: function (datos) {
             $("#contenido").html(datos);
-            /*Modales de Administrar Usuarios*/
-            $('#modal-nuevo-usuario').on('show.bs.modal', function (event) {
-                var modal = $(this);
-                var button = $(event.relatedTarget);
-                mostrar_registra_nuevo_usuario(modal);
-            });
-            $('#modal-editar-usuario').on('show.bs.modal', function (event) {
-                var modal = $(this);
-                var button = $(event.relatedTarget);
-                var usuario = button.data('usuario');
-                mostrar_editar_usuario(modal, usuario);
-            });
-            $('#modal-eliminar-usuario').on('show.bs.modal', function (event) {
-                var modal = $(this);
-                var button = $(event.relatedTarget);
-                var usuario = button.data('usuario');
-                mostrar_eliminar_usuario(modal, usuario);
-            });
-            $('#modal-cambiar-contrasena-usuario').on('show.bs.modal', function (event) {
-                var modal = $(this);
-                var button = $(event.relatedTarget);
-                var usuario = button.data('usuario');
-                cambiar_clave_usuario(modal, usuario);
-            });
-
-            /*Modales de Administrar Menus*/
-            $('#modal-nuevo-menu').on('show.bs.modal', function (event) {
-                var modal = $(this);
-                var button = $(event.relatedTarget);
-                mostrar_registra_nuevo_menu(modal);
-            });
-            $('#modal-editar-menu').on('show.bs.modal', function (event) {
-                var modal = $(this);
-                var button = $(event.relatedTarget);
-                var menu = button.data('menu');
-                mostrar_editar_menu(modal, menu);
-            });
-            $('#modal-eliminar-menu').on('show.bs.modal', function (event) {
-                var modal = $(this);
-                var button = $(event.relatedTarget);
-                var menu = button.data('menu');
-                mostrar_eliminar_menu(modal, menu);
-            });
-
-            /*Modales de Administrar Perfiles*/
-            $('#modal-nuevo-perfil').on('show.bs.modal', function (event) {
-                var modal = $(this);
-                var button = $(event.relatedTarget);
-                mostrar_registra_nuevo_perfil(modal);
-            });
-            $('#modal-editar-perfil').on('show.bs.modal', function (event) {
-                var modal = $(this);
-                var button = $(event.relatedTarget);
-                var usuario = button.data('perfil');
-                mostrar_editar_perfil(modal, usuario);
-            });
-            $('#modal-eliminar-perfil').on('show.bs.modal', function (event) {
-                var modal = $(this);
-                var button = $(event.relatedTarget);
-                var usuario = button.data('perfil');
-                mostrar_eliminar_perfil(modal, usuario);
-            });
         }
     });
 }
@@ -180,6 +118,10 @@ function registrar_usuario() {
                 u_sede: $.trim(sede.select().val()),
                 u_sexo: $.trim(sexo.select().val())
             },
+            beforeSend: function (objeto) {
+                $("#modal-nuevo-usuario").find('.modal-footer div label').html("");
+                $("#modal-nuevo-usuario").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+            },
             error: function (xhr, ajaxOptions, thrownError) {
                 //$("#contentMenu").html(xhr.responseText);
             },
@@ -187,6 +129,7 @@ function registrar_usuario() {
                 var resp = datos.split("***");
                 if (resp[1] === "1") {
                     var lista_sm = resp[3].split("--");
+                    $("#modal-nuevo-menu").find('.modal-footer div label').html('');
                     Toast.fire({
                         position: 'top-end',
                         icon: 'success',
@@ -195,6 +138,7 @@ function registrar_usuario() {
                     });
                     setTimeout(function () {
                         $('#modal-nuevo-usuario').modal('hide');
+                        $('.modal-backdrop').remove();
                         $("#btnRegistrarUsuario").attr("disabled", false);
                         cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
                     }, 4500);
@@ -321,6 +265,10 @@ function editar_usuario() {
                 u_sexoEdi: $.trim(sexo.select().val()),
                 u_estadoEdi: $.trim(estado.select().val())
             },
+            beforeSend: function (objeto) {
+                $("#modal-editar-menu").find('.modal-footer div label').html("");
+                $("#modal-editar-menu").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+            },
             error: function (xhr, ajaxOptions, thrownError) {
                 //$("#contentMenu").html(xhr.responseText);
             },
@@ -328,6 +276,7 @@ function editar_usuario() {
                 var resp = datos.split("***");
                 if (resp[1] === "1") {
                     var lista_sm = resp[3].split("--");
+                    $("#modal-editar-menu").find('.modal-footer div label').html('');
                     Toast.fire({
                         position: 'top-end',
                         icon: 'success',
@@ -336,6 +285,7 @@ function editar_usuario() {
                     });
                     setTimeout(function () {
                         $('#modal-editar-usuario').modal('hide');
+                        $('.modal-backdrop').remove();
                         $("#btnEditarUsuario").attr("disabled", false);
                         cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
                     }, 4500);
@@ -393,6 +343,10 @@ function eliminar_usuario() {
             sm_codigo: $.trim(codSMenu.val()),
             u_codiUsuIdEli: $.trim(hdnCodiUsuaEli.val())
         },
+        beforeSend: function (objeto) {
+            $("#modal-eliminar-usuario").find('.modal-footer div label').html("");
+            $("#modal-eliminar-usuario").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+        },
         error: function (xhr, ajaxOptions, thrownError) {
             //$("#contentMenu").html(xhr.responseText);
         },
@@ -400,6 +354,7 @@ function eliminar_usuario() {
             var resp = datos.split("***");
             if (resp[1] === "1") {
                 var lista_sm = resp[3].split("--");
+                $("#modal-eliminar-usuario").find('.modal-footer div label').html('');
                 Toast.fire({
                     position: 'top-end',
                     icon: 'success',
@@ -408,6 +363,7 @@ function eliminar_usuario() {
                 });
                 setTimeout(function () {
                     $('#modal-eliminar-usuario').modal('hide');
+                    $('.modal-backdrop').remove();
                     $("#btnEliminarUsuario").attr("disabled", false);
                     cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
                 }, 4500);
@@ -463,6 +419,10 @@ function envio_clave_usuario() {
             sm_codigo: $.trim(codSMenu.val()),
             u_hdnCodiUsuaCam: $.trim(hdnCodiUsuaCam.val())
         },
+        beforeSend: function (objeto) {
+            $("#modal-cambiar-contrasena-usuario").find('.modal-footer div label').html("");
+            $("#modal-cambiar-contrasena-usuario").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+        },
         error: function (xhr, ajaxOptions, thrownError) {
             //$("#contentMenu").html(xhr.responseText);
         },
@@ -470,6 +430,7 @@ function envio_clave_usuario() {
             var resp = datos.split("***");
             if (resp[1] === "1") {
                 var lista_sm = resp[3].split("--");
+                $("#modal-cambiar-contrasena-usuario").find('.modal-footer div label').html('');
                 Toast.fire({
                     position: 'top-end',
                     icon: 'success',
@@ -478,6 +439,7 @@ function envio_clave_usuario() {
                 });
                 setTimeout(function () {
                     $('#modal-cambiar-contrasena-usuario').modal('hide');
+                    $('.modal-backdrop').remove();
                     $("#btnCambiarContrasenaUsuario").attr("disabled", false);
                     cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
                 }, 5500);
@@ -527,12 +489,16 @@ function registrar_menu() {
     var codSMenu = $("#hdnCodiAU");
     var descripcion = $("#txtDescripcion");
     var imagen = $("#cbbImagen");
+    var carpeta = $("#txtCarpeta");
     var mensaje = "";
     if ($.trim(descripcion.val()) == "") {
         mensaje += "Ingrese la descripción del menú<br>";
     }
     if ($.trim(imagen.select().val()) == 0) {
         mensaje += "Ingrese la imagen del menú<br>";
+    }
+    if ($.trim(carpeta.val()) == "") {
+        mensaje += "Ingrese el nombre de la carpeta<br>";
     }
     if (mensaje !== "") {
         Toast.fire({
@@ -551,7 +517,12 @@ function registrar_menu() {
                 opcion: "proceso_registro_nuevo_menu",
                 sm_codigo: $.trim(codSMenu.val()),
                 m_descripcion: $.trim(descripcion.val()),
-                m_imagen: $.trim(imagen.select().val())
+                m_imagen: $.trim(imagen.select().val()),
+                m_carpeta: $.trim(carpeta.val())
+            },
+            beforeSend: function (objeto) {
+                $("#modal-nuevo-menu").find('.modal-footer div label').html("");
+                $("#modal-nuevo-menu").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 //$("#contentMenu").html(xhr.responseText);
@@ -560,6 +531,7 @@ function registrar_menu() {
                 var resp = datos.split("***");
                 if (resp[1] === "1") {
                     var lista_sm = resp[3].split("--");
+                    $("#modal-nuevo-menu").find('.modal-footer div label').html('');
                     Toast.fire({
                         position: 'top-end',
                         icon: 'success',
@@ -569,6 +541,7 @@ function registrar_menu() {
                     setTimeout(function () {
                         $('#modal-nuevo-menu').modal('hide');
                         $("#btnRegistrarMenu").attr("disabled", false);
+                        $('.modal-backdrop').remove();
                         cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
                     }, 4500);
                 } else {
@@ -620,6 +593,7 @@ function editar_menu() {
     var codMenu = $("#hdnCodiMenu");
     var descripcionEdi = $("#txtDescripcionEdi");
     var imagenEdi = $("#cbbImagenEdi");
+    var carpetaEdi = $("#txtCarpetaEdi");
     var estadoMeEdi = $("#cbbEstadoMeEdi");
     var mensaje = "";
     if ($.trim(descripcionEdi.val()) == "") {
@@ -627,6 +601,9 @@ function editar_menu() {
     }
     if ($.trim(imagenEdi.select().val()) == 0) {
         mensaje += "Ingrese la imagen del menú<br>";
+    }
+    if ($.trim(carpetaEdi.val()) == "") {
+        mensaje += "Ingrese el nombre de la carpeta<br>";
     }
     if ($.trim(estadoMeEdi.select().val()) == -1) {
         mensaje += "Ingrese el estado del menú<br>";
@@ -650,7 +627,12 @@ function editar_menu() {
                 m_codigoEdi: $.trim(codMenu.val()),
                 m_descripcionEdi: $.trim(descripcionEdi.val()),
                 m_imagenEdi: $.trim(imagenEdi.select().val()),
+                m_carpetaEdi: $.trim(carpetaEdi.val()),
                 m_estadoMeEdi: $.trim(estadoMeEdi.select().val())
+            },
+            beforeSend: function (objeto) {
+                $("#modal-editar-menu").find('.modal-footer div label').html("");
+                $("#modal-editar-menu").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 //$("#contentMenu").html(xhr.responseText);
@@ -659,6 +641,7 @@ function editar_menu() {
                 var resp = datos.split("***");
                 if (resp[1] === "1") {
                     var lista_sm = resp[3].split("--");
+                    $("#modal-editar-menu").find('.modal-footer div label').html('');
                     Toast.fire({
                         position: 'top-end',
                         icon: 'success',
@@ -668,6 +651,7 @@ function editar_menu() {
                     setTimeout(function () {
                         $('#modal-editar-menu').modal('hide');
                         $("#btnEditarMenu").attr("disabled", false);
+                        $('.modal-backdrop').remove();
                         cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
                     }, 4500);
                 } else {
@@ -724,6 +708,10 @@ function eliminar_menu() {
             sm_codigo: $.trim(codSMenu.val()),
             u_codiMenuIdEli: $.trim(hdnCodiMenuEli.val())
         },
+        beforeSend: function (objeto) {
+            $("#modal-eliminar-menu").find('.modal-footer div label').html("");
+            $("#modal-eliminar-menu").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+        },
         error: function (xhr, ajaxOptions, thrownError) {
             //$("#contentMenu").html(xhr.responseText);
         },
@@ -731,6 +719,7 @@ function eliminar_menu() {
             var resp = datos.split("***");
             if (resp[1] === "1") {
                 var lista_sm = resp[3].split("--");
+                $("#modal-eliminar-menu").find('.modal-footer div label').html('');
                 Toast.fire({
                     position: 'top-end',
                     icon: 'success',
@@ -740,6 +729,7 @@ function eliminar_menu() {
                 setTimeout(function () {
                     $('#modal-eliminar-menu').modal('hide');
                     $("#btnEliminarMenu").attr("disabled", false);
+                    $('.modal-backdrop').remove();
                     cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
                 }, 4500);
             } else {
@@ -757,14 +747,313 @@ function eliminar_menu() {
     });
 }
 
-
-function mostrar_registra_nuevo_perfil() {
+function mostrar_registra_nuevo_submenu(modal) {
     $.ajax({
         url: "php/aco_php/controller.php",
         dataType: "html",
         type: "POST",
         data: {
-            opcion: "formulario_registro_nuevo_usuario"
+            opcion: "formulario_registro_nuevo_submenu"
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+            $('#cbbSubImagen').selectpicker();
+        }
+    });
+}
+
+function registrar_submenu() {
+    $("#btnRegistrarSubmenu").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiAU");
+    var descripcion = $("#txtDescripcionSub");
+    var menu = $("#cbbMenus");
+    var imagen = $("#cbbSubImagen");
+    var link = $("#txtLinkSub");
+    var mensaje = "";
+    if ($.trim(descripcion.val()) == "") {
+        mensaje += "Ingrese la descripción del submenú<br>";
+    }
+    if ($.trim(menu.select().val()) == 0) {
+        mensaje += "Ingrese el menú<br>";
+    }
+    if ($.trim(imagen.select().val()) == 0) {
+        mensaje += "Ingrese la imagen del submenú<br>";
+    }
+    if ($.trim(link.val()) == "") {
+        mensaje += "Ingrese el link del submenú<br>";
+    }
+    if (mensaje !== "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: mensaje,
+            showConfirmButton: false
+        });
+        $("#btnRegistrarSubmenu").attr("disabled", false);
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "proceso_registro_nuevo_submenu",
+                sm_codigo: $.trim(codSMenu.val()),
+                s_descripcion: $.trim(descripcion.val()),
+                s_menu: $.trim(menu.val()),
+                s_imagen: $.trim(imagen.select().val()),
+                s_link: $.trim(link.val())
+            },
+            beforeSend: function (objeto) {
+                $("#modal-nuevo-submenu").find('.modal-footer div label').html("");
+                $("#modal-nuevo-submenu").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                var resp = datos.split("***");
+                if (resp[1] === "1") {
+                    var lista_sm = resp[3].split("--");
+                    $("#modal-nuevo-submenu").find('.modal-footer div label').html('');
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $('#modal-nuevo-submenu').modal('hide');
+                        $("#btnRegistrarSubmenu").attr("disabled", false);
+                        $('.modal-backdrop').remove();
+                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                    }, 4500);
+                } else {
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $("#btnRegistrarSubmenu").attr("disabled", false);
+                    }, 4500);
+                }
+            }
+        });
+    }
+}
+
+function mostrar_editar_submenu(modal, codigo) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_editar_submenu",
+            u_esub_codigo: codigo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);formulario_editar_submenu
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+            $('#cbbSubImagenEdi').selectpicker();
+        }
+    });
+}
+
+function editar_submenu() {
+    $("#btnEditarSubmenu").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiAU");
+    var codiSubMenu = $("#hdnCodiSubMenu");
+    var descripcion = $("#txtDescripcionSubEdi");
+    var menu = $("#cbbMenusEdi");
+    var imagen = $("#cbbSubImagenEdi");
+    var link = $("#txtLinkSubEdi");
+    var estado = $("#cbbEstadosubEdi");
+    var mensaje = "";
+    if ($.trim(descripcion.val()) == "") {
+        mensaje += "Ingrese la descripción del submenú<br>";
+    }
+    if ($.trim(menu.select().val()) == 0) {
+        mensaje += "Ingrese el menú<br>";
+    }
+    if ($.trim(imagen.select().val()) == 0) {
+        mensaje += "Ingrese la imagen del submenú<br>";
+    }
+    if ($.trim(link.val()) == "") {
+        mensaje += "Ingrese el link del submenú<br>";
+    }
+    if ($.trim(estado.select().val()) == -1) {
+        mensaje += "Ingrese el estado del submenú<br>";
+    }
+    if (mensaje !== "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: mensaje,
+            showConfirmButton: false
+        });
+        $("#btnEditarSubmenu").attr("disabled", false);
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "proceso_editar_submenu",
+                sub_codisubmenu: $.trim(codiSubMenu.val()),
+                sm_codigo: $.trim(codSMenu.val()),
+                sub_descripcion: $.trim(descripcion.val()),
+                sub_menu: $.trim(menu.val()),
+                sub_imagen: $.trim(imagen.select().val()),
+                sub_link: $.trim(link.val()),
+                sub_estado: $.trim(estado.val())
+            },
+            beforeSend: function (objeto) {
+                $("#modal-editar-submenu").find('.modal-footer div label').html("");
+                $("#modal-editar-submenu").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                var resp = datos.split("***");
+                if (resp[1] === "1") {
+                    var lista_sm = resp[3].split("--");
+                    $("#modal-editar-submenu").find('.modal-footer div label').html('');
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $('#modal-editar-submenu').modal('hide');
+                        $("#btnEditarSubmenu").attr("disabled", false);
+                        $('.modal-backdrop').remove();
+                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                    }, 4500);
+                } else {
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $("#btnEditarSubmenu").attr("disabled", false);
+                    }, 4500);
+                }
+            }
+        });
+    }
+}
+
+
+function mostrar_eliminar_submenu(modal, codigo) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_eliminar_submenu",
+            u_elsub_codigo: codigo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);formulario_editar_submenu
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            modal.find('.modal-body').html(datos);
+        }
+    });
+}
+
+function eliminar_submenu() {
+    $("#btnEliminarSubmenu").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiAU");
+    var hdnCodiSubmenuEli = $("#hdnCodiSubmenuEli");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_eliminar_submenu",
+            sm_codigo: $.trim(codSMenu.val()),
+            u_codiSubmenuIdEli: $.trim(hdnCodiSubmenuEli.val())
+        },
+        beforeSend: function (objeto) {
+            $("#modal-eliminar-submenu").find('.modal-footer div label').html("");
+            $("#modal-eliminar-submenu").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            var resp = datos.split("***");
+            if (resp[1] === "1") {
+                var lista_sm = resp[3].split("--");
+                $("#modal-eliminar-submenu").find('.modal-footer div label').html('');
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $('#modal-eliminar-submenu').modal('hide');
+                    $("#btnEliminarSubmenu").attr("disabled", false);
+                    $('.modal-backdrop').remove();
+                    cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                }, 4500);
+            } else {
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'error',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $("#btnEliminarSubmenu").attr("disabled", false);
+                }, 4500);
+            }
+        }
+    });
+}
+
+function mostrar_registra_nuevo_perfil(modal) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_registro_nuevo_perfil"
         },
         error: function (xhr, ajaxOptions, thrownError) {
             //$("#contentMenu").html(xhr.responseText);
@@ -778,9 +1067,797 @@ function mostrar_registra_nuevo_perfil() {
 }
 
 function registrar_perfil() {
-
+    $("#btnRegistrarPerfil").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiAU");
+    var descripcion = $("#txtDescripcionPer");
+    var checkList = "";
+    var mensaje = "";
+    $('#listFieldset').find('input[type=checkbox]:checked').each(function () {
+        var value = (this.checked ? $(this).val() : "");
+        //var id = $(this).attr("id");
+        checkList += value + "*";
+    });
+    checkList = checkList.slice(0, checkList.length - 1);
+    if ($.trim(descripcion.val()) == "") {
+        mensaje += "Ingrese la descripción del perfil<br>";
+    }
+    if (mensaje !== "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: mensaje,
+            showConfirmButton: false
+        });
+        $("#btnRegistrarPerfil").attr("disabled", false);
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "proceso_nuevo_perfil",
+                sm_codigo: $.trim(codSMenu.val()),
+                per_descripcion: $.trim(descripcion.val()),
+                per_lista: $.trim(checkList)
+            },
+            beforeSend: function (objeto) {
+                $("#modal-nuevo-perfil").find('.modal-footer div label').html("");
+                $("#modal-nuevo-perfil").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                var resp = datos.split("***");
+                if (resp[1] === "1") {
+                    var lista_sm = resp[3].split("--");
+                    $("#modal-nuevo-perfil").find('.modal-footer div label').html('');
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $('#modal-nuevo-perfil').modal('hide');
+                        $("#btnRegistrarPerfil").attr("disabled", false);
+                        $('.modal-backdrop').remove();
+                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                    }, 4500);
+                } else {
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $("#btnRegistrarPerfil").attr("disabled", false);
+                    }, 4500);
+                }
+            }
+        });
+    }
 }
 
+function mostrar_editar_perfil(modal, codigo) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_editar_perfil",
+            u_eperf_codigo: codigo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);formulario_editar_submenu
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+            $('#cbbSubImagenEdi').selectpicker();
+        }
+    });
+}
+
+function editar_perfil() {
+    $("#btnEditarPerfil").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiAU");
+    var codiPerfil = $("#hdnCodiPerfil");
+    var descripcion = $("#txtDescripcionPerEdi");
+    var estado = $("#cbbEstadoPerEdi");
+    var checkList = "";
+    var mensaje = "";
+    $('#listFieldsetEdi').find('input[type=checkbox]:checked').each(function () {
+        var value = (this.checked ? $(this).val() : "");
+        //var id = $(this).attr("id");
+        checkList += value + "*";
+    });
+    checkList = checkList.slice(0, checkList.length - 1);
+    if ($.trim(descripcion.val()) == "") {
+        mensaje += "Ingrese la descripción del perfil<br>";
+    }
+    if ($.trim(estado.select().val()) == -1) {
+        mensaje += "Ingrese el estado del perfil<br>";
+    }
+    if (mensaje !== "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: mensaje,
+            showConfirmButton: false
+        });
+        $("#btnEditarPerfil").attr("disabled", false);
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "proceso_editar_perfil",
+                perf_codigo: $.trim(codiPerfil.val()),
+                sm_codigo: $.trim(codSMenu.val()),
+                perf_descripcion: $.trim(descripcion.val()),
+                perf_estado: $.trim(estado.val()),
+                perf_lista: $.trim(checkList)
+            },
+            beforeSend: function (objeto) {
+                $("#modal-editar-perfil").find('.modal-footer div label').html("");
+                $("#modal-editar-perfil").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                var resp = datos.split("***");
+                if (resp[1] === "1") {
+                    var lista_sm = resp[3].split("--");
+                    $("#modal-editar-perfil").find('.modal-footer div label').html('');
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $('#modal-editar-perfil').modal('hide');
+                        $("#btnEditarPerfil").attr("disabled", false);
+                        $('.modal-backdrop').remove();
+                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                    }, 4500);
+                } else {
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $("#btnEditarPerfil").attr("disabled", false);
+                    }, 4500);
+                }
+            }
+        });
+    }
+}
+
+function mostrar_eliminar_perfil(modal, codigo) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_eliminar_perfil",
+            u_eliperf_codigo: codigo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);formulario_editar_submenu
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+        }
+    });
+}
+
+function eliminar_perfil() {
+    $("#btnEliminarPerfil").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiAU");
+    var hdnCodiPerfilEli = $("#hdnCodiPerfilEli");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_eliminar_perfil",
+            sm_codigo: $.trim(codSMenu.val()),
+            u_codiPerfilIdEli: $.trim(hdnCodiPerfilEli.val())
+        },
+        beforeSend: function (objeto) {
+            $("#modal-eliminar-perfil").find('.modal-footer div label').html("");
+            $("#modal-eliminar-perfil").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            var resp = datos.split("***");
+            if (resp[1] === "1") {
+                var lista_sm = resp[3].split("--");
+                $("#modal-eliminar-perfil").find('.modal-footer div label').html('');
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $('#modal-eliminar-perfil').modal('hide');
+                    $("#btnEliminarPerfil").attr("disabled", false);
+                    $('.modal-backdrop').remove();
+                    cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                }, 4500);
+            } else {
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'error',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $("#btnEliminarPerfil").attr("disabled", false);
+                }, 4500);
+            }
+        }
+    });
+}
+
+function mostrar_confirmacion_carga_alumnos(modal) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_confirmacion_carga_alumnos",
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);formulario_editar_submenu
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+        }
+    });
+}
+
+function registrar_carga_alumnos() {
+    $("#btnRegistrarCargaAlumno").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiAU");
+    var cod = $("#hdnNumeral").val();
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_registrar_carga_alumnos",
+            sm_codigo: $.trim(codSMenu.val()),
+            u_codPerson: $.trim(cod)
+        },
+        beforeSend: function (objeto) {
+            $("#modal-confirmar-carga-alumnos").find('.modal-footer div label').html("");
+            $("#modal-confirmar-carga-alumnos").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            var resp = datos.split("***");
+            if (resp[1] === "1") {
+                var lista_sm = resp[3].split("--");
+                //$("#modal-confirmar-carga-alumnos").find('.modal-footer div label').html('');
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $('#modal-confirmar-carga-alumnos').modal('hide');
+                    $('#modal-carga-alumno').modal('hide');
+                    $("#btnRegistrarCargaAlumno").attr("disabled", false);
+                    $('.modal-backdrop').remove();
+                    cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                }, 4500);
+            } else {
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'error',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $("#btnRegistrarCargaAlumno").attr("disabled", false);
+                }, 4500);
+            }
+            $("#modal-confirmar-carga-alumnos").find('.modal-footer div label').html("");
+        }
+    });
+}
+
+function mostrar_detalle_grupo(modal, codigo, nombre) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_detalle_grupo",
+            u_gru_codigo: codigo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            modal.find('.modal-body').html(datos);
+            modal.find('.modal-header .modal-title').html('Grupo: ' + nombre);
+            $("#tableGrupoDetalle").DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": true,
+                "paging": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+                "buttons": ["new", "colvis"]
+            }).buttons().container().appendTo('#tableGrupoDetalle_wrapper .col-md-6:eq(0)');
+        }
+    });
+}
+
+function eliminar_detalle_grupo(modal, codigo) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_eliminar_detalle_grupo",
+            u_gru_codigo: codigo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            modal.find('.modal-body').html(datos);
+        }
+    });
+}
+
+function eliminar_carga_alumnos() {
+    $("#btnEliminarCargaAlumno").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiAU");
+    var hdnCodiGrupoEli = $("#hdnCodiGrupo");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_eliminar_detalle_grupo",
+            sm_codigo: $.trim(codSMenu.val()),
+            u_codiGrupoIdEli: $.trim(hdnCodiGrupoEli.val())
+        },
+        beforeSend: function (objeto) {
+            $("#modal-eliminar-carga-alumno").find('.modal-footer div label').html("");
+            $("#modal-eliminar-carga-alumno").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            var resp = datos.split("***");
+            if (resp[1] === "1") {
+                var lista_sm = resp[3].split("--");
+                $("#modal-eliminar-carga-alumno").find('.modal-footer div label').html('');
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $('#modal-eliminar-carga-alumno').modal('hide');
+                    $("#btnEliminarCargaAlumno").attr("disabled", false);
+                    $('.modal-backdrop').remove();
+                    cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                }, 4500);
+            } else {
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'error',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $("#btnEliminarCargaAlumno").attr("disabled", false);
+                }, 4500);
+            }
+        }
+    });
+}
+
+function activar_detalle_grupo(modal, codigo) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_activar_detalle_grupo",
+            u_gru_codigo: codigo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            modal.find('.modal-body').html(datos);
+        }
+    });
+}
+
+function activar_carga_alumnos() {
+    $("#btnActivarCargaAlumno").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiAU");
+    var hdnCodiGrupoEli = $("#hdnCodiGrupoAc");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_activar_detalle_grupo",
+            sm_codigo: $.trim(codSMenu.val()),
+            u_codiGrupoIdEli: $.trim(hdnCodiGrupoEli.val())
+        },
+        beforeSend: function (objeto) {
+            $("#modal-activar-carga-alumno").find('.modal-footer div label').html("");
+            $("#modal-activar-carga-alumno").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            var resp = datos.split("***");
+            if (resp[1] === "1") {
+                var lista_sm = resp[3].split("--");
+                $("#modal-activar-carga-alumno").find('.modal-footer div label').html('');
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $('#modal-activar-carga-alumno').modal('hide');
+                    $("#btnActivarCargaAlumno").attr("disabled", false);
+                    $('.modal-backdrop').remove();
+                    cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                }, 4500);
+            } else {
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'error',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $("#btnActivarCargaAlumno").attr("disabled", false);
+                }, 4500);
+            }
+        }
+    });
+}
+
+function registrar_carga_usuarios() {
+    $("#btnRegistrarCargaUsuario").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiAU");
+    var cod = $("#hdnNumeralUsu").val();
+    $.ajax({
+        url: "php/aco_php/psi_registrar_usuarios.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            sm_codigo: $.trim(codSMenu.val()),
+            u_codPerson: $.trim(cod)
+        },
+        beforeSend: function (objeto) {
+            $("#modal-confirmar-carga-usuarios").find('.modal-footer div label').html("");
+            $("#modal-confirmar-carga-usuarios").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            var resp = datos.split("***");
+            if (resp[1] === "1") {
+                var lista_sm = resp[3].split("--");
+                $("#modal-confirmar-carga-usuarios").find('.modal-footer div label').html('');
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $('#modal-confirmar-carga-usuarios').modal('hide');
+                    $("#btnRegistrarCargaUsuario").attr("disabled", false);
+                    $('.modal-backdrop').remove();
+                    cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                }, 4500);
+            } else {
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'error',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $("#btnRegistrarCargaUsuario").attr("disabled", false);
+                }, 4500);
+            }
+        }
+    });
+}
+
+function mostrar_detalle_grupo_usuarios(modal, codigo, nombre) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_detalle_grupo_usuarios",
+            u_gru_codigo: codigo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            modal.find('.modal-body').html(datos);
+            modal.find('.modal-header .modal-title').html('Grupo: ' + nombre);
+            $("#tableGrupoDetalleUsuarios").DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": true,
+                "paging": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+                "buttons": ["new", "colvis"]
+            }).buttons().container().appendTo('#tableGrupoDetalleUsuarios_wrapper .col-md-6:eq(0)');
+        }
+    });
+}
+
+function eliminar_detalle_grupo_usuario(modal, codigo) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_eliminar_detalle_grupo_usuario",
+            u_gru_codigo: codigo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            modal.find('.modal-body').html(datos);
+        }
+    });
+}
+
+function eliminar_carga_usuarios() {
+    $("#btnEliminarCargaUsuario").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiAU");
+    var hdnCodiGrupoEli = $("#hdnCodiGrupoUsu");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_eliminar_detalle_grupo_usuario",
+            sm_codigo: $.trim(codSMenu.val()),
+            u_codiGrupoIdEliUsua: $.trim(hdnCodiGrupoEli.val())
+        },
+        beforeSend: function (objeto) {
+            $("#modal-eliminar-carga-usuario").find('.modal-footer div label').html("");
+            $("#modal-eliminar-carga-usuario").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            var resp = datos.split("***");
+            if (resp[1] === "1") {
+                var lista_sm = resp[3].split("--");
+                $("#modal-eliminar-carga-usuario").find('.modal-footer div label').html('');
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $('#modal-eliminar-carga-usuario').modal('hide');
+                    $("#btnEliminarCargaUsuario").attr("disabled", false);
+                    $('.modal-backdrop').remove();
+                    cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                }, 4500);
+            } else {
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'error',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $("#btnEliminarCargaUsuario").attr("disabled", false);
+                }, 4500);
+            }
+        }
+    });
+}
+
+
+function activar_detalle_grupo_usuario(modal, codigo) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_activar_detalle_grupo_usuario",
+            u_gru_codigo: codigo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            modal.find('.modal-body').html(datos);
+        }
+    });
+}
+
+
+function activar_carga_usuarios() {
+    $("#btnActivarCargaUsuario").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiAU");
+    var hdnCodiGrupoEli = $("#hdnCodiGrupoUsu");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_activar_detalle_grupo_usuario",
+            sm_codigo: $.trim(codSMenu.val()),
+            u_codiGrupoIdEliUsua: $.trim(hdnCodiGrupoEli.val())
+        },
+        beforeSend: function (objeto) {
+            $("#modal-activar-carga-usuario").find('.modal-footer div label').html("");
+            $("#modal-activar-carga-usuario").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            var resp = datos.split("***");
+            if (resp[1] === "1") {
+                var lista_sm = resp[3].split("--");
+                $("#modal-activar-carga-usuario").find('.modal-footer div label').html('');
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $('#modal-activar-carga-usuario').modal('hide');
+                    $("#btnActivarCargaUsuario").attr("disabled", false);
+                    $('.modal-backdrop').remove();
+                    cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                }, 4500);
+            } else {
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'error',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $("#btnActivarCargaUsuario").attr("disabled", false);
+                }, 4500);
+            }
+        }
+    });
+}
+
+function mostrar_confirmacion_carga_usuarios(modal) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_confirmacion_carga_usuarios",
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);formulario_editar_submenu
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+        }
+    });
+}
 
 function valida_correo(id) {
 // Define our regular expression.

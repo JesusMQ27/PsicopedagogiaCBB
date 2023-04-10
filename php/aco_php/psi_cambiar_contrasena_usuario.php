@@ -43,7 +43,7 @@ if (count($usuario_dta) > 0) {
     }
     $cambiar_contra = fnc_cambiar_contrasena_usuario($conexion, $u_hdnCodiUsua, $usuario_dta[0]["token"], $u_clave);
     if ($cambiar_contra) {
-        $url_inicio = "http://" . $_SERVER["SERVER_NAME"] . "/CBB_sistema/index.php";
+        $url_inicio = "http://" . $_SERVER["SERVER_NAME"] . "/SistSIAE/index.php";
         $str_mensaje_correo = "Hola " . $u_nombreCompleto . " <br/><br/>Se ha realizado un reiniciado de tu contraseña para el acceso al Sistema Integral de Acompañamiento al Estudiante - SIAE.<br/><br/>"
                 . "Ahora puedes iniciar sesión con las siguientes credenciales:<br/><br/>"
                 . "Nombre de usuario: " . $u_numDocumento . "<br/>"

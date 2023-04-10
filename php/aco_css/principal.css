@@ -23,6 +23,51 @@ and open the template in the editor.
     cursor: pointer;
 }
 
+.celeste{
+    color: skyblue;
+    cursor: pointer;
+}
+
 .space-div{
     padding-bottom: 7px;
+}
+
+.fieldset{
+    background-color: #007bff;
+    border-radius: 4px;
+}
+
+.legend {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    color: darkblue;
+    font-size: 17px;
+    font-weight: bold;
+    padding: 3px 5px 3px 7px;
+    width: auto;
+}
+
+.fieldset_menu{
+    background-color: white;
+    border-radius: 4px;
+}
+
+.legend_menu {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    color: darkblue;
+    font-size: 17px;
+    font-weight: bold;
+    padding: 3px 5px 3px 7px;
+    width: auto;
+}
+
+.a_styles{
+    color: #007bff;
+    text-decoration: none;
+    background-color: transparent;
+    font-size: 1.5rem;
+    cursor: pointer
 }

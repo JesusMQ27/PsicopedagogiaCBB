@@ -62,7 +62,7 @@ if (count($valicant_ndoc) > 0) {
                 $u_clave = hash("sha256", md5($clave));
                 $registrar_usuario = fnc_registrar_nuevo_usuario($conexion, $u_tipoUsuario, $u_tipoDoc, $u_numDoc, strtoupper($u_paterno), strtoupper($u_materno), strtoupper($u_nombres), strtolower($u_correo), $u_clave, $u_telefono, $u_sede, $u_sexo, $u_token);
                 if ($registrar_usuario) {
-                    $url_inicio = "http://" . $_SERVER["SERVER_NAME"] . "/CBB_sistema/index.php";
+                    $url_inicio = "http://" . $_SERVER["SERVER_NAME"] . "/SistSIAE/index.php";
 
                     $str_mensaje_correo = "Hola " . $u_nombres . " " . $u_paterno . " " . $u_materno . " <br/><br/>Tu registro en el Sistema Integral de Acompañamiento al Estudiante - SIAE ha sido exitoso.<br/><br/>"
                             . "Ahora puedes iniciar sesión con las siguientes credenciales:<br/><br/>"

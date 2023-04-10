@@ -1,5 +1,5 @@
-<?php session_start(); 
-echo $_SESSION["usuario"];?>
+<?php session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>

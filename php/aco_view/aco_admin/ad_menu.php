@@ -74,8 +74,97 @@ $lista_menus = fnc_lista_menus($conexion, "", "");
 
 </section>
 
+<div class="modal fade" id="modal-nuevo-menu" role="dialog" aria-hidden="true" aria-labelledby="modal-nuevo-menu">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Registrar Nuevo Men&uacute;</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                <div style="float: right">
+                    <label></label>
+                    <button type="button" id="btnRegistrarMenu" class="btn btn-primary swalDefaultError" onclick="return registrar_menu()">Registrar Men&uacute;</button>
+                </div>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<div class="modal fade" id="modal-editar-menu" role="dialog" aria-hidden="true" aria-labelledby="modal-editar-menu">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Editar Men&uacute;</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                <div style="float: right">
+                    <label></label>
+                    <button type="button" id="btnEditarMenu" class="btn btn-primary swalDefaultError" onclick="return editar_menu()">Editar Men&uacute;</button>
+                </div>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<div class="modal fade" id="modal-eliminar-menu" role="dialog" aria-hidden="true" aria-labelledby="modal-eliminar-menu">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Eliminar Men&uacute;</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                <div style="float: right">
+                    <label></label>
+                    <button type="button" id="btnEliminarMenu" class="btn btn-primary swalDefaultError" onclick="return eliminar_menu()">Eliminar Men&uacute;</button>
+                </div>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
 <script>
     $(function () {
+
+        /*Modales de Administrar Menus*/
+        $('#modal-nuevo-menu').on('show.bs.modal', function (event) {
+            var modal = $(this);
+            var button = $(event.relatedTarget);
+            mostrar_registra_nuevo_menu(modal);
+        });
+        $('#modal-editar-menu').on('show.bs.modal', function (event) {
+            var modal = $(this);
+            var button = $(event.relatedTarget);
+            var menu = button.data('menu');
+            mostrar_editar_menu(modal, menu);
+        });
+        $('#modal-eliminar-menu').on('show.bs.modal', function (event) {
+            var modal = $(this);
+            var button = $(event.relatedTarget);
+            var menu = button.data('menu');
+            mostrar_eliminar_menu(modal, menu);
+        });
         $("#tableMenus").DataTable({
             "responsive": true,
             "lengthChange": true,

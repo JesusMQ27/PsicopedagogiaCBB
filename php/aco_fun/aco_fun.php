@@ -47,6 +47,16 @@ function fnc_submenu_x_menu($conexion, $id) {
     return $arreglo;
 }
 
+function fnc_submenu_x_menu_perfil($conexion, $id) {
+    $arreglo = array();
+    $sql = con_submenu_x_menu_perfil($id);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
 function fnc_consultar_submenu($conexion, $id) {
     $arreglo = array();
     $sql = con_consultar_submenu($id);
@@ -100,7 +110,7 @@ function fnc_generate_random_string($length = 10) {
     $charactersLength = strlen($characters);
     $randomString = '';
     for ($i = 0; $i < $length; $i++) {
-        $randomString .= $characters[random_int(0, $charactersLength - 1)];
+        $randomString .= $characters[rand(0, $charactersLength - 1)];
     }
     return $randomString;
 }
@@ -127,9 +137,9 @@ function fnc_cambiar_contrasena_usuario($conexion, $id, $token, $password) {
     return $stmt;
 }
 
-function fnc_lista_tipo_usuarios($conexion, $id) {
+function fnc_lista_tipo_usuarios($conexion, $id, $estado) {
     $arreglo = array();
-    $sql = con_lista_tipo_usuarios($id);
+    $sql = con_lista_tipo_usuarios($id, $estado);
     $stmt = $conexion->query($sql);
     foreach ($stmt as $data) {
         array_push($arreglo, $data);
@@ -225,14 +235,14 @@ function fnc_lista_iconos($conexion, $id) {
     return $arreglo;
 }
 
-function fnc_registrar_menu($conexion, $codigo, $descripcion, $imagen) {
-    $sql = con_registrar_menu($codigo, $descripcion, $imagen);
+function fnc_registrar_menu($conexion, $codigo, $descripcion, $imagen, $carpeta) {
+    $sql = con_registrar_menu($codigo, $descripcion, $imagen, $carpeta);
     $stmt = $conexion->exec($sql);
     return $stmt;
 }
 
-function fnc_editar_menu($conexion, $id, $codigo, $nombre, $icono, $estado) {
-    $sql = con_editar_menu($id, $codigo, $nombre, $icono, $estado);
+function fnc_editar_menu($conexion, $id, $codigo, $nombre, $icono, $carpeta, $estado) {
+    $sql = con_editar_menu($id, $codigo, $nombre, $icono, $carpeta, $estado);
     $stmt = $conexion->exec($sql);
     return $stmt;
 }
@@ -243,5 +253,288 @@ function fnc_eliminar_menu($conexion, $id) {
     return $stmt;
 }
 
+function fnc_lista_submenus($conexion, $id, $estado) {
+    $arreglo = array();
+    $sql = con_lista_submenus($id, $estado);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
 
+function fnc_consulta_ultimo_orden_menu($conexion, $menu) {
+    $arreglo = array();
+    $sql = con_consulta_ultimo_orden_menu($menu);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_registrar_submenu($conexion, $orden, $codigo, $descripcion, $menu, $imagen, $link) {
+    $sql = con_registrar_submenu($orden, $codigo, $descripcion, $menu, $imagen, $link);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_editar_submenu($conexion, $id, $orden, $codigo, $nombre, $menu, $icono, $link, $estado) {
+    $sql = con_editar_submenu($id, $orden, $codigo, $nombre, $menu, $icono, $link, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_eliminar_submenu($conexion, $id) {
+    $sql = con_eliminar_submenu($id);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_registrar_perfil($conexion, $codigo, $descripcion) {
+    $sql = con_registrar_perfil($codigo, $descripcion);
+    $stmt = $conexion->exec($sql);
+    return $conexion->lastInsertId();
+}
+
+function fnc_registrar_accesos_perfil($conexion, $lista) {
+    $sql = con_registrar_accesos_perfil($lista);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_lista_menu_asigna($conexion, $codigo) {
+    $arreglo = array();
+    $sql = con_lista_menu_asigna($codigo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_editar_perfil($conexion, $id, $nombre, $estado) {
+    $sql = con_editar_perfil($id, $nombre, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_editar_accesos_perfil($conexion, $lista, $codigo) {
+    $sql = con_editar_accesos_perfil($lista, $codigo);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_editar_accesos_perfil_todos($conexion, $lista, $codigo) {
+    $sql = con_editar_accesos_perfil_todos($lista, $codigo);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_eliminar_perfil($conexion, $id) {
+    $sql = con_eliminar_perfil($id);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_drop_tabla_tmp_carga_alumnos($conexion, $codigo) {
+    $sql = con_drop_tabla_tmp_carga_alumnos($codigo);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fun_crear_tabla_tmp_carga_alumnos($conexion, $codigo) {
+    $sql = con_crear_tabla_tmp_carga_alumnos($codigo);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function func_inserta_data_tabla_tmp_carga_alumnos($conexion, $tabla, $data) {
+    $sql = con_inserta_data_tabla_tmp_carga_alumnos($tabla, $data);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function func_lista_data_tabla_tmp_carga_alumnos($conexion, $codigo) {
+    $arreglo = array();
+    $sql = con_lista_data_tabla_tmp_carga_alumnos($codigo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_data_validos_tabla_tmp_carga_alumnos($conexion, $codigo) {
+    $arreglo = array();
+    $sql = con_lista_data_validos_tabla_tmp_carga_alumnos($codigo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_registrar_grupo($conexion, $cadena) {
+    $sql = con_registrar_grupo($cadena);
+    $stmt = $conexion->exec($sql);
+    return $conexion->lastInsertId();
+}
+
+function fnc_registrar_data_tmp_a_alumno($conexion, $cadena) {
+    $sql = con_registrar_data_tmp_a_alumno($cadena);
+    $stmt = $conexion->exec($sql);
+    return $conexion->lastInsertId();
+}
+
+function fnc_registrar_matricula_alumno($conexion, $cadena) {
+    $sql = con_registrar_matricula_alumno($cadena);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_lista_grupos($conexion, $id, $estado) {
+    $arreglo = array();
+    $sql = con_lista_grupos($id, $estado);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function func_lista_grupo_detalle($conexion, $codigo) {
+    $arreglo = array();
+    $sql = con_lista_grupo_detalle($codigo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_eliminar_grupo($conexion, $id, $estado) {
+    $sql = con_eliminar_grupo($id, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_eliminar_alumno_grupo($conexion, $id, $estado) {
+    $sql = con_eliminar_alumno_grupo($id, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_eliminar_matricula_grupo($conexion, $id, $estado) {
+    $sql = con_eliminar_matricula_grupo($id, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_lista_grupos_usuarios($conexion, $id, $estado) {
+    $arreglo = array();
+    $sql = con_lista_grupos_usuarios($id, $estado);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_fecha_a_YY_MM_DD($fecha) {
+    $nueva_fecha = "";
+    $array = explode("/", $fecha);
+    if (count($array) > 1) {
+        $nueva_fecha = $array[2] . "-" . $array[1] . "-" . $array[0];
+    }
+    return $nueva_fecha;
+}
+
+function fnc_drop_tabla_tmp_carga_usuarios($conexion, $codigo) {
+    $sql = con_drop_tabla_tmp_carga_usuarios($codigo);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fun_crear_tabla_tmp_carga_usuarios($conexion, $codigo) {
+    $sql = con_crear_tabla_tmp_carga_usuarios($codigo);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function func_inserta_data_tabla_tmp_carga_usuarios($conexion, $tabla, $data) {
+    $sql = con_inserta_data_tabla_tmp_carga_usuarios($tabla, $data);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function func_lista_data_tabla_tmp_carga_usuarios($conexion, $codigo) {
+    $arreglo = array();
+    $sql = con_lista_data_tabla_tmp_carga_usuarios($codigo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_registrar_grupo_usuario($conexion, $cadena) {
+    $sql = con_registrar_grupo_usuario($cadena);
+    $stmt = $conexion->exec($sql);
+    return $conexion->lastInsertId();
+}
+
+function fnc_registrar_data_tmp_a_usuario($conexion, $cadena) {
+    $sql = con_registrar_data_tmp_a_usuario($cadena);
+    $stmt = $conexion->exec($sql);
+    return $conexion->lastInsertId();
+}
+
+function fnc_registrar_usuario_dictado($conexion, $cadena) {
+    $sql = con_registrar_usuario_dictado($cadena);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function func_lista_grupo_detalle_usuarios($conexion, $codigo) {
+    $arreglo = array();
+    $sql = con_lista_grupo_detalle_usuarios($codigo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_eliminar_grupo_usuario($conexion, $id, $estado) {
+    $sql = con_eliminar_grupo_usuario($id, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_eliminar_usuario_grupo($conexion, $id, $estado) {
+    $sql = con_eliminar_usuario_grupo($id, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function func_lista_data_tabla_tmp_carga_usuarios_correos($conexion, $codigo) {
+    $arreglo = array();
+    $sql = con_lista_data_tabla_tmp_carga_usuarios_correos($codigo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_sedes_x_perfil($conexion, $p_usuaId) {
+    $arreglo = array();
+    $sql = con_sedes_x_perfil($p_usuaId);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
 ?>

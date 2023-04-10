@@ -5,7 +5,7 @@ $con = new DB(1111);
 $conexion = $con->connect();
 $nombre = $_POST["nombre_opcion"];
 $codigo = $_POST["codigo_menu"];
-$lista_perfiles = fnc_lista_tipo_usuarios($conexion, "");
+$lista_perfiles = fnc_lista_tipo_usuarios($conexion, "", "");
 ?>
 
 <section class="content-header">
@@ -72,8 +72,96 @@ $lista_perfiles = fnc_lista_tipo_usuarios($conexion, "");
 
 </section>
 
+<div class="modal fade" id="modal-nuevo-perfil" role="dialog" aria-hidden="true" aria-labelledby="modal-nuevo-perfil">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Registrar Nuevo Perfil</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                <div style="float: right">
+                    <label></label>
+                    <button type="button" id="btnRegistrarPerfil" class="btn btn-primary swalDefaultError" onclick="return registrar_perfil()">Registrar Perfil</button>
+                </div>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<div class="modal fade" id="modal-editar-perfil" role="dialog" aria-hidden="true" aria-labelledby="modal-editar-perfil">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Editar Perfil</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                <div style="float: right">
+                    <label></label>
+                    <button type="button" id="btnEditarPerfil" class="btn btn-primary swalDefaultError" onclick="return editar_perfil()">Editar Perfil</button>
+                </div>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<div class="modal fade" id="modal-eliminar-perfil" role="dialog" aria-hidden="true" aria-labelledby="modal-eliminar-perfil">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Eliminar Perfil</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                <div style="float: right">
+                    <label></label>
+                    <button type="button" id="btnEliminarPerfil" class="btn btn-primary swalDefaultError" onclick="return eliminar_perfil()">Eliminar Perfil</button>
+                </div>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
 <script>
     $(function () {
+        /*Modales de Administrar Perfiles*/
+        $('#modal-nuevo-perfil').on('show.bs.modal', function (event) {
+            var modal = $(this);
+            var button = $(event.relatedTarget);
+            mostrar_registra_nuevo_perfil(modal);
+        });
+        $('#modal-editar-perfil').on('show.bs.modal', function (event) {
+            var modal = $(this);
+            var button = $(event.relatedTarget);
+            var perfil = button.data('perfil');
+            mostrar_editar_perfil(modal, perfil);
+        });
+        $('#modal-eliminar-perfil').on('show.bs.modal', function (event) {
+            var modal = $(this);
+            var button = $(event.relatedTarget);
+            var perfil = button.data('perfil');
+            mostrar_eliminar_perfil(modal, perfil);
+        });
         $("#tablePerfiles").DataTable({
             "responsive": true,
             "lengthChange": true,
