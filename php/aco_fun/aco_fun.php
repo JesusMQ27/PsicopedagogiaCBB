@@ -23,13 +23,13 @@ function fnc_datos_usuario($conexion, $p_usuaId) {
 }
 
 function fnc_contrasena_php_mailer() {
-    $contrasena = "yiewhvvrmqzqsmif";
+    $contrasena = "rotyziaemysifotl";
     return $contrasena;
 }
 
-function fnc_menu_x_perfil($conexion, $id) {
+function fnc_menu_x_perfil($conexion, $id, $usuario) {
     $arreglo = array();
-    $sql = con_menu_x_perfil($id);
+    $sql = con_menu_x_perfil($id, $usuario);
     $stmt = $conexion->query($sql);
     foreach ($stmt as $data) {
         array_push($arreglo, $data);
@@ -37,9 +37,9 @@ function fnc_menu_x_perfil($conexion, $id) {
     return $arreglo;
 }
 
-function fnc_submenu_x_menu($conexion, $id) {
+function fnc_submenu_x_menu($conexion, $id, $perfil, $usuario) {
     $arreglo = array();
-    $sql = con_submenu_x_menu($id);
+    $sql = con_submenu_x_menu($id, $perfil, $usuario);
     $stmt = $conexion->query($sql);
     foreach ($stmt as $data) {
         array_push($arreglo, $data);
@@ -387,6 +387,12 @@ function fnc_registrar_data_tmp_a_alumno($conexion, $cadena) {
     return $conexion->lastInsertId();
 }
 
+function fnc_registrar_data_tmp_a_apoderado($conexion, $cadena) {
+    $sql = con_registrar_data_tmp_a_apoderado($cadena);
+    $stmt = $conexion->exec($sql);
+    return $conexion->lastInsertId();
+}
+
 function fnc_registrar_matricula_alumno($conexion, $cadena) {
     $sql = con_registrar_matricula_alumno($cadena);
     $stmt = $conexion->exec($sql);
@@ -537,4 +543,243 @@ function fnc_sedes_x_perfil($conexion, $p_usuaId) {
     }
     return $arreglo;
 }
+
+function fnc_fechas_rango($conexion) {
+    $arreglo = array();
+    $sql = con_fechas_rango();
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_solicitudes($conexion, $sede, $fechaInicio, $fechaFin, $codigoUsuario) {
+    $arreglo = array();
+    $sql = con_lista_solicitudes($sede, $fechaInicio, $fechaFin, $codigoUsuario);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_tipo_entrevistas($conexion, $codi) {
+    $arreglo = array();
+    $sql = con_lista_tipo_entrevistas($codi);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_categorias($conexion, $codi) {
+    $arreglo = array();
+    $sql = con_lista_categorias($codi);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_subcategorias($conexion, $categoria, $codi) {
+    $arreglo = array();
+    $sql = con_lista_subcategorias($categoria, $codi);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_motivos($conexion, $motivo) {
+    $arreglo = array();
+    $sql = con_lista_motivos($motivo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_secciones_por_usuario($conexion, $p_usuaId) {
+    $arreglo = array();
+    $sql = con_secciones_por_usuario($p_usuaId);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_buscar_alumno($conexion, $filtro, $sede, $seccion) {
+    $reporte = array();
+    $sql = con_buscar_alumno($filtro, $sede, $seccion);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        $reporte_row["value"] = $data["value"];
+        $reporte_row["label"] = $data["text"];
+        $reporte_row["dni"] = $data["dni"];
+        $reporte_row["nombres"] = $data["nombres"];
+        array_push($reporte, $reporte_row);
+    }
+    return $reporte;
+}
+
+function fnc_alumno_matricula_detalle($conexion, $codigo) {
+    $arreglo = array();
+    $sql = con_alumno_matricula_detalle($codigo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_apoderados_de_alumno($conexion, $alumno, $codigo) {
+    $arreglo = array();
+    $sql = con_lista_apoderados_de_alumno($alumno, $codigo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_tipos_apoderados($conexion, $codigo) {
+    $arreglo = array();
+    $sql = con_lista_tipos_apoderados($codigo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_validar_dni_apoderado($conexion, $codigoAlumno, $codigoApoderado, $numero) {
+    $arreglo = array();
+    $sql = con_validar_dni_apoderado($codigoAlumno, $codigoApoderado, $numero);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_apoderado_del_alumno($conexion, $codigo) {
+    $arreglo = array();
+    $sql = con_apoderado_del_alumno($codigo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_registrar_apoderado($conexion, $cadena) {
+    $sql = con_registrar_apoderado($cadena);
+    $stmt = $conexion->exec($sql);
+    return $conexion->lastInsertId();
+}
+
+function fnc_registrar_apoderado_historico($conexion, $cadena) {
+    $sql = con_registrar_apoderado_historico($cadena);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_modificar_apoderado($conexion, $codigo, $dni, $correo, $telefono) {
+    $sql = con_modificar_apoderado($codigo, $dni, $correo, $telefono);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_registrar_solicitud_estudiante($conexion, $cadena) {
+    $sql = con_registrar_solicitud_estudiante($cadena);
+    $stmt = $conexion->exec($sql);
+    return $conexion->lastInsertId();
+}
+
+function fnc_registrar_solicitud_firmas($conexion, $cadena) {
+    $sql = con_registrar_solicitud_firmas($cadena);
+    $stmt = $conexion->exec($sql);
+    return $conexion->lastInsertId();
+}
+
+function fnc_solicitud_alumno($conexion, $codigo) {
+    $arreglo = array();
+    $sql = con_solicitud_alumno($codigo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_eliminar_solicitud_alumno($conexion, $id, $estado) {
+    $sql = con_eliminar_solicitud_alumno($id, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function convertirFecha($fecha) {
+    $date = explode("/", $fecha);
+    $rfecha = $date[2] . "-" . $date[1] . "-" . $date[0];
+    return $rfecha;
+}
+
+function fnc_buscar_semaforo_docentes($conexion, $sede, $fecha_ini, $fecha_fin, $semaforo) {
+    $arreglo = array();
+    $sql = con_buscar_semaforo_docentes($sede, $fecha_ini, $fecha_fin, $semaforo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_obtener_codigo_entrevista($conexion, $codi) {
+    $arreglo = array();
+    $sql = con_obtener_codigo_entrevista($codi);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_registrar_sub_solicitud_estudiante($conexion, $cadena) {
+    $sql = con_registrar_sub_solicitud_estudiante($cadena);
+    $stmt = $conexion->exec($sql);
+    return $conexion->lastInsertId();
+}
+
+function fnc_registrar_sub_solicitud_firmas($conexion, $cadena) {
+    $sql = con_registrar_sub_solicitud_firmas($cadena);
+    $stmt = $conexion->exec($sql);
+    return $conexion->lastInsertId();
+}
+
+function fnc_listar_todas_solicitudes_x_entrevista($conexion, $codi, $entre, $sub) {
+    $arreglo = array();
+    $sql = con_listar_todas_solicitudes_x_entrevista($codi, $entre, $sub);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_obtener_solicitud_x_codigo($conexion, $tipo, $codi) {
+    $arreglo = array();
+    $sql = con_obtener_solicitud_x_codigo($tipo, $codi);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
 ?>

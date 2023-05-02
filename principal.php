@@ -44,6 +44,11 @@ $sede = $userData[0]["sede"];
         <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
+
+        <link type="text/css" rel="stylesheet" href="plugins/daterangepicker/daterangepicker.css" />
+
+        <link href="plugins/bootstrap/css/bootstrap-theme.min.css" rel="stylesheet" type="text/css"/>
+
     </head>
     <!--
     `body` tag options:
@@ -226,7 +231,7 @@ $sede = $userData[0]["sede"];
                         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                             <?php
                             $html_menu = "";
-                            $lista_menu = fnc_menu_x_perfil($conexion, $userData[0]["perfil"]);
+                            $lista_menu = fnc_menu_x_perfil($conexion, $userData[0]["perfil"], $useId);
                             foreach ($lista_menu as $lista) {
                                 $menu = $lista["id"];
                                 $html_menu .= "<li class='nav-item'>
@@ -238,7 +243,7 @@ $sede = $userData[0]["sede"];
                                     </p>
                                 </a>
                                 <ul class='nav nav-treeview'>";
-                                $lista_submenu = fnc_submenu_x_menu($conexion, $menu);
+                                $lista_submenu = fnc_submenu_x_menu($conexion, $menu, $userData[0]["perfil"], $useId);
                                 foreach ($lista_submenu as $lista_s) {
                                     $html_menu .= "<li class='nav-item'>
                                         <a href='#' onclick='cargar_opcion(" . '"' . $lista_s["id"] . '"' . "," . '"' . $lista_s["ruta"] . '"' . "," . '"' . $lista_s["submenu"] . '"' . ")' class='nav-link'>
@@ -371,11 +376,15 @@ $sede = $userData[0]["sede"];
         <!-- REQUIRED SCRIPTS -->
 
         <!-- jQuery -->
-        <script src="plugins/jquery/jquery.min.js"></script>
+        <script src="plugins/jquery/jquery.min_1.js"></script>
+        <script src="plugins/signature_pad/signature_pad.js" type="text/javascript"></script>
         <!-- Bootstrap -->
         <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
         <!-- AdminLTE -->
         <script src="dist/js/adminlte.js"></script>
+        <script type="text/javascript" src="php/aco_js/principal.js"></script>
+        <script src="plugins/daterangepicker/moment.min.js"></script>
+        <script src="plugins/daterangepicker/daterangepicker.js"></script>
 
         <!-- OPTIONAL SCRIPTS -->
         <script src="plugins/chart.js/Chart.min.js"></script>
@@ -396,7 +405,7 @@ $sede = $userData[0]["sede"];
         <script src="plugins/datatables-buttons/js/buttons.html5.min.js"></script>
         <script src="plugins/datatables-buttons/js/buttons.print.min.js"></script>
         <script src="plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
-        <script type="text/javascript" src="php/aco_js/principal.js"></script>
+
         <!-- Select2 -->
         <script src="plugins/select2/js/select2.full.min.js"></script>
 
@@ -405,15 +414,19 @@ $sede = $userData[0]["sede"];
         <!-- Toastr -->
         <script src="plugins/toastr/toastr.min.js"></script>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
+        <script src="plugins/bootstrap-select/bootstrap-select.min.js"></script>
         <!-- (Optional) Latest compiled and minified JavaScript translation files -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/i18n/defaults-*.min.js"></script>
+        <!--   <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/i18n/defaults-*.min.js"></script>-->
         <!-- fileinput -->
         <script src="plugins/fileinput/fileinput.js" type="text/javascript"></script>
         <script src="plugins/fileinput/theme.js" type="text/javascript"></script>
-        <script src="plugins/fileinput/popper.min.js" type="text/javascript"></script>
+        <!--<script src="plugins/fileinput/popper.min.js" type="text/javascript"></script>-->
         <script src="plugins/fileinput/es.js" type="text/javascript"></script>
         <script src="plugins/jqueryForm/jquery.form.min.js" type="text/javascript" ></script>
+
+        <script src="plugins/bootstrap-typeahead/bootstrap3-typeahead.min.js" type="text/javascript"></script>
+        <script src="plugins/printArea/jquery.PrintArea.js" type="text/javascript"></script>
+
     </body>
 
 </html>

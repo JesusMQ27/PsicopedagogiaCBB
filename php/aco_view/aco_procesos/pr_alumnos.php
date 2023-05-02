@@ -127,14 +127,14 @@ $lista_grupos = fnc_lista_grupos($conexion, "", "");
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title">Confirmar Pre carga data Alumno</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="cerrar_ventana_confirmacion_alumno()">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
             </div>
             <div class="modal-footer justify-content-between">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="cerrar_ventana_confirmacion_alumno()">Cerrar</button>
                 <div style="float: right">
                     <label></label>
                     <button type="button" id="btnRegistrarCargaAlumno" class="btn btn-primary swalDefaultError" 
@@ -159,7 +159,7 @@ $lista_grupos = fnc_lista_grupos($conexion, "", "");
             <div class="modal-body">
             </div>
             <div class="modal-footer justify-content-between">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal" >Cerrar</button>
             </div>
         </div>
         <!-- /.modal-content -->

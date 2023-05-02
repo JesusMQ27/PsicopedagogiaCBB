@@ -1156,19 +1156,23 @@ function proceso_editar_perfil() {
             if (count($lista_submenu_perfil) > 0) {
                 for ($i = 0; $i < count($lista_submenu_perfil); $i++) {
                     $array_da = explode("_", $lista_submenu_perfil[$i]);
-                    if ($array_da[0] === "0") {//nuevo registro perfil
-                        $str_inserts .= "('" . $perf_codigo . "','" . $array_da[1] . "','1'),";
-                    } else {//modificar perfil
-                        $str_updates .= "" . $array_da[0] . ",";
+                    if (count($array_da) > 1) {
+                        if ($array_da[0] === "0") {//nuevo registro perfil
+                            $str_inserts .= "('" . $perf_codigo . "','" . $array_da[1] . "','1'),";
+                        } else {//modificar perfil
+                            $str_updates .= "" . $array_da[0] . ",";
+                        }
                     }
                 }
                 $str_inserts = substr($str_inserts, 0, -1);
                 $str_updates = substr($str_updates, 0, -1);
-                if ($str_updates !== "") {
-                    fnc_editar_accesos_perfil($conexion, $str_updates, $perf_codigo);
-                    fnc_editar_accesos_perfil_todos($conexion, $str_updates, $perf_codigo);
-                } else {
-                    fnc_editar_accesos_perfil_todos($conexion, $str_updates, $perf_codigo);
+                if (trim($str_inserts) === "") {
+                    if (trim($str_updates) !== "") {
+                        fnc_editar_accesos_perfil($conexion, $str_updates, $perf_codigo);
+                        fnc_editar_accesos_perfil_todos($conexion, $str_updates, $perf_codigo);
+                    } else {
+                        fnc_editar_accesos_perfil_todos($conexion, $str_updates, $perf_codigo);
+                    }
                 }
                 if (trim($str_inserts) !== "") {
                     fnc_registrar_accesos_perfil($conexion, $str_inserts);
@@ -1238,6 +1242,7 @@ function load_modal_carga_alumnos() {
     $str_validacion = "";
     $count1 = 0;
     $count2 = 0;
+    $count_t = 0;
     $html = "<input type='hidden' id='hdnNumeral' value='" . $codigo . "'><div class='col-md-12 table-responsive' id='divPreCargaAlumnos' >"
             . "<table id='tablePreCargaAlumnos' class='table' style='font-size: 13px;width:100% !important'>"
             . "<thead>"
@@ -1257,6 +1262,12 @@ function load_modal_carga_alumnos() {
             $salida_alu = "Alumno no existe";
             $salida_sede = "";
             $salida_secc = "";
+            if (trim($value["grado"]) === "") {
+                $salida_secc = "--El grado esta vacio--";
+            }
+            if (trim($value["seccion"]) === "") {
+                $salida_secc .= "La seccion esta vacia";
+            }
             $count1++;
         } else {
             if ($value["actual_alu_id"] !== 0) {
@@ -1284,10 +1295,17 @@ function load_modal_carga_alumnos() {
             } else {
                 $color = "color:red";
             }
+            $count_t++;
             $validacion = substr($validacion, 0, -1);
             $str_validacion = str_replace("*", "<br/>", $validacion);
         } else {
-            $str_validacion = $validacion;
+            $array_fila2 = explode("--", $validacion);
+            if (count($array_fila2) > 1) {
+                $color = "color:red";
+                $count_t++;
+                $validacion = str_replace("--", "<br/>", $validacion);
+                $str_validacion = $validacion;
+            }
         }
         $html .= "<tr style='$color'>"
                 . "<td>$aux</td>"
@@ -1303,9 +1321,14 @@ function load_modal_carga_alumnos() {
         $aux++;
     }
     $html .= "</tbody></table></div>"
-            . "<span class='text-bold text'>Alumnos nuevos:</span> <span class='badge bg-info'>" . $count1 . "</span>&nbsp;&nbsp;|&nbsp;&nbsp;"
-            . "<span class='text-bold text'>Alumnos ya registrados:</span><span class='badge bg-danger'>" . $count2 . "</span>&nbsp;&nbsp;|&nbsp;&nbsp;"
-            . "<span class='text-bold text'>Total de alumnos: </span><span class='badge bg-success'>" . (count($lista)) . "</span>";
+            . "<div class='col-md-12'>"
+            . "<span class='text-bold text'>Alumnos nuevos: </span><span class='badge bg-info'>" . $count1 . "</span>&nbsp;&nbsp;|&nbsp;&nbsp;"
+            . "<span class='text-bold text'>Alumnos ya registrados: </span><span class='badge bg-danger'>" . $count2 . "</span>&nbsp;&nbsp;|&nbsp;&nbsp;"
+            . "<span class='text-bold text'>Total de alumnos: </span><span class='badge bg-success'>" . (count($lista)) . "</span>"
+            . "</div>"
+            . "<div class='col-md-12'>"
+            . "<span><i class='nav-icon fa fa-info-circle' style='color: skyblue'></i> Nota: Solo se cargaran los registros que estan de color negro.</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span class='text-bold text'>Registros que se cargarán: </span><span class='badge bg-success'>" . (count($lista) - $count_t) . "</span>"
+            . "</div>";
     echo $html;
 }
 
@@ -1339,22 +1362,28 @@ function operacion_registrar_carga_alumnos() {
             $grupo_creado = fnc_registrar_grupo($conexion, $cadenaInsertGrupo);
             if ($grupo_creado) {
                 foreach ($lista as $value) {
-                    $cadenaInsertAlumno = '("' . $value["dni"] . '","' . $value["nombres"] . '","' . $value["cod_alumno"] . '","' .
-                            $value["nom_padre"] . '","' . $value["cor_padre"] . '","' . $value["cel_padre"] . '","' .
-                            $value["nom_madre"] . '","' . $value["cor_madre"] . '","' . $value["cel_madre"] . '","' .
-                            $value["apo_dir"] . '","' . $value["dis_apo"] . '","' . $value["cor_alu"] . '","1")';
-                    if ($value["actual_alu_id"] == 0) {
-                        $aluCodigo = fnc_registrar_data_tmp_a_alumno($conexion, $cadenaInsertAlumno);
-                        if ($aluCodigo && $value["valida_matricula"] == 0) {
-                            $cadenaInsertMatri = "('" . $aluCodigo . "','" . $value["registrar_sed_id"] . "','" . $value["registrar_sec_id"] . "','" .
-                                    $value["tip_alu"] . "',NOW(),'" . $grupo_creado . "','1')";
-                            fnc_registrar_matricula_alumno($conexion, $cadenaInsertMatri);
-                        }
-                    } else {
-                        if ($value["valida_matricula"] == 0) {
-                            $cadenaInsertMatri = "('" . $value["actual_alu_id"] . "','" . $value["registrar_sed_id"] . "','" . $value["registrar_sec_id"] . "','" .
-                                    $value["tip_alu"] . "',NOW(),'" . $grupo_creado . "','1')";
-                            fnc_registrar_matricula_alumno($conexion, $cadenaInsertMatri);
+                    if (trim($value["grado"]) !== "" && trim($value["seccion"] !== "")) {
+                        $cadenaInsertAlumno = '("' . $value["dni"] . '","' . $value["nombres"] . '","' . $value["cod_alumno"] . '","' .
+                                $value["cor_alu"] . '","1")';
+                        if ($value["actual_alu_id"] == 0) {
+                            $aluCodigo = fnc_registrar_data_tmp_a_alumno($conexion, $cadenaInsertAlumno);
+                            if ($aluCodigo) {
+                                $cadenaInsertApoderado = ''
+                                        . '("' . $aluCodigo . '","1","' . $value["nom_padre"] . '","' . $value["cor_padre"] . '","' . $value["cel_padre"] . '","' . $value["apo_dir"] . '","' . $value["dis_apo"] . '","1"),'
+                                        . '("' . $aluCodigo . '","2","' . $value["nom_madre"] . '","' . $value["cor_madre"] . '","' . $value["cel_madre"] . '","' . $value["apo_dir"] . '","' . $value["dis_apo"] . '","1")';
+                                fnc_registrar_data_tmp_a_apoderado($conexion, $cadenaInsertApoderado);
+                            }
+                            if ($aluCodigo && $value["valida_matricula"] == 0) {
+                                $cadenaInsertMatri = "('" . $aluCodigo . "','" . $value["registrar_sed_id"] . "','" . $value["registrar_sec_id"] . "','" .
+                                        $value["tip_alu"] . "',NOW(),'" . $grupo_creado . "','1')";
+                                fnc_registrar_matricula_alumno($conexion, $cadenaInsertMatri);
+                            }
+                        } else {
+                            if ($value["valida_matricula"] == 0) {
+                                $cadenaInsertMatri = "('" . $value["actual_alu_id"] . "','" . $value["registrar_sed_id"] . "','" . $value["registrar_sec_id"] . "','" .
+                                        $value["tip_alu"] . "',NOW(),'" . $grupo_creado . "','1')";
+                                fnc_registrar_matricula_alumno($conexion, $cadenaInsertMatri);
+                            }
                         }
                     }
                 }
@@ -1597,10 +1626,12 @@ function load_modal_carga_usuarios() {
         $aux++;
     }
     $html .= "</tbody></table></div>"
-            . "<span class='text-bold text'>Usuarios nuevos:</span> <span class='badge bg-info'>" . $count1 . "</span>&nbsp;&nbsp;|&nbsp;&nbsp;"
+            . "<div class='col-md-12'>"
+            . "   <span class='text-bold text'>Usuarios nuevos:</span> <span class='badge bg-info'>" . $count1 . "</span>&nbsp;&nbsp;|&nbsp;&nbsp;"
             . "<span class='text-bold text'>Usuarios ya registrados:</span><span class='badge bg-danger'>" . $count2 . "</span>&nbsp;&nbsp;|&nbsp;&nbsp;"
             . "<span class='text-bold text'>Total de usuarios: </span><span class='badge bg-success'>" . (count($lista)) . "</span><br/>"
-            . "<span><i class='nav-icon fa fa-info-circle' style='color: skyblue'></i> Nota: Solo se cargaran los usuarios que tienen correo electrónico.</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span class='text-bold text'>Cantidad de usuarios con correos: </span><span class='badge bg-success'>" . ($count_correos) . "</span>";
+            . "<span><i class='nav-icon fa fa-info-circle' style='color: skyblue'></i> Nota: Solo se cargaran los usuarios que tienen correo electrónico.</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span class='text-bold text'>Cantidad de usuarios con correos: </span><span class='badge bg-success'>" . ($count_correos) . "</span>"
+            . "</div>";
     echo $html;
 }
 
@@ -1749,4 +1780,2190 @@ function formulario_confirmacion_carga_usuarios() {
         </div>
     </div>
     <?php
+}
+
+function formulario_carga_subcategorias() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $sm_cat_cod = strip_tags(trim($_POST["cat_cod"]));
+    if ($sm_cat_cod === "") {
+        echo "<option value='0'>-- Seleccione --</option>";
+    } else {
+        $lista_subcategorias = fnc_lista_subcategorias($conexion, $sm_cat_cod, "");
+        if (count($lista_subcategorias) > 0) {
+            echo "<option value=''>-- Seleccione --</option>";
+            foreach ($lista_subcategorias as $lista) {
+                echo "<option value='" . $lista["id"] . "'>" . $lista["nombre"] . "</option>";
+            }
+        } else {
+            echo "<option value='0'>-- Seleccione --</option>";
+        }
+    }
+}
+
+function formulario_nueva_solicitud() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $tipos_entrevistas = fnc_lista_tipo_entrevistas($conexion, "");
+    $lista_categorias = fnc_lista_categorias($conexion, "");
+    $html = '<div class="row space-div">
+            <div class="col-md-2" style="margin-bottom: 0px;">
+                <label>Buscar alumno: </label>
+            </div>
+            <div class="col-md-4">
+                <input type="text" id="searchAlumno" class="typeahead form-control" style="size:12px;text-transform: uppercase;" value="" autocomplete="off">
+            </div>
+            <div class="col-md-4">
+                <input type="hidden" id="matric" value=""/>
+                <label id="dataAlumno" style="font-size: 16px;"></label>
+            </div>
+        </div>
+        <div class="row space-div">
+        <div class="col-md-2" style="margin-bottom: 0px;">
+            <label>Categoria: </label>
+        </div>
+        <div class="col-md-4">';
+    $html .= '<select id="cbbCategoria" class="form-control select2" style="width: 100%" onchange="cargar_subcategorias(this)">
+               <option value="">-- Seleccione --</option>';
+    if (count($lista_categorias) > 0) {
+        foreach ($lista_categorias as $lista) {
+            $html .= "<option value='" . $lista["id"] . "' >" . $lista["nombre"] . "</option>";
+        }
+    }
+    $html .= '</select>';
+    $html .= '</div>
+        <div class="col-md-2" style="margin-bottom: 0px;">
+            <label>Subcategoria: </label>
+        </div>
+        <div class="col-md-4">';
+    $html .= '<select id="cbbSubcategoria" class="form-control select2" style="width: 100%">
+                <option value="">-- Seleccione --</option>';
+    $html .= '</select>';
+    $html .= '</div>
+       </div>';
+    $html .= '<div class="row space-div">
+            <div class="col-md-2" style="margin-bottom: 0px;">
+                <label>Tipo de entrevista: </label>
+            </div>
+            <div class="col-md-3">';
+    $html .= '<select id="cbbTipoSolicitud" class="form-control select2" style="width: 100%" onchange="mostrar_tipo_solicitud(this)">
+                <option value="">-- Seleccione --</option>';
+    if (count($tipos_entrevistas) > 0) {
+        foreach ($tipos_entrevistas as $lista) {
+            $html .= "<option value='" . $lista["id"] . "'>" . $lista["nombre"] . "</option>";
+        }
+    }
+    $html .= '</select>';
+    $html .= '</div>
+        </div>';
+    $html .= '<div class="card card-primary" id="divEntrevista">';
+    $html .= '</div>';
+    echo $html;
+}
+
+function formulario_detalle_tipo_solicitud() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $sm_tipo_sol = strip_tags(trim($_POST["sol_tipo"]));
+    $sm_sol_matricula = strip_tags(trim($_POST["sol_matricula"]));
+    $sm_sol_categoria = strip_tags(trim($_POST["sol_categoria"]));
+    $sm_sol_subcategoria = strip_tags(trim($_POST["sol_subcategoria"]));
+    $usuario_data = fnc_datos_usuario($conexion, p_usuario);
+    $matricula = fnc_alumno_matricula_detalle($conexion, $sm_sol_matricula);
+    $html = '<input type="hidden" id="txt_sede" value="' . $matricula[0]["sedeId"] . '">';
+    if ($sm_tipo_sol === "1") {
+        $html .= '<div class="card-header">
+                <h3 class="card-title">FICHA DE ENTREVISTA A ESTUDIANTE</h3>
+              </div>
+              <div class="card-body">
+                <h5>I. DATOS INFORMATIVOS:</h5>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Nombre del estudiante: </label>
+                    </div>
+                    <div class="col-md-4"><span>' . strtoupper($matricula[0]["alumno"]) . '</span></div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Grado, sección y nivel: </label>
+                    </div>
+                    <div class="col-md-3"><span>' . $matricula[0]["grado"] . '</span></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Entrevistador: </label>
+                    </div>
+                    <div class="col-md-4"><span>' . $usuario_data[0]["usuariodata"] . '</span></div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Sede: </label>
+                    </div>
+                    <div class="col-md-3"><span>' . $matricula[0]["sede"] . '</span></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Motivo de la entrevista: </label>
+                    </div>
+                    <div class="col-md-4"><textarea class="form-control" rows="3" id="txtMotivo" placeholder=""></textarea>
+                        ';
+        $html .= '  </div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Fecha y hora: </label>
+                    </div>
+                    <div class="col-md-3"><span> <i class="fa fa-info-circle celeste"></i> La fecha y hora se crea al guardar la ficha.</span></div>
+                </div>
+                <h5>II. DESARROLLO DE LA ENTREVISTA:</h5>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Planteamiento del estudiante: </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" rows="3" id="txtPlanEstudiante" placeholder=""></textarea></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Planteamiento del entrevistador(a): </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" rows="3" id="txtPlanEntrevistador" placeholder=""></textarea></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Acuerdos: </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" id="txtAcuerdos" rows="3" placeholder=""></textarea></div>
+                </div>
+              </div>'
+                . '<div class="row space-div">'
+                . '<div class="col-md-5" style="margin-bottom: 0px;">'
+                . '<div id="signature-pad" class="signature-pad" style="margin-left: 20px;">
+                    <div class="description">Firma del estudiante</div>
+                    <div class="signature-pad--body">
+                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas1"></canvas>
+                    </div>
+                   </div>
+                   <div style="margin-left: 20px;">
+                        <button type="button" class="btn btn-default" onclick="limpiar_firma();">Limpiar firma</button>
+                   </div>
+                   <div style="margin-left: 20px;">
+                       <label>' . str_replace(" - ", "<br/>", strtoupper($matricula[0]["alumno"])) . '<label/>
+                   </div>'
+                . '</div>'
+                . '<div class="col-md-2" style="margin-bottom: 0px;">'
+                . '</div>'
+                . '<div class="col-md-5" style="margin-bottom: 0px;">'
+                . '<div id="signature-pad-entrevistador" class="signature-pad" >
+                    <div class="description">Firma del entrevistador</div>
+                    <div class="signature-pad--body">
+                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas2"></canvas>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-default" onclick="limpiar_firma_entrevistador();">Limpiar firma</button>
+                   </div>
+                   <div style="margin-left: 20px;">
+                       <label>' . strtoupper($usuario_data[0]["usuariodata"]) . '<br/>' . $usuario_data[0]["usuarioDni"] . '<label/>
+                   </div>'
+                . ' </div>'
+                . '</div>';
+    } elseif ($sm_tipo_sol === "2") {
+        $lista_apoderados = fnc_lista_apoderados_de_alumno($conexion, $matricula[0]["aluId"], "");
+        $html .= '<div class="card-header">
+                <h3 class="card-title">FICHA DE ENTREVISTA A PADRES DE FAMILIA</h3>
+              </div>
+              <div class="card-body">
+                <h5>I. DATOS INFORMATIVOS:</h5>
+                <div class="row space-div">
+                    <input type="hidden" id="txtAlumCodig" value="' . $matricula[0]["aluId"] . '"/>
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Nombre del estudiante: </label>
+                    </div>
+                    <div class="col-md-4"><span>' . strtoupper($matricula[0]["alumno"]) . '</span></div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Grado, sección y nivel: </label>
+                    </div>
+                    <div class="col-md-3"><span>' . $matricula[0]["grado"] . '</span></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Nombre del padre/madre/apoderado: </label>
+                    </div>
+                    <div class="col-md-4">';
+        $html .= '<select id="cbbTipoApoderado" class="form-control select2" style="width: 100%" onchange="mostrar_info_apoderado(this)">
+                <option value="">-- Seleccione --</option>';
+        if (count($lista_apoderados) > 0) {
+            foreach ($lista_apoderados as $lista) {
+                $html .= '<option value="' . $lista["codigo"] . '">' . $lista["tipo"] . ' - ' . $lista["dni"] . ' - ' . strtoupper($lista["nombre"]) . '</option>';
+            }
+        }
+        $html .= ' <option value="-1" >-- Otro --</option></select>';
+        $html .= '</div><div class="col-md-3" id="divEditarInfoApoderado"></div></div>
+                <div class="row space-div" id="detalleApoderado">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Correo: </label>
+                    </div>
+                    <div class="col-md-4"></div>
+                    <div class="col-md-2">
+                        <label>Teléfono: </label>
+                    </div>
+                    <div class="col-md-3"></div>
+                </div>';
+        $html .= '
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Entrevistador: </label>
+                    </div>
+                    <div class="col-md-4"><span>' . strtoupper($usuario_data[0]["usuariodata"]) . '</span></div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Sede: </label>
+                    </div>
+                    <div class="col-md-3"><span>' . $matricula[0]["sede"] . '</span></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Motivo de la entrevista: </label>
+                    </div>
+                    <div class="col-md-4"><textarea class="form-control" rows="3" id="txtMotivo" placeholder=""></textarea>';
+        $html .= '  </div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Fecha y hora: </label>
+                    </div>
+                    <div class="col-md-3"><span> <i class="fa fa-info-circle celeste"></i> La fecha y hora se crea al guardar la ficha.</span></div>
+                </div>
+                <h5>II. INFORME QUE SE LE HARÁ LLEGAR AL PADRE/MADRE/APODERADO:</h5>
+                <div class="row space-div">
+                    <div class="col-md-12"><textarea class="form-control" rows="3" id="txtInforme" placeholder=""></textarea></div>
+                </div>
+
+                <h5>III. DESARROLLO DE LA ENTREVISTA::</h5>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Planteamiento del padre, madre o apoderado: </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" rows="3" id="txtPlanPadre" placeholder=""></textarea></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Planteamiento del docente, tutor/a, psicólogo(a), director(a): </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" rows="3" id="txtPlanDocente" placeholder=""></textarea></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Acuerdos - Acciones a realizar por los padres: </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" id="txtAcuerdosPadres" rows="3" placeholder=""></textarea></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Acuerdos - Acciones a realizar por el colegio: </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" id="txtAcuerdosColegio" rows="3" placeholder=""></textarea></div>
+                </div>
+              </div>'
+                . '<div class="row space-div">'
+                . '<div class="col-md-5" style="margin-bottom: 0px;">'
+                . '<div id="signature-pad" class="signature-pad" style="margin-left: 20px;">
+                    <div class="description">Firma del padre, madre o apoderado</div>
+                    <div class="signature-pad--body">
+                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas1"></canvas>
+                    </div>
+                   </div>
+                   <div style="margin-left: 20px;">
+                        <button type="button" class="btn btn-default" onclick="limpiar_firma();">Limpiar firma</button>
+                   </div>
+                   <div style="margin-left: 20px;" id="divApoderadoNombreDNI">
+                       <label><label/>
+                   </div>'
+                . '</div>'
+                . '<div class="col-md-2" style="margin-bottom: 0px;">'
+                . '</div>'
+                . '<div class="col-md-5" style="margin-bottom: 0px;">'
+                . '<div id="signature-pad-entrevistador" class="signature-pad" >
+                    <div class="description">Firma del entrevistador</div>
+                    <div class="signature-pad--body">
+                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas2"></canvas>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-default" onclick="limpiar_firma_entrevistador();">Limpiar firma</button>
+                   </div>
+                   <div style="margin-left: 20px;">
+                       <label>' . strtoupper($usuario_data[0]["usuariodata"]) . '<br/>' . $usuario_data[0]["usuarioDni"] . '<label/>
+                   </div>'
+                . ' </div>'
+                . '</div>';
+    }
+    $html .= '</div>';
+    echo $html;
+}
+
+function formulario_carga_info_apoderado() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $alu_cod = strip_tags(trim($_POST["alu_cod"]));
+    $tip_apod = strip_tags(trim($_POST["tip_apod"]));
+    $html = "";
+    if ($tip_apod == "" || $tip_apod == "-1") {
+        $html = ' <div class="col-md-3" style="margin-bottom: 0px;">
+                    <label>Correo: </label>
+                  </div>
+                  <div class="col-md-4"><span></span></div>
+                  <div class="col-md-2">
+                     <label>Teléfono: </label>
+                  </div>
+                  <div class="col-md-3"><span></span></div>';
+        $html .= "********";
+    } else {
+        $apoderado = fnc_lista_apoderados_de_alumno($conexion, $alu_cod, $tip_apod);
+
+        if (count($apoderado) > 0) {
+            $html = ' <div class="col-md-3" style="margin-bottom: 0px;">
+                    <label>Correo: </label>
+                  </div>
+                  <div class="col-md-4"><span>' . $apoderado[0]["correo"] . '</span></div>
+                  <div class="col-md-2">
+                     <label>Teléfono: </label>
+                  </div>
+                  <div class="col-md-3"><span>' . $apoderado[0]["telefono"] . '</span></div>';
+
+            $html .= "****";
+            $html .= '<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#modal-editar-apoderado" data-backdrop="static" '
+                    . ' data-alumno="' . $alu_cod . '" data-info-apoderado="' . $apoderado[0]["codigo"] . '">Editar</button>****<label>' . strtoupper($apoderado[0]["nombre"]) . '<br/>' . $apoderado[0]["dni"] . '</label>';
+        } else {
+            $html = ' <div class="col-md-3" style="margin-bottom: 0px;">
+                    <label>Correo: </label>
+                  </div>
+                  <div class="col-md-4"><span></span></div>
+                  <div class="col-md-2">
+                     <label>Teléfono: </label>
+                  </div>
+                  <div class="col-md-3"><span></span></div>';
+            $html .= "********";
+        }
+    }
+    echo $html;
+}
+
+function formulario_editar_apoderado() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $apod = strip_tags(trim($_POST["sm_apoderado"]));
+    $alumnoCod = strip_tags(trim($_POST["sm_alumno"]));
+    $html = "";
+    $apoderado = fnc_apoderado_del_alumno($conexion, $apod);
+    $tipos_apoderados = fnc_lista_tipos_apoderados($conexion, "");
+    if (count($apoderado) > 0) {
+        $html = '<div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Tipo</label>
+            </div>
+            <input id="txtAlumnCodigo" type="hidden" class="form-control" value="' . $alumnoCod . '" />
+            <div class="col-md-6">';
+        $html .= '<select id="cbbTipoApoderado" class="form-control select2" style="width: 100%" disabled>
+                ';
+        if (count($tipos_apoderados) > 0) {
+            $selected = "";
+            foreach ($tipos_apoderados as $lista) {
+                if ($lista["id"] == $apoderado[0]["tipo"]) {
+                    $selected = " selected ";
+                } else {
+                    $selected = "";
+                }
+                $html .= '<option value="' . $lista["id"] . '" ' . $selected . ' >' . $lista["nombre"] . '</option>';
+            }
+        }
+        $html .= '</select></div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Nombres</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtNombresApoderado" class="form-control select2" style="width: 100%" disabled value="' . $apoderado[0]["nombres"] . '" />
+            </div>
+        </div>
+        
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>DNI</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtDniApoderado" type="text" class="form-control select2" style="width: 100%" value="' . $apoderado[0]["dni"] . '" 
+                    maxlength="12" onkeypress="return solo_numeros(event);"/>
+            </div>
+        </div>
+        <input id="txtApoderadoCod" type="hidden" class="form-control select2" style="width: 100%" value="' . $apoderado[0]["id"] . '" />
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Correo</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtCorreoApoderado" type="text" class="form-control select2" style="width: 100%" value="' . $apoderado[0]["correo"] . '" />
+            </div>
+        </div>
+        
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Telefono</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtTelfApoderado" type="text" class="form-control select2" style="width: 100%" value="' . $apoderado[0]["telefono"] . '" 
+                    maxlength="9" onkeypress="return solo_numeros(event);"/>
+            </div>
+        </div>';
+    }
+    echo $html;
+}
+
+function formulario_nuevo_apoderado() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $alumno = strip_tags(trim($_POST["sm_alumno"]));
+    $tipos_apoderados = fnc_lista_tipos_apoderados($conexion, "");
+    $html = '<div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Tipo</label>
+            </div>
+            <div class="col-md-6">';
+    $html .= '<input type="hidden" id="txtAlumnoCodiN" class="form-control" value="' . $alumno . '"/>';
+    $html .= '<select id="cbbTipoApoderadoN" class="form-control" style="width: 100%" disabled>
+                ';
+    if (count($tipos_apoderados) > 0) {
+        $selected = "";
+        foreach ($tipos_apoderados as $lista) {
+            if ($lista["id"] == 3) {
+                $selected = " selected ";
+            } else {
+                $selected = "";
+            }
+            $html .= '<option value="' . $lista["id"] . '" ' . $selected . ' >' . $lista["nombre"] . '</option>';
+        }
+    }
+    $html .= '</select></div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>DNI</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtDniN" class="form-control" style="width: 100%" maxlength="12" 
+                onkeypress="return solo_numeros(event);"/>
+            </div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Apellidos y nombres</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtNombresApoderadoN" class="form-control" style="width: 100%;text-transform: uppercase;"
+                   onkeypress="return solo_letras(event);"/>
+            </div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Correo</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtCorreoApoderadoN" type="text" class="form-control" style="width: 100%"/>
+            </div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Telefono</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtTelfApoderadoN" type="text" class="form-control" style="width: 100%" maxlength="9" 
+                onkeypress="return solo_numeros(event);"/>
+            </div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Direcci&oacute;n</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtDireccionN" type="text" class="form-control" style="width: 100%;text-transform: uppercase;"/>
+            </div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Distrito</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtDistritoN" type="text" class="form-control" style="width: 100%;text-transform: uppercase;"
+                onkeypress="return solo_letras(event);"/>
+            </div>
+        </div>';
+    echo $html;
+}
+
+function operacion_registrar_apoderado() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $codigo = strip_tags(trim($_POST["a_txtAlumnoCodiN"]));
+    $tipo_apoderado = strip_tags(trim($_POST["a_cbbTipoApoderadoN"]));
+    $dni = strip_tags(trim($_POST["a_txtDniN"]));
+    $nombres = strip_tags(trim($_POST["a_txtNombresApoderadoN"]));
+    $correo = strip_tags(trim($_POST["a_txtCorreoApoderadoN"]));
+    $telefono = strip_tags(trim($_POST["a_txtTelfApoderadoN"]));
+    $direccion = strip_tags(trim($_POST["a_txtDireccionN"]));
+    $distrito = strip_tags(trim($_POST["a_txtDistritoN"]));
+    $html = "";
+    $valida_dni = fnc_validar_dni_apoderado($conexion, $codigo, "", $dni);
+    if (count($valida_dni) > 0) {
+        $html .= "0***El número de documento ya esta registrado, favor de ingresar otro.************";
+    } else {
+        $cadena = "('" . $codigo . "','" . $tipo_apoderado . "','" . strtoupper($nombres) . "','" .
+                $dni . "','" . trim($correo) . "','" . $telefono . "','" . strtoupper($direccion) . "','" . strtoupper($distrito) . "','1')";
+        $idApoderado = fnc_registrar_apoderado($conexion, $cadena);
+        if ($idApoderado) {
+            $htmlSelect = "";
+            $lista_apoderados = fnc_lista_apoderados_de_alumno($conexion, $codigo, "");
+            if (count($lista_apoderados) > 0) {
+                $selected = "";
+                $htmlSelect .= '<option value="">-- Seleccione --</option>';
+                foreach ($lista_apoderados as $lista) {
+                    if ($lista["codigo"] == $idApoderado) {
+                        $selected = " selected ";
+                    }
+                    $htmlSelect .= '<option value="' . $lista["codigo"] . '" ' . $selected . '>' . $lista["tipo"] . ' - ' . $lista["dni"] . ' - ' . $lista["nombre"] . '</option>';
+                }
+                $htmlSelect .= '<option value="-1" >-- Otro --</option>';
+            } else {
+                $htmlSelect = "";
+            }
+            $html_editarInfoApoderado = '<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#modal-editar-apoderado" data-backdrop="static" data-alumno="' . $codigo . '" data-info-apoderado="' . $idApoderado . '">Editar</button>';
+
+            $html_detalle_apo = '<div class="col-md-3" style="margin-bottom: 0px;">
+                    <label>Correo: </label>
+                  </div>
+                  <div class="col-md-4"><span>' . trim($correo) . '</span></div>
+                  <div class="col-md-2">
+                     <label>Teléfono: </label>
+                  </div>
+                  <div class="col-md-3"><span>' . $telefono . '</span>
+                  </div>';
+            $html_apo_nombreDni = '<label>' . strtoupper($nombres) . '<br>' . $dni . '</label>';
+            $html = "1***Datos de Apoderado registrados correctamente***" . $htmlSelect . "***" . $html_editarInfoApoderado . "***" . $html_detalle_apo . "***" . $html_apo_nombreDni;
+        }
+    }
+    echo $html;
+}
+
+function operacion_editar_apoderado() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $alumnoCod = strip_tags(trim($_POST["a_txtAlumnCodigo"]));
+    $codigo = strip_tags(trim($_POST["a_txtApoderadoCod"]));
+    $dni = strip_tags(trim($_POST["a_txtDniApoderado"]));
+    $correo = strip_tags(trim($_POST["a_txtCorreoApoderado"]));
+    $telefono = strip_tags(trim($_POST["a_txtTelfApoderado"]));
+    $html = "";
+    $valida_dni = fnc_validar_dni_apoderado($conexion, "", $codigo, $dni);
+    if (count($valida_dni) > 0) {
+        $html .= "0***El número de documento ya esta registrado, favor de ingresar otro.*********";
+    } else {
+        $htmlSelect = "";
+        $apoderado = fnc_apoderado_del_alumno($conexion, $codigo);
+        if (trim($apoderado[0]["dni"]) !== trim($dni) || trim($apoderado[0]["correo"]) !== trim($correo) || trim($apoderado[0]["telefono"]) !== trim($telefono)) {
+            $str_cadena = "('" . $codigo . "',NOW(),'" . $apoderado[0]["correo"] . "','" . $apoderado[0]["telefono"] . "','1')";
+            $resp = fnc_registrar_apoderado_historico($conexion, $str_cadena);
+            if ($resp) {
+                fnc_modificar_apoderado($conexion, $codigo, $dni, $correo, $telefono);
+            }
+        }
+        $html .= "1***Apoderado editado correctamente.***";
+        $lista_apoderados = fnc_lista_apoderados_de_alumno($conexion, $alumnoCod, "");
+        if (count($lista_apoderados) > 0) {
+            $selected = "";
+            $htmlSelect .= '<option value="">-- Seleccione --</option>';
+            foreach ($lista_apoderados as $lista) {
+                if ($lista["codigo"] == $codigo) {
+                    $selected = " selected ";
+                } else {
+                    $selected = "";
+                }
+                $htmlSelect .= '<option value="' . $lista["codigo"] . '" ' . $selected . '>' . $lista["tipo"] . ' - ' . $lista["dni"] . ' - ' . $lista["nombre"] . '</option>';
+            }
+            $htmlSelect .= '<option value="-1" >-- Otro --</option>';
+        } else {
+            $htmlSelect = "";
+        }
+
+        $html .= $htmlSelect . "***";
+
+        $html .= ' <div class="col-md-3" style="margin-bottom: 0px;">
+                    <label>Correo: </label>
+                  </div>
+                  <div class="col-md-4"><span>' . $correo . '</span></div>
+                  <div class="col-md-2">
+                     <label>Teléfono: </label>
+                  </div>
+                  <div class="col-md-3"><span>' . $telefono . '</span></div>***';
+        $html .= '<label>' . strtoupper($apoderado[0]["nombres"]) . '<br>' . $dni . '</label>';
+    }
+    echo $html;
+}
+
+function formulario_detalle_solicitud() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_solicitud = strip_tags(trim($_POST["s_solicitud"]));
+    $eu_codgrupo = explode("-", $s_solicitud);
+    $solicitud = explode("/", $eu_codgrupo[1]);
+    $solicitud_data = fnc_solicitud_alumno($conexion, $solicitud[0]);
+    $html = "";
+    $html2 = "";
+    if (count($solicitud_data) > 0) {
+        $html = '<div class = "row space-div">
+        <div class = "col-md-3" style = "margin-bottom: 0px;">
+        <label>Tipo de Solicitud: </label>
+        </div>
+        <div class = "col-md-9"><span>' . $solicitud_data[0]["entrevista"] . '</span></div>
+        </div>' .
+                '<div class = "row space-div">
+        <div class = "col-md-3" style = "margin-bottom: 0px;">
+        <label>Categoria: </label>
+        </div>
+        <div class = "col-md-9"><span>' . $solicitud_data[0]["categoria"] . '</span></div>
+        </div>' .
+                '<div class = "row space-div">
+        <div class = "col-md-3" style = "margin-bottom: 0px;">
+        <label>Subcategoria: </label>
+        </div>
+        <div class = "col-md-9"><span>' . $solicitud_data[0]["subcategoria"] . '</span></div>
+        </div>';
+        $html .= '<div class = "card card-primary">';
+        if ($solicitud_data[0]["entreId"] === "1") {
+            $html2 = '<div class = "card-header">
+        <h3 class = "card-title">FICHA DE ENTREVISTA A ESTUDIANTE</h3>
+        </div>
+        <div class = "card-body">
+        <h5>I. DATOS INFORMATIVOS:</h5>
+        <div class = "row space-div">
+        <div class = "col-md-3" style = "margin-bottom: 0px;">
+        <label>Nombre del estudiante: </label>
+        </div>
+        <div class = "col-md-4"><span>' . $solicitud_data[0]["alumno"] . '</span></div>
+        <div class = "col-md-2" style = "margin-bottom: 0px;">
+        <label>Grado, sección y nivel: </label>
+        </div>
+        <div class = "col-md-3"><span>' . $solicitud_data[0]["grado"] . '</span></div>
+        </div>
+        <div class = "row space-div">
+        <div class = "col-md-3" style = "margin-bottom: 0px;">
+        <label>Entrevistador: </label>
+        </div>
+        <div class = "col-md-4"><span>' . $solicitud_data[0]["usuario"] . '</span></div>
+        <div class = "col-md-2" style = "margin-bottom: 0px;">
+        <label>Sede: </label>
+        </div>
+        <div class = "col-md-3"><span>' . $solicitud_data[0]["sede"] . '</span></div>
+        </div>
+        <div class = "row space-div">
+        <div class = "col-md-3" style = "margin-bottom: 0px;">
+        <label>Motivo de la entrevista: </label>
+        </div>
+        <div class = "col-md-4"><span>' . $solicitud_data[0]["motivo"] . '</span>
+        </div>
+        <div class = "col-md-2" style = "margin-bottom: 0px;">
+        <label>Fecha y hora: </label>
+        </div>
+        <div class = "col-md-3"><span>' . $solicitud_data[0]["fecha"] . '</span></div>
+        </div>
+        <h5>II. DESARROLLO DE LA ENTREVISTA:</h5>
+        <div class = "row space-div">
+        <div class = "col-md-3" style = "margin-bottom: 0px;">
+        <label>Planteamiento del estudiante: </label>
+        </div>
+        <div class = "col-md-9"><textarea class = "form-control" rows = "3" placeholder = "" disabled>' . $solicitud_data[0]["plan_estu"] . '</textarea></div>
+        </div>
+        <div class = "row space-div">
+        <div class = "col-md-3" style = "margin-bottom: 0px;">
+        <label>Planteamiento del entrevistador(a): </label>
+        </div>
+        <div class = "col-md-9"><textarea class = "form-control" rows = "3" placeholder = "" disabled>' . $solicitud_data[0]["plan_entre"] . '</textarea></div>
+        </div>
+        <div class = "row space-div">
+        <div class = "col-md-3" style = "margin-bottom: 0px;">
+        <label>Acuerdos: </label>
+        </div>
+        <div class = "col-md-9"><textarea class = "form-control" rows = "3" placeholder = "" disabled>' . $solicitud_data[0]["acuerdos"] . '</textarea></div>
+        </div>
+        </div>';
+        } elseif ($solicitud_data[0]["entreId"] === "2") {
+            $html2 = '<div class = "card-header">
+        <h3 class = "card-title">FICHA DE ENTREVISTA A PADRES DE FAMILIA</h3>
+        </div>
+        <div class = "card-body">
+        <h5>I. DATOS INFORMATIVOS:</h5>
+        <div class = "row space-div">
+        <div class = "col-md-3" style = "margin-bottom: 0px;">
+        <label>Nombre del estudiante: </label>
+        </div>
+        <div class = "col-md-4"><span>' . $solicitud_data[0]["alumno"] . '</span></div>
+        <div class = "col-md-2" style = "margin-bottom: 0px;">
+        <label>Grado, sección y nivel: </label>
+        </div>
+        <div class = "col-md-3"><span>' . $solicitud_data[0]["grado"] . '</span></div>
+        </div>
+        <div class = "row space-div">
+        <div class = "col-md-3" style = "margin-bottom: 0px;">
+        <label>Nombre del padre/madre/apoderado: </label>
+        </div>
+        <div class = "col-md-4"><span>';
+            if (trim($solicitud_data[0]["padre"]) === '' && trim($solicitud_data[0]["madre"]) === "") {
+                $html2 .= '';
+            } else if (trim($solicitud_data[0]["padre"]) === '' && trim($solicitud_data[0]["madre"]) != "") {
+                $html2 .= trim($solicitud_data[0]["padre"]) . trim($solicitud_data[0]["madre"]);
+            } else {
+                $html2 .= trim($solicitud_data[0]["padre"]) . "<br>" . trim($solicitud_data[0]["madre"]);
+            }
+            $html2 .= '</span></div>
+        <div class = "col-md-2" style = "margin-bottom: 0px;">
+        <label>Teléfono, correo: </label>
+        </div>
+        <div class = "col-md-3"><span>';
+            if (trim($solicitud_data[0]["data_padre"]) === '' && trim($solicitud_data[0]["data_madre"]) === "") {
+                $html2 .= '';
+            } else if (trim($solicitud_data[0]["data_padre"]) === '' && trim($solicitud_data[0]["data_madre"]) != "") {
+                $html2 .= trim($solicitud_data[0]["data_padre"]) . trim($solicitud_data[0]["data_madre"]);
+            } else {
+                $html2 .= trim($solicitud_data[0]["data_padre"]) . "<br>" . trim($solicitud_data[0]["data_madre"]);
+            }
+            $html2 .= '</span></div>
+        </div>
+        <div class = "row space-div">
+        <div class = "col-md-3" style = "margin-bottom: 0px;">
+        <label>Entrevistador: </label>
+        </div>
+        <div class = "col-md-4"><span>' . $solicitud_data[0]["usuario"] . '</span></div>
+        <div class = "col-md-2" style = "margin-bottom: 0px;">
+        <label>Sede: </label>
+        </div>
+        <div class = "col-md-3"><span>' . $solicitud_data[0]["sede"] . '</span></div>
+        </div>
+        <div class = "row space-div">
+        <div class = "col-md-3" style = "margin-bottom: 0px;">
+        <label>Motivo de la entrevista: </label>
+        </div>
+        <div class = "col-md-4"><span>' . $solicitud_data[0]["motivo"] . '</span>';
+            $html2 .= '</div>
+        <div class = "col-md-2" style = "margin-bottom: 0px;">
+        <label>Fecha y hora: </label>
+        </div>
+        <div class = "col-md-3"><span>' . $solicitud_data[0]["fecha"] . '</span></div>
+        </div>
+        <h5>II. INFORME QUE SE LE HARÁ LLEGAR AL PADRE/MADRE/APODERADO:</h5>
+        <div class = "row space-div">
+        <div class = "col-md-12"><textarea class = "form-control" rows = "3" id = "txtInforme" placeholder = "" disabled>' . $solicitud_data[0]["informe"] . '</textarea></div>
+        </div>
+        <h5>III. DESARROLLO DE LA ENTREVISTA::</h5>
+        <div class = "row space-div">
+        <div class = "col-md-3" style = "margin-bottom: 0px;">
+        <label>Planteamiento del padre, madre o apoderado: </label>
+        </div>
+        <div class = "col-md-9"><textarea class = "form-control" rows = "3" id = "txtPlanPadre" placeholder = "" disabled>' . $solicitud_data[0]["plan_padre"] . '</textarea></div>
+        </div>
+        <div class = "row space-div">
+        <div class = "col-md-3" style = "margin-bottom: 0px;">
+        <label>Planteamiento del docente, tutor/a, psicólogo(a), director(a): </label>
+        </div>
+        <div class = "col-md-9"><textarea class = "form-control" rows = "3" placeholder = "" disabled>' . $solicitud_data[0]["plan_docen"] . '</textarea></div>
+        </div>
+        <div class = "row space-div">
+        <div class = "col-md-3" style = "margin-bottom: 0px;">
+        <label>Acuerdos - Acciones a realizar por los padres: </label>
+        </div>
+        <div class = "col-md-9"><textarea class = "form-control" rows = "3" placeholder = "" disabled>' . $solicitud_data[0]["acuerdos1"] . '</textarea></div>
+        </div>
+        <div class = "row space-div">
+        <div class = "col-md-3" style = "margin-bottom: 0px;">
+        <label>Acuerdos - Acciones a realizar por el colegio: </label>
+        </div>
+        <div class = "col-md-9"><textarea class = "form-control" rows = "3" placeholder = "" disabled>' . $solicitud_data[0]["acuerdos2"] . '</textarea></div>
+        </div>
+        </div>';
+        }
+    }
+    echo $html . $html2;
+}
+
+function formulario_eliminar_solicitud() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $so_codigo = strip_tags(trim($_POST["s_solicitud"]));
+    $so_cod1 = explode("-", $so_codigo);
+    $soalu_codi = explode("/", $so_cod1[1]);
+    $solicitud_data = fnc_solicitud_alumno($conexion, $soalu_codi[0]);
+    ?>
+    <div class="row space-div">
+        <div class="col-md-12" style="margin-bottom: 0px;">
+            <input type="hidden" id="hdnCodiSoliAlu" class="form-control" value="<?php echo trim($soalu_codi[0]); ?>"/>
+            <label>&iquest;Esta seguro de eliminar la solicitud del alumno "<?php echo $solicitud_data[0]["alumno"]; ?>" ?</label>
+        </div>
+    </div>
+    <?php
+}
+
+function operacion_eliminar_solicitud() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $sm_codigoEdi = strip_tags(trim($_POST["sm_codigo"]));
+    $u_codiSoliEliAlu = strip_tags(trim($_POST["u_codiSoliEliAlu"]));
+    try {
+        fnc_eliminar_solicitud_alumno($conexion, $u_codiSoliEliAlu, "0");
+        $str_submenu = "";
+        $str_menu_id = "";
+        $str_menu_nombre = "";
+        $submenu = fnc_consultar_submenu($conexion, $sm_codigoEdi);
+        if (count($submenu) > 0) {
+            $str_submenu = $submenu[0]["ruta"];
+            $str_menu_id = $submenu[0]["id"];
+            $str_menu_nombre = $submenu[0]["nombre"];
+        } else {
+            $str_submenu = "";
+            $str_menu_id = "";
+            $str_menu_nombre = "";
+        }
+        echo "***1***Solicitud eliminada correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
+    } catch (Exception $exc) {
+        echo "***0***Error al eliminar solicitud.***<br/>";
+    }
+}
+
+function operacion_buscar_semaforo_docentes() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_sede = strip_tags(trim($_POST["s_sede"]));
+    $fecha1 = strip_tags(trim($_POST["s_fecha_inicio"]));
+    $fecha2 = strip_tags(trim($_POST["s_fecha_fin"]));
+    $s_semaforo = strip_tags(trim($_POST["s_semaforo"]));
+    $fechaInicio = convertirFecha($fecha1);
+    $fechaFin = convertirFecha($fecha2);
+    $lista = fnc_buscar_semaforo_docentes($conexion, $s_sede, $fechaInicio, $fechaFin, $s_semaforo);
+    $html = "";
+    $aux = 1;
+    if (count($lista) > 0) {
+        foreach ($lista as $value) {
+            if ($value["color"] == "Rojo") {
+                $color = "color:red";
+            } else if ($value["color"] == "Ambar") {
+                $color = "color:#ff7e00 ";
+            } else if ($value["color"] == "Verde") {
+                $color = "color:green";
+            }
+            $html .= "<tr >"
+                    . "<td>$aux</td>"
+                    . "<td>" . $value["sede"] . "</td>"
+                    . "<td >" . $value["docente"] . "</td>"
+                    . "<td>" . $value["grado"] . "</td>"
+                    . "<td style='text-align:center'>" . $value["cantidad"] . "</td>"
+                    . "<td style='text-align:center'>" . $value["cantidad_faltantes"] . "</td>"
+                    . "<td style='$color'> " . $value["color"] . "</td>"
+                    . "</tr>";
+            $aux++;
+        }
+    } else {
+        $html = ' <tr class = "odd"><td valign = "top" colspan = "7" class = "dataTables_empty">No hay datos disponibles en la tabla</td></tr>';
+    }
+    echo $html;
+}
+
+function formulario_nueva_subsolicitud() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $entrevista = strip_tags(trim($_POST["s_entrevista"]));
+    $tipos_entrevistas = fnc_lista_tipo_entrevistas($conexion, "");
+    $lista_categorias = fnc_lista_categorias($conexion, "");
+    $eu_codentrevista = explode("-", $entrevista);
+    $entrevista_codigo = explode("/", $eu_codentrevista[1]);
+    $entre = fnc_obtener_codigo_entrevista($conexion, $entrevista_codigo[0]);
+    $html = '<div class="row space-div">
+            <div class="col-md-2" style="margin-bottom: 0px;">
+                <label>C&oacute;digo de Entrevista: </label>
+            </div>
+            <div class="col-md-4">
+                <label>' . $entre[0]["codigo_ent"] . '</label>
+                <input type="hidden" id="codi_entre_sub" value="' . $entrevista_codigo[0] . '"/>
+            </div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-2" style="margin-bottom: 0px;">
+                <label>Buscar alumno: </label>
+            </div>
+            <div class="col-md-4">
+                <input type="text" id="searchAlumno_sub" class="typeahead form-control" style="size:12px;text-transform: uppercase;" value="" autocomplete="off">
+            </div>
+            <div class="col-md-4">
+                <input type="hidden" id="matric_sub" value=""/>
+                <label id="dataAlumno_sub" style="font-size: 16px;"></label>
+            </div>
+        </div>
+        <div class="row space-div">
+        <div class="col-md-2" style="margin-bottom: 0px;">
+            <label>Categoria: </label>
+        </div>
+        <div class="col-md-4">';
+    $html .= '<select id="cbbCategoria_sub" class="form-control select2" style="width: 100%" onchange="cargar_subcategorias_sub(this)">
+               <option value="">-- Seleccione --</option>';
+    if (count($lista_categorias) > 0) {
+        foreach ($lista_categorias as $lista) {
+            $html .= "<option value='" . $lista["id"] . "' >" . $lista["nombre"] . "</option>";
+        }
+    }
+    $html .= '</select>';
+    $html .= '</div>
+        <div class="col-md-2" style="margin-bottom: 0px;">
+            <label>Subcategoria: </label>
+        </div>
+        <div class="col-md-4">';
+    $html .= '<select id="cbbSubcategoria_sub" class="form-control select2" style="width: 100%">
+                <option value="">-- Seleccione --</option>';
+    $html .= '</select>';
+    $html .= '</div>
+       </div>';
+    $html .= '<div class="row space-div">
+            <div class="col-md-2" style="margin-bottom: 0px;">
+                <label>Tipo de entrevista: </label>
+            </div>
+            <div class="col-md-3">';
+    $html .= '<select id="cbbTipoSolicitud_sub" class="form-control select2" style="width: 100%" onchange="mostrar_tipo_solicitud_sub(this)">
+                <option value="">-- Seleccione --</option>';
+    if (count($tipos_entrevistas) > 0) {
+        foreach ($tipos_entrevistas as $lista) {
+            $html .= "<option value='" . $lista["id"] . "'>" . $lista["nombre"] . "</option>";
+        }
+    }
+    $html .= '</select>';
+    $html .= '</div>
+        </div>';
+    $html .= '<div class="card card-success" id="divSubEntrevista">';
+    $html .= '</div>';
+    echo $html;
+}
+
+function formulario_detalle_tipo_solicitud_sub() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $sm_tipo_sol = strip_tags(trim($_POST["sol_tipo"]));
+    $sm_sol_matricula = strip_tags(trim($_POST["sol_matricula"]));
+    $sm_sol_categoria = strip_tags(trim($_POST["sol_categoria"]));
+    $sm_sol_subcategoria = strip_tags(trim($_POST["sol_subcategoria"]));
+    $usuario_data = fnc_datos_usuario($conexion, p_usuario);
+    $matricula = fnc_alumno_matricula_detalle($conexion, $sm_sol_matricula);
+    $html = '<input type="hidden" id="txt_sede_sub" value="' . $matricula[0]["sedeId"] . '">';
+    if ($sm_tipo_sol === "1") {
+        $html .= '<div class="card-header">
+                <h3 class="card-title">FICHA DE ENTREVISTA A ESTUDIANTE</h3>
+              </div>
+              <div class="card-body">
+                <h5>I. DATOS INFORMATIVOS:</h5>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Nombre del estudiante: </label>
+                    </div>
+                    <div class="col-md-4"><span>' . strtoupper($matricula[0]["alumno"]) . '</span></div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Grado, sección y nivel: </label>
+                    </div>
+                    <div class="col-md-3"><span>' . $matricula[0]["grado"] . '</span></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Entrevistador: </label>
+                    </div>
+                    <div class="col-md-4"><span>' . $usuario_data[0]["usuariodata"] . '</span></div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Sede: </label>
+                    </div>
+                    <div class="col-md-3"><span>' . $matricula[0]["sede"] . '</span></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Motivo de la entrevista: </label>
+                    </div>
+                    <div class="col-md-4"><textarea class="form-control" rows="3" id="txtMotivo_sub" placeholder=""></textarea>
+                        ';
+        $html .= '  </div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Fecha y hora: </label>
+                    </div>
+                    <div class="col-md-3"><span> <i class="fa fa-info-circle celeste"></i> La fecha y hora se crea al guardar la ficha.</span></div>
+                </div>
+                <h5>II. DESARROLLO DE LA ENTREVISTA:</h5>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Planteamiento del estudiante: </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" rows="3" id="txtPlanEstudiante_sub" placeholder=""></textarea></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Planteamiento del entrevistador(a): </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" rows="3" id="txtPlanEntrevistador_sub" placeholder=""></textarea></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Acuerdos: </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" id="txtAcuerdos_sub" rows="3" placeholder=""></textarea></div>
+                </div>
+              </div>'
+                . '<div class="row space-div">'
+                . '<div class="col-md-5" style="margin-bottom: 0px;">'
+                . '<div id="signature-pad-sub" class="signature-pad" style="margin-left: 20px;">
+                    <div class="description">Firma del estudiante</div>
+                    <div class="signature-pad--body">
+                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas1_sub"></canvas>
+                    </div>
+                   </div>
+                   <div style="margin-left: 20px;">
+                        <button type="button" class="btn btn-default" onclick="limpiar_firma_sub();">Limpiar firma</button>
+                   </div>
+                   <div style="margin-left: 20px;">
+                       <label>' . str_replace(" - ", "<br/>", strtoupper($matricula[0]["alumno"])) . '<label/>
+                   </div>'
+                . '</div>'
+                . '<div class="col-md-2" style="margin-bottom: 0px;">'
+                . '</div>'
+                . '<div class="col-md-5" style="margin-bottom: 0px;">'
+                . '<div id="signature-pad-entrevistador-sub" class="signature-pad" >
+                    <div class="description">Firma del entrevistador</div>
+                    <div class="signature-pad--body">
+                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas2_sub"></canvas>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-default" onclick="limpiar_firma_entrevistador_sub();">Limpiar firma</button>
+                   </div>
+                   <div style="margin-left: 20px;">
+                       <label>' . strtoupper($usuario_data[0]["usuariodata"]) . '<br/>' . $usuario_data[0]["usuarioDni"] . '<label/>
+                   </div>'
+                . ' </div>'
+                . '</div>';
+    } elseif ($sm_tipo_sol === "2") {
+        $lista_apoderados = fnc_lista_apoderados_de_alumno($conexion, $matricula[0]["aluId"], "");
+        $html .= '<div class="card-header">
+                <h3 class="card-title">FICHA DE ENTREVISTA A PADRES DE FAMILIA</h3>
+              </div>
+              <div class="card-body">
+                <h5>I. DATOS INFORMATIVOS:</h5>
+                <div class="row space-div">
+                    <input type="hidden" id="txtAlumCodig_sub" value="' . $matricula[0]["aluId"] . '"/>
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Nombre del estudiante: </label>
+                    </div>
+                    <div class="col-md-4"><span>' . strtoupper($matricula[0]["alumno"]) . '</span></div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Grado, sección y nivel: </label>
+                    </div>
+                    <div class="col-md-3"><span>' . $matricula[0]["grado"] . '</span></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Nombre del padre/madre/apoderado: </label>
+                    </div>
+                    <div class="col-md-4">';
+        $html .= '<select id="cbbTipoApoderado_sub" class="form-control select2" style="width: 100%" onchange="mostrar_info_apoderado_sub(this)">
+                <option value="">-- Seleccione --</option>';
+        if (count($lista_apoderados) > 0) {
+            foreach ($lista_apoderados as $lista) {
+                $html .= '<option value="' . $lista["codigo"] . '">' . $lista["tipo"] . ' - ' . $lista["dni"] . ' - ' . strtoupper($lista["nombre"]) . '</option>';
+            }
+        }
+        $html .= ' <option value="-1" >-- Otro --</option></select>';
+        $html .= '</div><div class="col-md-3" id="divEditarInfoApoderado_sub"></div></div>
+                <div class="row space-div" id="detalleApoderado_sub">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Correo: </label>
+                    </div>
+                    <div class="col-md-4"></div>
+                    <div class="col-md-2">
+                        <label>Teléfono: </label>
+                    </div>
+                    <div class="col-md-3"></div>
+                </div>';
+        $html .= '
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Entrevistador: </label>
+                    </div>
+                    <div class="col-md-4"><span>' . strtoupper($usuario_data[0]["usuariodata"]) . '</span></div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Sede: </label>
+                    </div>
+                    <div class="col-md-3"><span>' . $matricula[0]["sede"] . '</span></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Motivo de la entrevista: </label>
+                    </div>
+                    <div class="col-md-4"><textarea class="form-control" rows="3" id="txtMotivo_sub" placeholder=""></textarea>';
+        $html .= '  </div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Fecha y hora: </label>
+                    </div>
+                    <div class="col-md-3"><span> <i class="fa fa-info-circle celeste"></i> La fecha y hora se crea al guardar la ficha.</span></div>
+                </div>
+                <h5>II. INFORME QUE SE LE HARÁ LLEGAR AL PADRE/MADRE/APODERADO:</h5>
+                <div class="row space-div">
+                    <div class="col-md-12"><textarea class="form-control" rows="3" id="txtInforme_sub" placeholder=""></textarea></div>
+                </div>
+
+                <h5>III. DESARROLLO DE LA ENTREVISTA::</h5>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Planteamiento del padre, madre o apoderado: </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" rows="3" id="txtPlanPadre_sub" placeholder=""></textarea></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Planteamiento del docente, tutor/a, psicólogo(a), director(a): </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" rows="3" id="txtPlanDocente_sub" placeholder=""></textarea></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Acuerdos - Acciones a realizar por los padres: </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" id="txtAcuerdosPadres_sub" rows="3" placeholder=""></textarea></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Acuerdos - Acciones a realizar por el colegio: </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" id="txtAcuerdosColegio_sub" rows="3" placeholder=""></textarea></div>
+                </div>
+              </div>'
+                . '<div class="row space-div">'
+                . '<div class="col-md-5" style="margin-bottom: 0px;">'
+                . '<div id="signature-pad-sub" class="signature-pad" style="margin-left: 20px;">
+                    <div class="description">Firma del padre, madre o apoderado</div>
+                    <div class="signature-pad--body">
+                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas1_sub"></canvas>
+                    </div>
+                   </div>
+                   <div style="margin-left: 20px;">
+                        <button type="button" class="btn btn-default" onclick="limpiar_firma();">Limpiar firma</button>
+                   </div>
+                   <div style="margin-left: 20px;" id="divApoderadoNombreDNI_sub">
+                       <label><label/>
+                   </div>'
+                . '</div>'
+                . '<div class="col-md-2" style="margin-bottom: 0px;">'
+                . '</div>'
+                . '<div class="col-md-5" style="margin-bottom: 0px;">'
+                . '<div id="signature-pad-entrevistador-sub" class="signature-pad" >
+                    <div class="description">Firma del entrevistador</div>
+                    <div class="signature-pad--body">
+                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas2_sub"></canvas>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-default" onclick="limpiar_firma_entrevistador();">Limpiar firma</button>
+                   </div>
+                   <div style="margin-left: 20px;">
+                       <label>' . strtoupper($usuario_data[0]["usuariodata"]) . '<br/>' . $usuario_data[0]["usuarioDni"] . '<label/>
+                   </div>'
+                . ' </div>'
+                . '</div>';
+    }
+    $html .= '</div>';
+    echo $html;
+}
+
+function formulario_carga_info_apoderado_sub() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $alu_cod = strip_tags(trim($_POST["alu_cod"]));
+    $tip_apod = strip_tags(trim($_POST["tip_apod"]));
+    $html = "";
+    if ($tip_apod == "" || $tip_apod == "-1") {
+        $html = ' <div class="col-md-3" style="margin-bottom: 0px;">
+                    <label>Correo: </label>
+                  </div>
+                  <div class="col-md-4"><span></span></div>
+                  <div class="col-md-2">
+                     <label>Teléfono: </label>
+                  </div>
+                  <div class="col-md-3"><span></span></div>';
+        $html .= "********";
+    } else {
+        $apoderado = fnc_lista_apoderados_de_alumno($conexion, $alu_cod, $tip_apod);
+
+        if (count($apoderado) > 0) {
+            $html = ' <div class="col-md-3" style="margin-bottom: 0px;">
+                    <label>Correo: </label>
+                  </div>
+                  <div class="col-md-4"><span>' . $apoderado[0]["correo"] . '</span></div>
+                  <div class="col-md-2">
+                     <label>Teléfono: </label>
+                  </div>
+                  <div class="col-md-3"><span>' . $apoderado[0]["telefono"] . '</span></div>';
+
+            $html .= "****";
+            $html .= '<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#modal-editar-apoderado-sub" data-backdrop="static" '
+                    . ' data-alumno="' . $alu_cod . '" data-info-apoderado="' . $apoderado[0]["codigo"] . '">Editar</button>****<label>' . strtoupper($apoderado[0]["nombre"]) . '<br/>' . $apoderado[0]["dni"] . '</label>';
+        } else {
+            $html = ' <div class="col-md-3" style="margin-bottom: 0px;">
+                    <label>Correo: </label>
+                  </div>
+                  <div class="col-md-4"><span></span></div>
+                  <div class="col-md-2">
+                     <label>Teléfono: </label>
+                  </div>
+                  <div class="col-md-3"><span></span></div>';
+            $html .= "********";
+        }
+    }
+    echo $html;
+}
+
+function formulario_editar_apoderado_sub() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $apod = strip_tags(trim($_POST["sm_apoderado"]));
+    $alumnoCod = strip_tags(trim($_POST["sm_alumno"]));
+    $html = "";
+    $apoderado = fnc_apoderado_del_alumno($conexion, $apod);
+    $tipos_apoderados = fnc_lista_tipos_apoderados($conexion, "");
+    if (count($apoderado) > 0) {
+        $html = '<div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Tipo</label>
+            </div>
+            <input id="txtAlumnCodigo_sub" type="hidden" class="form-control" value="' . $alumnoCod . '" />
+            <div class="col-md-6">';
+        $html .= '<select id="cbbTipoApoderado_sub" class="form-control select2" style="width: 100%" disabled>
+                ';
+        if (count($tipos_apoderados) > 0) {
+            $selected = "";
+            foreach ($tipos_apoderados as $lista) {
+                if ($lista["id"] == $apoderado[0]["tipo"]) {
+                    $selected = " selected ";
+                } else {
+                    $selected = "";
+                }
+                $html .= '<option value="' . $lista["id"] . '" ' . $selected . ' >' . $lista["nombre"] . '</option>';
+            }
+        }
+        $html .= '</select></div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Nombres</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtNombresApoderado_sub" class="form-control select2" style="width: 100%" disabled value="' . $apoderado[0]["nombres"] . '" />
+            </div>
+        </div>
+        
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>DNI</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtDniApoderado_sub" type="text" class="form-control select2" style="width: 100%" value="' . $apoderado[0]["dni"] . '" 
+                    maxlength="12" onkeypress="return solo_numeros(event);"/>
+            </div>
+        </div>
+        <input id="txtApoderadoCod_sub" type="hidden" class="form-control select2" style="width: 100%" value="' . $apoderado[0]["id"] . '" />
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Correo</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtCorreoApoderado_sub" type="text" class="form-control select2" style="width: 100%" value="' . $apoderado[0]["correo"] . '" />
+            </div>
+        </div>
+        
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Telefono</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtTelfApoderado_sub" type="text" class="form-control select2" style="width: 100%" value="' . $apoderado[0]["telefono"] . '" 
+                    maxlength="9" onkeypress="return solo_numeros(event);"/>
+            </div>
+        </div>';
+    }
+    echo $html;
+}
+
+function operacion_editar_apoderado_sub() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $alumnoCod = strip_tags(trim($_POST["a_txtAlumnCodigo_sub"]));
+    $codigo = strip_tags(trim($_POST["a_txtApoderadoCod_sub"]));
+    $dni = strip_tags(trim($_POST["a_txtDniApoderado_sub"]));
+    $correo = strip_tags(trim($_POST["a_txtCorreoApoderado_sub"]));
+    $telefono = strip_tags(trim($_POST["a_txtTelfApoderado_sub"]));
+    $html = "";
+    $valida_dni = fnc_validar_dni_apoderado($conexion, "", $codigo, $dni);
+    if (count($valida_dni) > 0) {
+        $html .= "0***El número de documento ya esta registrado, favor de ingresar otro.*********";
+    } else {
+        $htmlSelect = "";
+        $apoderado = fnc_apoderado_del_alumno($conexion, $codigo);
+        if (trim($apoderado[0]["dni"]) !== trim($dni) || trim($apoderado[0]["correo"]) !== trim($correo) || trim($apoderado[0]["telefono"]) !== trim($telefono)) {
+            $str_cadena = "('" . $codigo . "',NOW(),'" . $apoderado[0]["correo"] . "','" . $apoderado[0]["telefono"] . "','1')";
+            $resp = fnc_registrar_apoderado_historico($conexion, $str_cadena);
+            if ($resp) {
+                fnc_modificar_apoderado($conexion, $codigo, $dni, $correo, $telefono);
+            }
+        }
+        $html .= "1***Apoderado editado correctamente.***";
+        $lista_apoderados = fnc_lista_apoderados_de_alumno($conexion, $alumnoCod, "");
+        if (count($lista_apoderados) > 0) {
+            $selected = "";
+            $htmlSelect .= '<option value="">-- Seleccione --</option>';
+            foreach ($lista_apoderados as $lista) {
+                if ($lista["codigo"] == $codigo) {
+                    $selected = " selected ";
+                } else {
+                    $selected = "";
+                }
+                $htmlSelect .= '<option value="' . $lista["codigo"] . '" ' . $selected . '>' . $lista["tipo"] . ' - ' . $lista["dni"] . ' - ' . $lista["nombre"] . '</option>';
+            }
+            $htmlSelect .= '<option value="-1" >-- Otro --</option>';
+        } else {
+            $htmlSelect = "";
+        }
+
+        $html .= $htmlSelect . "***";
+
+        $html .= ' <div class="col-md-3" style="margin-bottom: 0px;">
+                    <label>Correo: </label>
+                  </div>
+                  <div class="col-md-4"><span>' . $correo . '</span></div>
+                  <div class="col-md-2">
+                     <label>Teléfono: </label>
+                  </div>
+                  <div class="col-md-3"><span>' . $telefono . '</span></div>***';
+        $html .= '<label>' . strtoupper($apoderado[0]["nombres"]) . '<br>' . $dni . '</label>';
+    }
+    echo $html;
+}
+
+function formulario_nuevo_apoderado_sub() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $alumno = strip_tags(trim($_POST["sm_alumno"]));
+    $tipos_apoderados = fnc_lista_tipos_apoderados($conexion, "");
+    $html = '<div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Tipo</label>
+            </div>
+            <div class="col-md-6">';
+    $html .= '<input type="hidden" id="txtAlumnoCodiN_sub" class="form-control" value="' . $alumno . '"/>';
+    $html .= '<select id="cbbTipoApoderadoN_sub" class="form-control" style="width: 100%" disabled>
+                ';
+    if (count($tipos_apoderados) > 0) {
+        $selected = "";
+        foreach ($tipos_apoderados as $lista) {
+            if ($lista["id"] == 3) {
+                $selected = " selected ";
+            } else {
+                $selected = "";
+            }
+            $html .= '<option value="' . $lista["id"] . '" ' . $selected . ' >' . $lista["nombre"] . '</option>';
+        }
+    }
+    $html .= '</select></div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>DNI</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtDniN_sub" class="form-control" style="width: 100%" maxlength="12" 
+                onkeypress="return solo_numeros(event);"/>
+            </div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Apellidos y nombres</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtNombresApoderadoN_sub" class="form-control" style="width: 100%;text-transform: uppercase;"
+                   onkeypress="return solo_letras(event);"/>
+            </div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Correo</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtCorreoApoderadoN_sub" type="text" class="form-control" style="width: 100%"/>
+            </div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Telefono</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtTelfApoderadoN_sub" type="text" class="form-control" style="width: 100%" maxlength="9" 
+                onkeypress="return solo_numeros(event);"/>
+            </div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Direcci&oacute;n</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtDireccionN_sub" type="text" class="form-control" style="width: 100%;text-transform: uppercase;"/>
+            </div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Distrito</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtDistritoN_sub" type="text" class="form-control" style="width: 100%;text-transform: uppercase;"
+                onkeypress="return solo_letras(event);"/>
+            </div>
+        </div>';
+    echo $html;
+}
+
+function operacion_registrar_apoderado_sub() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $codigo = strip_tags(trim($_POST["a_txtAlumnoCodiN_sub"]));
+    $tipo_apoderado = strip_tags(trim($_POST["a_cbbTipoApoderadoN_sub"]));
+    $dni = strip_tags(trim($_POST["a_txtDniN_sub"]));
+    $nombres = strip_tags(trim($_POST["a_txtNombresApoderadoN_sub"]));
+    $correo = strip_tags(trim($_POST["a_txtCorreoApoderadoN_sub"]));
+    $telefono = strip_tags(trim($_POST["a_txtTelfApoderadoN_sub"]));
+    $direccion = strip_tags(trim($_POST["a_txtDireccionN_sub"]));
+    $distrito = strip_tags(trim($_POST["a_txtDistritoN_sub"]));
+    $html = "";
+    $valida_dni = fnc_validar_dni_apoderado($conexion, $codigo, "", $dni);
+    if (count($valida_dni) > 0) {
+        $html .= "0***El número de documento ya esta registrado, favor de ingresar otro.************";
+    } else {
+        $cadena = "('" . $codigo . "','" . $tipo_apoderado . "','" . strtoupper($nombres) . "','" .
+                $dni . "','" . trim($correo) . "','" . $telefono . "','" . strtoupper($direccion) . "','" . strtoupper($distrito) . "','1')";
+        $idApoderado = fnc_registrar_apoderado($conexion, $cadena);
+        if ($idApoderado) {
+            $htmlSelect = "";
+            $lista_apoderados = fnc_lista_apoderados_de_alumno($conexion, $codigo, "");
+            if (count($lista_apoderados) > 0) {
+                $selected = "";
+                $htmlSelect .= '<option value="">-- Seleccione --</option>';
+                foreach ($lista_apoderados as $lista) {
+                    if ($lista["codigo"] == $idApoderado) {
+                        $selected = " selected ";
+                    }
+                    $htmlSelect .= '<option value="' . $lista["codigo"] . '" ' . $selected . '>' . $lista["tipo"] . ' - ' . $lista["dni"] . ' - ' . $lista["nombre"] . '</option>';
+                }
+                $htmlSelect .= '<option value="-1" >-- Otro --</option>';
+            } else {
+                $htmlSelect = "";
+            }
+            $html_editarInfoApoderado = '<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#modal-editar-apoderado-sub" data-backdrop="static" data-alumno="' . $codigo . '" data-info-apoderado="' . $idApoderado . '">Editar</button>';
+
+            $html_detalle_apo = '<div class="col-md-3" style="margin-bottom: 0px;">
+                    <label>Correo: </label>
+                  </div>
+                  <div class="col-md-4"><span>' . trim($correo) . '</span></div>
+                  <div class="col-md-2">
+                     <label>Teléfono: </label>
+                  </div>
+                  <div class="col-md-3"><span>' . $telefono . '</span>
+                  </div>';
+            $html_apo_nombreDni = '<label>' . strtoupper($nombres) . '<br>' . $dni . '</label>';
+            $html = "1***Datos de Apoderado registrados correctamente***" . $htmlSelect . "***" . $html_editarInfoApoderado . "***" . $html_detalle_apo . "***" . $html_apo_nombreDni;
+        }
+    }
+    echo $html;
+}
+
+function formulario_editar_solicitud() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_solicitud = strip_tags(trim($_POST["s_solicitud"]));
+    $eu_codsolicitud = explode("-", $s_solicitud);
+    $solicitud_codigo = explode("/", $eu_codsolicitud[1]);
+    $lista_sol = fnc_listar_todas_solicitudes_x_entrevista($conexion, $solicitud_codigo[0], "1", "1");
+    $html = '<div class="row space-div">
+            <div class="col-md-2" style="margin-bottom: 0px;">
+              <label>Entrevista / Subentrevista</label>
+            </div>
+            <div class="col-md-10">';
+    $html .= '<select id="cbbTipoSolicitudCodis" class="form-control select2" style="width: 100%" onchange="cargar_solicitudes_a_editar(this)">
+                <option value="" >-- Seleccione --</option>';
+    foreach ($lista_sol as $value) {
+        $html .= '<option value="' . $value["id"] . '" >' . $value["detalle"] . '</option>';
+    }
+    $html .= '</select></div>
+        </div>
+        <div id="divDetalleEditar"></div>';
+    echo $html;
+}
+
+function formulario_carga_solicitudes() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_solicitud = strip_tags(trim($_POST["sol_cod"]));
+    $array = explode("-", $s_solicitud);
+    $entre_sub = "";
+    $html = "";
+    if ($array[0] === "ent") {
+        $entre_sub = "Entrevista";
+    } else {
+        $entre_sub = "Subentrevista";
+    }
+    $lista_solicitud = fnc_obtener_solicitud_x_codigo($conexion, $array[0], $array[1]);
+    if (count($lista_solicitud) > 0) {
+        $tipos_entrevistas = fnc_lista_tipo_entrevistas($conexion, "");
+        $lista_categorias = fnc_lista_categorias($conexion, "");
+        $lista_subcategorias = fnc_lista_subcategorias($conexion, $lista_solicitud[0]["categoria"], "");
+        $html = '<div class="row space-div">
+            <div class="col-md-2" style="margin-bottom: 0px;">
+                <label>C&oacute;digo de ' . $entre_sub . ': </label>
+            </div>
+            <div class="col-md-10">
+                <label>' . $lista_solicitud[0]["codigo"] . '</label>
+                <input type="hidden" id="codi_solicitud_edi" value="' . $array[1] . '"/>
+            </div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-2" style="margin-bottom: 0px;">
+                <label>Buscar alumno: </label>
+            </div>
+            <div class="col-md-4">
+                <input type="text" id="searchAlumno_edi" class="typeahead form-control" style="size:12px;text-transform: uppercase;" value="" autocomplete="off">
+            </div>
+            <div class="col-md-4">
+                <input type="hidden" id="matric_edi" value="' . $lista_solicitud[0]["matricula"] . '"/>
+                <label id="dataAlumno_edi" style="font-size: 16px;">' . $lista_solicitud[0]["alumno_busq"] . '</label>
+            </div>
+        </div>
+        <div class="row space-div">
+        <div class="col-md-2" style="margin-bottom: 0px;">
+            <label>Categoria: </label>
+        </div>
+        <div class="col-md-4">';
+        $html .= '<select id="cbbCategoria_edi" class="form-control select2" style="width: 100%" onchange="cargar_subcategorias_edi(this)">
+               <option value="">-- Seleccione --</option>';
+        if (count($lista_categorias) > 0) {
+            $selected_cate = "";
+            foreach ($lista_categorias as $lista) {
+                if ($lista["id"] === $lista_solicitud[0]["categoria"]) {
+                    $selected_cate = " selected ";
+                } else {
+                    $selected_cate = "";
+                }
+                $html .= "<option value='" . $lista["id"] . "' $selected_cate>" . $lista["nombre"] . "</option>";
+            }
+        }
+        $html .= '</select>';
+        $html .= '</div>
+        <div class="col-md-2" style="margin-bottom: 0px;">
+            <label>Subcategoria: </label>
+        </div>
+        <div class="col-md-4">';
+        $html .= '<select id="cbbSubcategoria_edi" class="form-control select2" style="width: 100%">
+                <option value="">-- Seleccione --</option>';
+        if (count($lista_subcategorias) > 0) {
+            $selected_subcate = "";
+            foreach ($lista_subcategorias as $lista) {
+                if ($lista["id"] === $lista_solicitud[0]["subcategorgia"]) {
+                    $selected_subcate = " selected ";
+                } else {
+                    $selected_subcate = "";
+                }
+                $html .= "<option value='" . $lista["id"] . "' $selected_subcate>" . $lista["nombre"] . "</option>";
+            }
+        }
+        $html .= '</select>';
+        $html .= '</div>
+       </div>';
+        $html .= '<div class="row space-div">
+            <div class="col-md-2" style="margin-bottom: 0px;">
+                <label>Tipo de entrevista: </label>
+            </div>
+            <div class="col-md-3">';
+        $html .= '<select id="cbbTipoSolicitud_edi" class="form-control select2" style="width: 100%" disabled>
+                <option value="">-- Seleccione --</option>';
+        if (count($tipos_entrevistas) > 0) {
+            $selected_tips = "";
+            foreach ($tipos_entrevistas as $lista) {
+                if ($lista["id"] === $lista_solicitud[0]["ent_id"]) {
+                    $selected_tips = " selected ";
+                } else {
+                    $selected_tips = "";
+                }
+                $html .= "<option value='" . $lista["id"] . "' $selected_tips>" . $lista["nombre"] . "</option>";
+            }
+        }
+        $html .= '</select>';
+        $html .= '</div><input type="hidden" id="txt_sede_sub" value="' . $lista_solicitud[0]["sedeId"] . '">
+        </div>';
+        $html .= '<div class="card card-warning" id="divSubEntrevista_edi">';
+        if ($lista_solicitud[0]["ent_id"] === "1") {
+            $html .= '<div class="card-header">
+                <h3 class="card-title">FICHA DE ENTREVISTA A ESTUDIANTE</h3>
+              </div>
+              <div class="card-body">
+                <h5>I. DATOS INFORMATIVOS:</h5>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Nombre del estudiante: </label>
+                    </div>
+                    <div class="col-md-4"><span id="nombre_estu_edi">' . strtoupper($lista_solicitud[0]["alumno"]) . '</span></div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Grado, sección y nivel: </label>
+                    </div>
+                    <div class="col-md-3"><span id="grado_estu_id">' . $lista_solicitud[0]["grado"] . '</span></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Entrevistador: </label>
+                    </div>
+                    <div class="col-md-4"><span>' . $lista_solicitud[0]["usuario"] . '</span></div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Sede: </label>
+                    </div>
+                    <div class="col-md-3"><span id="sede_estu_id">' . $lista_solicitud[0]["sede"] . '</span></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Motivo de la entrevista: </label>
+                    </div>
+                    <div class="col-md-4"><textarea class="form-control" rows="3" id="txtMotivo_edi" placeholder="">' . $lista_solicitud[0]["motivo"] . '</textarea>
+                        ';
+            $html .= '  </div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Fecha y hora: </label>
+                    </div>
+                    <div class="col-md-3"><span>' . $lista_solicitud[0]["fecha"] . '</span></div>
+                </div>
+                <h5>II. DESARROLLO DE LA ENTREVISTA:</h5>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Planteamiento del estudiante: </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" rows="3" id="txtPlanEstudiante_edi" placeholder="">' . $lista_solicitud[0]["plan_estudiante"] . '</textarea></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Planteamiento del entrevistador(a): </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" rows="3" id="txtPlanEntrevistador_edi" placeholder="">' . $lista_solicitud[0]["plan_entrevistador"] . '</textarea></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Acuerdos: </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" id="txtAcuerdos_edi" rows="3" placeholder="">' . $lista_solicitud[0]["acuerdos"] . '</textarea></div>
+                </div>
+              </div>'
+                    . '<div class="row space-div">'
+                    . '<div class="col-md-5" style="margin-bottom: 0px;">'
+                    . '<div id="signature-pad-sub" class="signature-pad" style="margin-left: 20px;">
+                    <div class="description">Firma del estudiante</div>
+                    <div class="signature-pad--body">
+                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas1_sub"></canvas>
+                    </div>
+                   </div>
+                   <div style="margin-left: 20px;">
+                        <button type="button" class="btn btn-default" onclick="limpiar_firma_sub();">Limpiar firma</button>
+                   </div>
+                   <div style="margin-left: 20px;">
+                       <label id="divApoderadoNombreDNI_edi">' . str_replace(" - ", "<br/>", strtoupper($lista_solicitud[0]["alumno"])) . '<label/>
+                   </div>'
+                    . '</div>'
+                    . '<div class="col-md-2" style="margin-bottom: 0px;">'
+                    . '</div>'
+                    . '<div class="col-md-5" style="margin-bottom: 0px;">'
+                    . '<div id="signature-pad-entrevistador-sub" class="signature-pad" >
+                    <div class="description">Firma del entrevistador</div>
+                    <div class="signature-pad--body">
+                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas2_sub"></canvas>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-default" onclick="limpiar_firma_entrevistador_sub();">Limpiar firma</button>
+                   </div>
+                   <div style="margin-left: 20px;">
+                       <label>' . strtoupper($lista_solicitud[0]["usuario"]) . '<br/>' . $lista_solicitud[0]["dni"] . '<label/>
+                   </div>'
+                    . ' </div>'
+                    . '</div>';
+        } elseif ($lista_solicitud[0]["ent_id"] === "2") {
+            $lista_apoderados = fnc_lista_apoderados_de_alumno($conexion, $lista_solicitud[0]["aluId"], "");
+            $apoderado = fnc_lista_apoderados_de_alumno($conexion, $lista_solicitud[0]["aluId"], $lista_solicitud[0]["apoderado"]);
+            $html .= '<div class="card-header">
+                <h3 class="card-title">FICHA DE ENTREVISTA A PADRES DE FAMILIA</h3>
+              </div>
+              <div class="card-body">
+                <h5>I. DATOS INFORMATIVOS:</h5>
+                <div class="row space-div">
+                    <input type="hidden" id="txtAlumCodig_edi" value="' . $lista_solicitud[0]["aluId"] . '"/>
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Nombre del estudiante: </label>
+                    </div>
+                    <div class="col-md-4"><span id="nombre_estu_edi">' . strtoupper($lista_solicitud[0]["alumno"]) . '</span></div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Grado, sección y nivel: </label>
+                    </div>
+                    <div class="col-md-3"><span id="grado_estu_id">' . $lista_solicitud[0]["grado"] . '</span></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Nombre del padre/madre/apoderado: </label>
+                    </div>
+                    <div class="col-md-4">';
+            $html .= '<select id="cbbTipoApoderado_edi" class="form-control select2" style="width: 100%" onchange="mostrar_info_apoderado_edi(this)">
+                <option value="">-- Seleccione --</option>';
+            if (count($lista_apoderados) > 0) {
+                $selected_apoderado = "";
+                foreach ($lista_apoderados as $lista) {
+                    if ($lista["codigo"] == $lista_solicitud[0]["apoderado"]) {
+                        $selected_apoderado = " selected ";
+                    } else {
+                        $selected_apoderado = "";
+                    }
+                    $html .= '<option value="' . $lista["codigo"] . '" ' . $selected_apoderado . '>' . $lista["tipo"] . ' - ' . $lista["dni"] . ' - ' . strtoupper($lista["nombre"]) . '</option>';
+                }
+            }
+            $html .= ' <option value="-1" >-- Otro --</option></select>';
+            $html .= '</div><div class="col-md-3" id="divEditarInfoApoderado_edi">
+                    <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#modal-editar-apoderado-edi" data-backdrop="static" data-alumno="' . $lista_solicitud[0]["aluId"] . '" data-info-apoderado="' . $lista_solicitud[0]["apoderado"] . '">Editar</button>
+                </div></div>
+                <div class="row space-div" id="detalleApoderado_edi">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Correo: </label>
+                    </div>
+                    <div class="col-md-4">' . $apoderado[0]["correo"] . '</div>
+                    <div class="col-md-2">
+                        <label>Teléfono: </label>
+                    </div>
+                    <div class="col-md-3">' . $apoderado[0]["telefono"] . '</div>
+                </div>';
+            $html .= '
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Entrevistador: </label>
+                    </div>
+                    <div class="col-md-4"><span>' . strtoupper($lista_solicitud[0]["usuario"]) . '</span></div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Sede: </label>
+                    </div>
+                    <div class="col-md-3"><span id="sede_estu_id">' . $lista_solicitud[0]["sede"] . '</span></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Motivo de la entrevista: </label>
+                    </div>
+                    <div class="col-md-4"><textarea class="form-control" rows="3" id="txtMotivo_edi" placeholder="">' . $lista_solicitud[0]["motivo"] . '</textarea>';
+            $html .= '  </div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Fecha y hora: </label>
+                    </div>
+                    <div class="col-md-3"><span>' . $lista_solicitud[0]["fecha"] . '</span></div>
+                </div>
+                <h5>II. INFORME QUE SE LE HARÁ LLEGAR AL PADRE/MADRE/APODERADO:</h5>
+                <div class="row space-div">
+                    <div class="col-md-12"><textarea class="form-control" rows="3" id="txtInforme_edi" placeholder="">' . $lista_solicitud[0]["informe"] . '</textarea></div>
+                </div>
+
+                <h5>III. DESARROLLO DE LA ENTREVISTA::</h5>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Planteamiento del padre, madre o apoderado: </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" rows="3" id="txtPlanPadre_edi" placeholder="">' . $lista_solicitud[0]["plan_padre"] . '</textarea></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Planteamiento del docente, tutor/a, psicólogo(a), director(a): </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" rows="3" id="txtPlanDocente_edi" placeholder="">' . $lista_solicitud[0]["plan_docente"] . '</textarea></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Acuerdos - Acciones a realizar por los padres: </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" id="txtAcuerdosPadres_edi" rows="3" placeholder="">' . $lista_solicitud[0]["acuerdos1"] . '</textarea></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Acuerdos - Acciones a realizar por el colegio: </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" id="txtAcuerdosColegio_edi" rows="3" placeholder="">' . $lista_solicitud[0]["acuerdos2"] . '</textarea></div>
+                </div>
+              </div>'
+                    . '<div class="row space-div">'
+                    . '<div class="col-md-5" style="margin-bottom: 0px;">'
+                    . '<div id="signature-pad-sub" class="signature-pad" style="margin-left: 20px;">
+                    <div class="description">Firma del padre, madre o apoderado</div>
+                    <div class="signature-pad--body">
+                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas1_sub"></canvas>
+                    </div>
+                   </div>
+                   <div style="margin-left: 20px;">
+                        <button type="button" class="btn btn-default" onclick="limpiar_firma();">Limpiar firma</button>
+                   </div>
+                   <div style="margin-left: 20px;" id="divApoderadoNombreDNI_edi">
+                       <label>' . strtoupper($apoderado[0]["nombre"]) . '<br/>' . $apoderado[0]["dni"] . '<label/>
+                   </div>'
+                    . '</div>'
+                    . '<div class="col-md-2" style="margin-bottom: 0px;">'
+                    . '</div>'
+                    . '<div class="col-md-5" style="margin-bottom: 0px;">'
+                    . '<div id="signature-pad-entrevistador-sub" class="signature-pad" >
+                    <div class="description">Firma del entrevistador</div>
+                    <div class="signature-pad--body">
+                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas2_sub"></canvas>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-default" onclick="limpiar_firma_entrevistador();">Limpiar firma</button>
+                   </div>
+                   <div style="margin-left: 20px;">
+                       <label>' . strtoupper($lista_solicitud[0]["usuario"]) . '<br/>' . $lista_solicitud[0]["dni"] . '<label/>
+                   </div>'
+                    . ' </div>'
+                    . '</div>';
+        }
+        $html .= '</div>';
+    }
+    echo $html;
+}
+
+function formulario_detalle_tipo_solicitud_edi() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $sm_tipo_sol = strip_tags(trim($_POST["sol_tipo"]));
+    $sm_sol_matricula = strip_tags(trim($_POST["sol_matricula"]));
+    $sm_sol_categoria = strip_tags(trim($_POST["sol_categoria"]));
+    $sm_sol_subcategoria = strip_tags(trim($_POST["sol_subcategoria"]));
+    $usuario_data = fnc_datos_usuario($conexion, p_usuario);
+    $matricula = fnc_alumno_matricula_detalle($conexion, $sm_sol_matricula);
+    $html = strtoupper($matricula[0]["alumno"]) . '***' . $matricula[0]["grado"] . "***";
+    if ($sm_tipo_sol === "1") {
+        $html .= '***';
+    } elseif ($sm_tipo_sol === "2") {
+        $lista_apoderados = fnc_lista_apoderados_de_alumno($conexion, $matricula[0]["aluId"], "");
+        $html .= '<option value="">-- Seleccione --</option>';
+        if (count($lista_apoderados) > 0) {
+            $selected_apoderado = "";
+            foreach ($lista_apoderados as $lista) {
+                $html .= '<option value="' . $lista["codigo"] . '" >' . $lista["tipo"] . ' - ' . $lista["dni"] . ' - ' . strtoupper($lista["nombre"]) . '</option>';
+            }
+        }
+        $html .= ' <option value="-1" >-- Otro --</option>***';
+    }
+    $html .= $matricula[0]["sede"] . "***" . str_replace(" - ", "<br/>", strtoupper($matricula[0]["alumno"])) . "***";
+    $html .= '<div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Correo: </label>
+                    </div>
+                    <div class="col-md-4"></div>
+                    <div class="col-md-2">
+                        <label>Teléfono: </label>
+                    </div>
+                    <div class="col-md-3"></div>';
+    echo $html;
+}
+
+function formulario_carga_info_apoderado_edi() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $alu_cod = strip_tags(trim($_POST["alu_cod"]));
+    $tip_apod = strip_tags(trim($_POST["tip_apod"]));
+    $html = "";
+    if ($tip_apod == "" || $tip_apod == "-1") {
+        $html = ' <div class="col-md-3" style="margin-bottom: 0px;">
+                    <label>Correo: </label>
+                  </div>
+                  <div class="col-md-4"><span></span></div>
+                  <div class="col-md-2">
+                     <label>Teléfono: </label>
+                  </div>
+                  <div class="col-md-3"><span></span></div>';
+        $html .= "********";
+    } else {
+        $apoderado = fnc_lista_apoderados_de_alumno($conexion, $alu_cod, $tip_apod);
+
+        if (count($apoderado) > 0) {
+            $html = ' <div class="col-md-3" style="margin-bottom: 0px;">
+                    <label>Correo: </label>
+                  </div>
+                  <div class="col-md-4"><span>' . $apoderado[0]["correo"] . '</span></div>
+                  <div class="col-md-2">
+                     <label>Teléfono: </label>
+                  </div>
+                  <div class="col-md-3"><span>' . $apoderado[0]["telefono"] . '</span></div>';
+
+            $html .= "****";
+            $html .= '<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#modal-editar-apoderado-edi" data-backdrop="static" '
+                    . ' data-alumno="' . $alu_cod . '" data-info-apoderado="' . $apoderado[0]["codigo"] . '">Editar</button>****<label>' . strtoupper($apoderado[0]["nombre"]) . '<br/>' . $apoderado[0]["dni"] . '</label>';
+        } else {
+            $html = ' <div class="col-md-3" style="margin-bottom: 0px;">
+                    <label>Correo: </label>
+                  </div>
+                  <div class="col-md-4"><span></span></div>
+                  <div class="col-md-2">
+                     <label>Teléfono: </label>
+                  </div>
+                  <div class="col-md-3"><span></span></div>';
+            $html .= "********";
+        }
+    }
+    echo $html;
+}
+
+function formulario_nuevo_apoderado_edi() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $alumno = strip_tags(trim($_POST["sm_alumno"]));
+    $tipos_apoderados = fnc_lista_tipos_apoderados($conexion, "");
+    $html = '<div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Tipo</label>
+            </div>
+            <div class="col-md-6">';
+    $html .= '<input type="hidden" id="txtAlumnoCodiN_edi" class="form-control" value="' . $alumno . '"/>';
+    $html .= '<select id="cbbTipoApoderadoN_edi" class="form-control" style="width: 100%" disabled>
+                ';
+    if (count($tipos_apoderados) > 0) {
+        $selected = "";
+        foreach ($tipos_apoderados as $lista) {
+            if ($lista["id"] == 3) {
+                $selected = " selected ";
+            } else {
+                $selected = "";
+            }
+            $html .= '<option value="' . $lista["id"] . '" ' . $selected . ' >' . $lista["nombre"] . '</option>';
+        }
+    }
+    $html .= '</select></div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>DNI</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtDniN_edi" class="form-control" style="width: 100%" maxlength="12" 
+                onkeypress="return solo_numeros(event);"/>
+            </div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Apellidos y nombres</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtNombresApoderadoN_edi" class="form-control" style="width: 100%;text-transform: uppercase;"
+                   onkeypress="return solo_letras(event);"/>
+            </div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Correo</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtCorreoApoderadoN_edi" type="text" class="form-control" style="width: 100%"/>
+            </div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Telefono</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtTelfApoderadoN_edi" type="text" class="form-control" style="width: 100%" maxlength="9" 
+                onkeypress="return solo_numeros(event);"/>
+            </div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Direcci&oacute;n</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtDireccionN_edi" type="text" class="form-control" style="width: 100%;text-transform: uppercase;"/>
+            </div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Distrito</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtDistritoN_edi" type="text" class="form-control" style="width: 100%;text-transform: uppercase;"
+                onkeypress="return solo_letras(event);"/>
+            </div>
+        </div>';
+    echo $html;
+}
+
+function formulario_editar_apoderado_edi() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $apod = strip_tags(trim($_POST["sm_apoderado"]));
+    $alumnoCod = strip_tags(trim($_POST["sm_alumno"]));
+    $html = "";
+    $apoderado = fnc_apoderado_del_alumno($conexion, $apod);
+    $tipos_apoderados = fnc_lista_tipos_apoderados($conexion, "");
+    if (count($apoderado) > 0) {
+        $html = '<div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Tipo</label>
+            </div>
+            <input id="txtAlumnCodigo_edi" type="hidden" class="form-control" value="' . $alumnoCod . '" />
+            <div class="col-md-6">';
+        $html .= '<select id="cbbTipoApoderado_edi" class="form-control select2" style="width: 100%" disabled>
+                ';
+        if (count($tipos_apoderados) > 0) {
+            $selected = "";
+            foreach ($tipos_apoderados as $lista) {
+                if ($lista["id"] == $apoderado[0]["tipo"]) {
+                    $selected = " selected ";
+                } else {
+                    $selected = "";
+                }
+                $html .= '<option value="' . $lista["id"] . '" ' . $selected . ' >' . $lista["nombre"] . '</option>';
+            }
+        }
+        $html .= '</select></div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Nombres</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtNombresApoderado_edi" class="form-control select2" style="width: 100%" disabled value="' . $apoderado[0]["nombres"] . '" />
+            </div>
+        </div>
+        
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>DNI</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtDniApoderado_edi" type="text" class="form-control select2" style="width: 100%" value="' . $apoderado[0]["dni"] . '" 
+                    maxlength="12" onkeypress="return solo_numeros(event);"/>
+            </div>
+        </div>
+        <input id="txtApoderadoCod_edi" type="hidden" class="form-control select2" style="width: 100%" value="' . $apoderado[0]["id"] . '" />
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Correo</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtCorreoApoderado_edi" type="text" class="form-control select2" style="width: 100%" value="' . $apoderado[0]["correo"] . '" />
+            </div>
+        </div>
+        
+        <div class="row space-div">
+            <div class="col-md-3" style="margin-bottom: 0px;">
+              <label>Telefono</label>
+            </div>
+            <div class="col-md-6">
+                <input id="txtTelfApoderado_edi" type="text" class="form-control select2" style="width: 100%" value="' . $apoderado[0]["telefono"] . '" 
+                    maxlength="9" onkeypress="return solo_numeros(event);"/>
+            </div>
+        </div>';
+    }
+    echo $html;
+}
+
+function operacion_editar_apoderado_edi() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $alumnoCod = strip_tags(trim($_POST["a_txtAlumnCodigo_edi"]));
+    $codigo = strip_tags(trim($_POST["a_txtApoderadoCod_edi"]));
+    $dni = strip_tags(trim($_POST["a_txtDniApoderado_edi"]));
+    $correo = strip_tags(trim($_POST["a_txtCorreoApoderado_edi"]));
+    $telefono = strip_tags(trim($_POST["a_txtTelfApoderado_edi"]));
+    $html = "";
+    $valida_dni = fnc_validar_dni_apoderado($conexion, "", $codigo, $dni);
+    if (count($valida_dni) > 0) {
+        $html .= "0***El número de documento ya esta registrado, favor de ingresar otro.*********";
+    } else {
+        $htmlSelect = "";
+        $apoderado = fnc_apoderado_del_alumno($conexion, $codigo);
+        if (trim($apoderado[0]["dni"]) !== trim($dni) || trim($apoderado[0]["correo"]) !== trim($correo) || trim($apoderado[0]["telefono"]) !== trim($telefono)) {
+            $str_cadena = "('" . $codigo . "',NOW(),'" . $apoderado[0]["correo"] . "','" . $apoderado[0]["telefono"] . "','1')";
+            $resp = fnc_registrar_apoderado_historico($conexion, $str_cadena);
+            if ($resp) {
+                fnc_modificar_apoderado($conexion, $codigo, $dni, $correo, $telefono);
+            }
+        }
+        $html .= "1***Apoderado editado correctamente.***";
+        $lista_apoderados = fnc_lista_apoderados_de_alumno($conexion, $alumnoCod, "");
+        if (count($lista_apoderados) > 0) {
+            $selected = "";
+            $htmlSelect .= '<option value="">-- Seleccione --</option>';
+            foreach ($lista_apoderados as $lista) {
+                if ($lista["codigo"] == $codigo) {
+                    $selected = " selected ";
+                } else {
+                    $selected = "";
+                }
+                $htmlSelect .= '<option value="' . $lista["codigo"] . '" ' . $selected . '>' . $lista["tipo"] . ' - ' . $lista["dni"] . ' - ' . $lista["nombre"] . '</option>';
+            }
+            $htmlSelect .= '<option value="-1" >-- Otro --</option>';
+        } else {
+            $htmlSelect = "";
+        }
+
+        $html .= $htmlSelect . "***";
+
+        $html .= ' <div class="col-md-3" style="margin-bottom: 0px;">
+                    <label>Correo: </label>
+                  </div>
+                  <div class="col-md-4"><span>' . $correo . '</span></div>
+                  <div class="col-md-2">
+                     <label>Teléfono: </label>
+                  </div>
+                  <div class="col-md-3"><span>' . $telefono . '</span></div>***';
+        $html .= '<label>' . strtoupper($apoderado[0]["nombres"]) . '<br>' . $dni . '</label>';
+    }
+    echo $html;
+}
+
+function operacion_registrar_apoderado_edi() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $codigo = strip_tags(trim($_POST["a_txtAlumnoCodiN_edi"]));
+    $tipo_apoderado = strip_tags(trim($_POST["a_cbbTipoApoderadoN_edi"]));
+    $dni = strip_tags(trim($_POST["a_txtDniN_edi"]));
+    $nombres = strip_tags(trim($_POST["a_txtNombresApoderadoN_edi"]));
+    $correo = strip_tags(trim($_POST["a_txtCorreoApoderadoN_edi"]));
+    $telefono = strip_tags(trim($_POST["a_txtTelfApoderadoN_edi"]));
+    $direccion = strip_tags(trim($_POST["a_txtDireccionN_edi"]));
+    $distrito = strip_tags(trim($_POST["a_txtDistritoN_edi"]));
+    $html = "";
+    $valida_dni = fnc_validar_dni_apoderado($conexion, $codigo, "", $dni);
+    if (count($valida_dni) > 0) {
+        $html .= "0***El número de documento ya esta registrado, favor de ingresar otro.************";
+    } else {
+        $cadena = "('" . $codigo . "','" . $tipo_apoderado . "','" . strtoupper($nombres) . "','" .
+                $dni . "','" . trim($correo) . "','" . $telefono . "','" . strtoupper($direccion) . "','" . strtoupper($distrito) . "','1')";
+        $idApoderado = fnc_registrar_apoderado($conexion, $cadena);
+        if ($idApoderado) {
+            $htmlSelect = "";
+            $lista_apoderados = fnc_lista_apoderados_de_alumno($conexion, $codigo, "");
+            if (count($lista_apoderados) > 0) {
+                $selected = "";
+                $htmlSelect .= '<option value="">-- Seleccione --</option>';
+                foreach ($lista_apoderados as $lista) {
+                    if ($lista["codigo"] == $idApoderado) {
+                        $selected = " selected ";
+                    }
+                    $htmlSelect .= '<option value="' . $lista["codigo"] . '" ' . $selected . '>' . $lista["tipo"] . ' - ' . $lista["dni"] . ' - ' . $lista["nombre"] . '</option>';
+                }
+                $htmlSelect .= '<option value="-1" >-- Otro --</option>';
+            } else {
+                $htmlSelect = "";
+            }
+            $html_editarInfoApoderado = '<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#modal-editar-apoderado-sub" data-backdrop="static" data-alumno="' . $codigo . '" data-info-apoderado="' . $idApoderado . '">Editar</button>';
+
+            $html_detalle_apo = '<div class="col-md-3" style="margin-bottom: 0px;">
+                    <label>Correo: </label>
+                  </div>
+                  <div class="col-md-4"><span>' . trim($correo) . '</span></div>
+                  <div class="col-md-2">
+                     <label>Teléfono: </label>
+                  </div>
+                  <div class="col-md-3"><span>' . $telefono . '</span>
+                  </div>';
+            $html_apo_nombreDni = '<label>' . strtoupper($nombres) . '<br>' . $dni . '</label>';
+            $html = "1***Datos de Apoderado registrados correctamente***" . $htmlSelect . "***" . $html_editarInfoApoderado . "***" . $html_detalle_apo . "***" . $html_apo_nombreDni;
+        }
+    }
+    echo $html;
 }
