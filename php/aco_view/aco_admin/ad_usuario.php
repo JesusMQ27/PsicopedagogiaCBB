@@ -1,11 +1,14 @@
 <?php
 require_once '../../aco_conect/DB.php';
 require_once '../../aco_fun/aco_fun.php';
+session_start();
 $con = new DB(1111);
 $conexion = $con->connect();
 $nombre = $_POST["nombre_opcion"];
 $codigo = $_POST["codigo_menu"];
-$lista_usuarios = fnc_lista_usuarios($conexion, "");
+$perfil = $_SESSION["psi_user"]["perfCod"];
+$sedeCodigo = $_SESSION["psi_user"]["sedCod"];
+$lista_usuarios = fnc_lista_usuarios($conexion, "", $sedeCodigo);
 ?>
 
 <section class="content-header">
@@ -32,7 +35,10 @@ $lista_usuarios = fnc_lista_usuarios($conexion, "");
                 <div class="row">
                     <div class="col-2">
                         <input type="hidden" id="hdnCodiAU" value="<?php echo $codigo; ?>"/>
-                        <button type="submit" class="btn btn-primary btn-block" data-toggle="modal" data-target="#modal-nuevo-usuario" data-backdrop="static">Nuevo usuario</button>
+                        <?php if ($perfil === "1" || $perfil === "2") { ?>
+                            <button type="submit" class="btn btn-primary btn-block" data-toggle="modal" data-target="#modal-nuevo-usuario" data-backdrop="static">Nuevo usuario</button>
+                        <?php } ?>
+
                     </div>
                 </div><br>
                 <table id="tableUsuarios" class="table table-bordered table-hover">
@@ -45,7 +51,9 @@ $lista_usuarios = fnc_lista_usuarios($conexion, "");
                             <th>Nombres</th>
                             <th>Correo</th>
                             <th>Estado</th>
-                            <th>Opci&oacute;n</th>
+                            <?php if ($perfil === "1" || $perfil === "2") { ?>
+                                <th>Opci&oacute;n</th>
+                            <?php } ?>
                         </tr>
                     </thead>
                     <tbody>
@@ -61,12 +69,15 @@ $lista_usuarios = fnc_lista_usuarios($conexion, "");
                                         <td>" . $lista["numDoc"] . "</td>
                                         <td>" . $lista["fullnombre"] . "</td>
                                         <td>" . $lista["correo"] . "</td>
-                                        <td>" . $lista["estado_nombre"] . "</td>
-                                        <td align='center'>"
-                                    . "<i class='nav-icon fas fa-edit naranja' title='Editar' data-toggle='modal' data-target='#modal-editar-usuario' data-backdrop='static' data-usuario='" . $usuarioCod . "'></i>&nbsp;&nbsp;"
-                                    . "<i class='nav-icon fas fa-trash rojo' title='Eliminar' data-toggle='modal' data-target='#modal-eliminar-usuario' data-backdrop='static' data-usuario='" . $usuarioCod . "'></i>&nbsp;&nbsp;"
-                                    . "<i class='nav-icon fas fa-paper-plane azul' title='Cambiar contraseña' data-toggle='modal' data-target='#modal-cambiar-contrasena-usuario' data-backdrop='static' data-usuario='" . $usuarioCod . "'></i>" . "</td>
-                                      </tr>";
+                                        <td>" . $lista["estado_nombre"] . "</td>";
+                            if ($perfil === "1" || $perfil === "2") {
+                                $html .= "<td align='center'>"
+                                        . "<i class='nav-icon fas fa-edit naranja' title='Editar' data-toggle='modal' data-target='#modal-editar-usuario' data-backdrop='static' data-usuario='" . $usuarioCod . "'></i>&nbsp;&nbsp;"
+                                        . "<i class='nav-icon fas fa-trash rojo' title='Eliminar' data-toggle='modal' data-target='#modal-eliminar-usuario' data-backdrop='static' data-usuario='" . $usuarioCod . "'></i>&nbsp;&nbsp;"
+                                        . "<i class='nav-icon fas fa-paper-plane azul' title='Cambiar contraseña' data-toggle='modal' data-target='#modal-cambiar-contrasena-usuario' data-backdrop='static' data-usuario='" . $usuarioCod . "'></i>" .
+                                        "</td>";
+                            }
+                            $html .= "</tr>";
                             $num++;
                         }
                         echo $html;

@@ -11,187 +11,344 @@ use Dompdf\Dompdf;
 $con = new DB(1111);
 $conexion = $con->connect();
 $dompdf = new Dompdf();
-$s_solicitud = $_GET['val'];
-$eu_codgrupo = explode("-", $s_solicitud);
-$solicitud = explode("/", $eu_codgrupo[1]);
-$solicitud_data = fnc_solicitud_alumno($conexion, $solicitud[0]);
-$str_html = "";
-$html = "";
-$html2 = "";
+$s_solicitud = strip_tags(trim($_GET["sol_cod"]));
+$array = explode("-", $s_solicitud);
+$entre_sub = "";
+$html = '<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            .card-header:{
+                background-color: #007bff;
+                border-bottom: 1px solid rgba(0,0,0,.125);
+                padding: 0.75rem 1.25rem;
+                position: relative;
+                border-top-left-radius: 0.25rem;
+                border-top-right-radius: 0.25rem;
+            }
+            .label: {
+                font-weight:bold;
+            }
+            </style>
+        </head>
+        <body>';
 $nombre_pdf = "";
-if (count($solicitud_data) > 0) {
-    $html = "
-<style> 
-    .card {
-        position: relative;
-        display: -ms-flexbox;
-        display: flex;
-        -ms-flex-direction: column;
-        flex-direction: column;
-        min-width: 0;
-        word-wrap: break-word;
-        background-color: #fff;
-        background-clip: border-box;
-        border: 0 solid rgba(0,0,0,.125);
-        border-radius: 0.25rem;
-    }
-    .card-header{
-        border-bottom: 1px solid rgba(0,0,0,.125);padding: 0.15rem 0.30rem;
-        position: relative;border-top-left-radius: 0.25rem;
-        border-top-right-radius: 0.25rem;background-color: #007bff;color: #fff;
-    }
-    .row {
-        display: -ms-flexbox;
-        display: flex;
-        -ms-flex-wrap: wrap;
-        flex-wrap: wrap;
-    }
-    .space-div {
-        padding-bottom: 7px;
-    }
-    .col-md-3 {
-        -ms-flex: 0 0 25%;
-        flex: 0 0 25%;
-        max-width: 25%;
-    }
-    .col-md-9 {
-        -ms-flex: 0 0 75%;
-        flex: 0 0 75%;
-        max-width: 75%;
-    }
-    label {
-        margin-bottom: 0.5rem;
-        font-weight: 700;
-    }
-</style> ";
+if ($array[0] === "ent") {
+    $entre_sub = "Entrevista";
+} else {
+    $entre_sub = "Sub Entrevista";
+}
+$lista_solicitud = fnc_obtener_solicitud_x_codigo($conexion, $array[0], $array[1]);
 
-
-    $html .= '<div >
-        <div >
-           <h4 class="card-title w-100" style="text-align: center;">DETALLE DE SOLICITUD DE ENTREVISTA</h4>
-        </div>
-        <div>
-            <label>Tipo de Solicitud: </label>' . $solicitud_data[0]["entrevista"] . '
-        </div><br>' .
-            '<div >
-            <label>Categoria: </label><span>' . $solicitud_data[0]["categoria"] . '</span>
-       </div><br>
-       <div>
-            <label>Subcategoria: </label><span>' . $solicitud_data[0]["subcategoria"] . '</span>
-       </div><br>';
-    $html .= '<div class="card card-primary">';
-    if ($solicitud_data[0]["entreId"] === "1") {
+if (count($lista_solicitud) > 0) {
+    $tipos_entrevistas = fnc_lista_tipo_entrevistas($conexion, "");
+    $lista_categorias = fnc_lista_categorias($conexion, $lista_solicitud[0]["categoria"]);
+    $lista_subcategorias = fnc_lista_subcategorias($conexion, $lista_solicitud[0]["categoria"], $lista_solicitud[0]["subcategorgia"]);
+    /*    $html .= '<div class="card card-warning" id="divSubEntrevista_edi">'; */
+    if ($lista_solicitud[0]["ent_id"] === "1") {
         $nombre_pdf = "entrevista_estudiante";
-        $html2 = '<div class="card-header">
-                <h3 >FICHA DE ENTREVISTA A ESTUDIANTE</h3>
-              </div><br/><br/>
-              <div ><br/>
-                <h5>I. DATOS INFORMATIVOS:</h5>
-                    <div>
-                        <label>Nombre del estudiante: </label><span>' . $solicitud_data[0]["alumno"] . '</span>
-                    </div><br>
-                    <div>
-                        <label>Grado, sección y nivel: </label>
-                    <span>' . $solicitud_data[0]["grado"] . '</span>
-                    </div><br>
-                    <div >
-                        <label>Entrevistador: </label><span>' . $solicitud_data[0]["usuario"] . '</span>
-                    </div><br>
-                    <div class="col-md-2" style="margin-bottom: 0px;">
-                        <label>Sede: </label><span>' . $solicitud_data[0]["sede"] . '</span>
-                    </div><br>
-                    <div >
-                        <label>Motivo de la entrevista: </label><span>' . $solicitud_data[0]["motivo"] . '</span>
-                    </div><br>
-                    <div >
-                        <label>Fecha y hora: </label><span>' . $solicitud_data[0]["fecha"] . '</span>
-                    </div>
+        $html .= '<div>
+                <img src="../../php/aco_img/logo_2.png" width="128px" height="45px" style="float:left;position: relative;top: 0;left: 0;right: 0;margin: 0 auto;"/>
+            </div>
+            <div class="card-header" style="">
+                <h4 style="text-align:center;text-decoration: underline">FICHA DE ENTREVISTA A ESTUDIANTE</h4>
+              </div>
+              <div class="card-body">';
+        $html .= '<br/><div class="row space-div">
+            <table style="font-size:12px">
+                <tr>
+                    <td>C&oacute;digo de ' . $entre_sub . ': </td>
+                    <td>' . $lista_solicitud[0]["codigo"] . '</td>
+                </tr>
+                <tr>
+                    <td>Categoria: </td>
+                    <td>';
+        $html .= "<label>" . $lista_categorias[0]["nombre"] . "</label>";
+        $html .= '</td>
+                </tr>
+                <tr>
+                    <td>Subcategoria:  </td>
+                    <td>';
+        if (count($lista_subcategorias) > 0) {
+            $selected_subcate = "";
+            foreach ($lista_subcategorias as $lista) {
+                if ($lista["id"] === $lista_solicitud[0]["subcategorgia"]) {
+                    $selected_subcate = $lista["nombre"];
+                }
+            }
+            $html .= "<label>" . $selected_subcate . "</label>";
+        }
+        $html .= '</td>
+                </tr>
+                <tr>
+                    <td>Tipo de entrevista: </td>
+                    <td>';
+        if (count($tipos_entrevistas) > 0) {
+            $selected_tips = "";
+            foreach ($tipos_entrevistas as $lista) {
+                if ($lista["id"] === $lista_solicitud[0]["ent_id"]) {
+                    $selected_tips = $lista["nombre"];
+                }
+            }
+            $html .= "<label>" . $selected_tips . "</label>";
+        }
+        $html .= '</td>
+                </tr>
+            </table>
+        </div>';
+        $html .= '<h5>I. DATOS INFORMATIVOS:</h5>
+                <div class="row space-div">
+                <table style="font-size:12px">
+                    <tr>
+                        <td><label>Nombre del estudiante: </label></td>
+                        <td>' . strtoupper($lista_solicitud[0]["alumno"]) . '</td>
+                    </tr>
+                    <tr>
+                        <td><label>Grado, sección y nivel: </label></td>
+                        <td>' . $lista_solicitud[0]["grado"] . '</td>
+                    </tr>
+                    <tr>
+                        <td><label>Entrevistador: </label></td>
+                        <td>' . $lista_solicitud[0]["usuario"] . '</td>
+                    </tr>
+                    <tr>
+                        <td><label>Sede: </label></td>
+                        <td>' . $lista_solicitud[0]["sede"] . '</td>
+                    </tr>
+                    <tr>
+                        <td><label>Motivo de la entrevista: </label></td>
+                        <td>' . $lista_solicitud[0]["motivo"] . '</td>
+                    </tr>
+                    <tr>
+                        <td><label>Fecha y hora: </label></td>
+                        <td>' . $lista_solicitud[0]["fecha"] . '</td>
+                    </tr>
+                 </table>';
+        $html .= '</div>
                 <h5>II. DESARROLLO DE LA ENTREVISTA:</h5>
-                <div >
-                    <div >
-                        <label>Planteamiento del estudiante: </label><span>' . $solicitud_data[0]["plan_estu"] . '</span></div>
-                </div><br>
-                <div >
-                    <div >
-                        <label>Planteamiento del entrevistador(a): </label><span>' . $solicitud_data[0]["plan_entre"] . '</span></div>
-                </div><br>
-                <div>
-                    <div >
-                        <label>Acuerdos: </label><span>' . $solicitud_data[0]["acuerdos"] . '</span></div>
-                </div>
-              </div>';
-    } elseif ($solicitud_data[0]["entreId"] === "2") {
+                <div class="row space-div">
+                <table style="font-size:12px">
+                    <tr>
+                        <td><label>Planteamiento del estudiante: </label></td>
+                        <td>' . $lista_solicitud[0]["plan_estudiante"] . '</td>
+                    </tr>
+                    <tr>
+                        <td><label>Planteamiento del entrevistador(a): </label></td>
+                        <td>' . $lista_solicitud[0]["plan_entrevistador"] . '</td>
+                    </tr>
+                    <tr>
+                        <td><label>Acuerdos: </label></td>
+                        <td>' . $lista_solicitud[0]["acuerdos"] . '</td>
+                    </tr>
+                </table>
+              </div>'
+                . '<div class="row space-div">';
+        $imagen_soli = "";
+        if ($array[0] === "ent") {
+            $imagen_soli = fnc_obtener_firma_entrevista($conexion, $array[1], "1");
+        } else {
+            $imagen_soli = fnc_obtener_firma_subentrevista($conexion, $array[1], "1");
+        }
+        $imagen_soli2 = "";
+        if ($array[0] === "ent") {
+            $imagen_soli2 = fnc_obtener_firma_entrevista($conexion, $array[1], "2");
+        } else {
+            $imagen_soli2 = fnc_obtener_firma_subentrevista($conexion, $array[1], "2");
+        }
+        $html .= '<table style="text-align:center">
+                    <tr>
+                        <td>
+                            <img id="ruta_img1" src="' . "../../php/" . str_replace("../", "", $imagen_soli[0]["imagen"]) . '" style="width:50%" />
+                        </td>
+                        <td>
+                            <img id="ruta_img2" src="' . "../../php/" . str_replace("../", "", $imagen_soli2[0]["imagen"]) . '" style="width:50%"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px">------------------------------------------------------------------<br/>'
+                . str_replace(" - ", "<br/>", strtoupper($lista_solicitud[0]["alumno"])) .
+                '</td>
+                        <td style="font-size:12px">------------------------------------------------------------------<br/>' .
+                strtoupper($lista_solicitud[0]["usuario"]) . '<br/>' . $lista_solicitud[0]["dni"]
+                . '</td>
+                    </tr>
+                    </table>';
+        $html .= ''
+                . '</div>';
+    } elseif ($lista_solicitud[0]["ent_id"] === "2") {
         $nombre_pdf = "entrevista_padres";
-        $html2 = '<div class="card-header">
-                <h3 >FICHA DE ENTREVISTA A PADRES DE FAMILIA</h3>
-              </div><br/><br/>
-              <div><br/><br/><br/>
-                <h5>I. DATOS INFORMATIVOS:</h5>
-                <div>
-                     <label>Nombre del estudiante: </label><span>' . $solicitud_data[0]["alumno"] . '</span>
-                </div><br>
-                <div>
-                     <label>Grado, sección y nivel: </label><span>' . $solicitud_data[0]["grado"] . '</span>
-                </div><br>
-                <div>
-                    <label>Nombre del padre/madre/apoderado: </label>
-                    <span>';
-        if (trim($solicitud_data[0]["padre"]) === '' && trim($solicitud_data[0]["madre"]) === "") {
-            $html2 .= '';
-        } else if (trim($solicitud_data[0]["padre"]) === '' && trim($solicitud_data[0]["madre"]) != "") {
-            $html2 .= trim($solicitud_data[0]["padre"]) . trim($solicitud_data[0]["madre"]);
-        } else {
-            $html2 .= trim($solicitud_data[0]["padre"]) . "<br>" . trim($solicitud_data[0]["madre"]);
+        $lista_apoderados = fnc_lista_apoderados_de_alumno($conexion, $lista_solicitud[0]["aluId"], "");
+        $apoderado = fnc_lista_apoderados_de_alumno($conexion, $lista_solicitud[0]["aluId"], $lista_solicitud[0]["apoderado"]);
+        $html .= '<div>
+                <img src="../../php/aco_img/logo_2.png" width="128px" height="45px" style="float:left;position: relative;top: 0;left: 0;right: 0;margin: 0 auto;"/>
+            </div>
+            <div class="card-header" style="">
+                <h4 style="text-align:center;text-decoration: underline">FICHA DE ENTREVISTA A PADRES DE FAMILIA</h4>
+              </div>
+              <div class="card-body">';
+        $html .= '<br/><div class="row space-div">
+            <table style="font-size:12px">
+                <tr>
+                    <td>C&oacute;digo de ' . $entre_sub . ': </td>
+                    <td>' . $lista_solicitud[0]["codigo"] . '</td>
+                </tr>
+                <tr>
+                    <td>Categoria: </td>
+                    <td>';
+        $html .= "<label>" . $lista_categorias[0]["nombre"] . "</label>";
+        $html .= '</td>
+                </tr>
+                <tr>
+                    <td>Subcategoria:  </td>
+                    <td>';
+        if (count($lista_subcategorias) > 0) {
+            $selected_subcate = "";
+            foreach ($lista_subcategorias as $lista) {
+                if ($lista["id"] === $lista_solicitud[0]["subcategorgia"]) {
+                    $selected_subcate = $lista["nombre"];
+                }
+                $html .= "<label>" . $selected_subcate . "</label>";
+            }
         }
-        $html2 .= '</span>
-                   </div><br>
-                    <div>
-                        <label>Teléfono, correo: </label><span>';
-        if (trim($solicitud_data[0]["data_padre"]) === '' && trim($solicitud_data[0]["data_madre"]) === "") {
-            $html2 .= '';
-        } else if (trim($solicitud_data[0]["data_padre"]) === '' && trim($solicitud_data[0]["data_madre"]) != "") {
-            $html2 .= trim($solicitud_data[0]["data_padre"]) . trim($solicitud_data[0]["data_madre"]);
-        } else {
-            $html2 .= trim($solicitud_data[0]["data_padre"]) . "<br>" . trim($solicitud_data[0]["data_madre"]);
+        $html .= '</td>
+                </tr>
+                <tr>
+                    <td>Tipo de entrevista: </td>
+                    <td>';
+        if (count($tipos_entrevistas) > 0) {
+            $selected_tips = "";
+            foreach ($tipos_entrevistas as $lista) {
+                if ($lista["id"] === $lista_solicitud[0]["ent_id"]) {
+                    $selected_tips = $lista["nombre"];
+                }
+                $html .= "<label>" . $selected_tips . "</label>";
+            }
         }
-        $html2 .= '</span>
-                </div><br>
-                <div >
-                     <label>Entrevistador: </label><span>' . $solicitud_data[0]["usuario"] . '</span>
-                </div><br>
-                <div>
-                     <label>Sede: </label><span>' . $solicitud_data[0]["sede"] . '</span>
-                </div><br>
-                <div>
-                     <label>Motivo de la entrevista: </label><span>' . $solicitud_data[0]["motivo"] . '</span>'
-                . '</div><br>';
-        $html2 .= '<div >
-                        <label>Fecha y hora: </label><span>' . $solicitud_data[0]["fecha"] . '</span>
-                </div>
+        $html .= '</td>
+                </tr>
+            </table>
+        </div>';
+        $html .= '<h5>I. DATOS INFORMATIVOS:</h5>
+                <div class="row space-div">
+                <table style="font-size:12px">
+                    <tr>
+                        <td><label>Nombre del estudiante: </label></td>
+                        <td>' . strtoupper($lista_solicitud[0]["alumno"]) . '</td>
+                    </tr>
+                    <tr>
+                        <td><label>Grado, sección y nivel: </label></td>
+                        <td>' . $lista_solicitud[0]["grado"] . '</td>
+                    </tr>
+                    <tr>
+                        <td><label>Nombre del padre/madre/apoderado: </label></td>
+                        <td>';
+        if (count($lista_apoderados) > 0) {
+            $selected_apoderado = "";
+            foreach ($lista_apoderados as $lista) {
+                if ($lista["codigo"] == $lista_solicitud[0]["apoderado"]) {
+                    $selected_apoderado = $lista["tipo"] . ' - ' . $lista["dni"] . ' - ' . strtoupper($lista["nombre"]);
+                }
+                $html .= '<label> ' . $selected_apoderado . '' . '</label>';
+            }
+        }
+        $html .= '</td>
+                    </tr>
+                    <tr>
+                        <td><label>Correo: </label></td>
+                        <td>' . $apoderado[0]["correo"] . '</td>
+                    </tr>
+                    <tr>
+                        <td><label>Teléfono: </label></td>
+                        <td>' . $apoderado[0]["telefono"] . '</td>
+                    </tr>
+                    <tr>
+                        <td><label>Entrevistador: </label></td>
+                        <td>' . strtoupper($lista_solicitud[0]["usuario"]) . '</td>
+                    </tr>
+                    <tr>
+                        <td><label>Sede: </label></td>
+                        <td>' . $lista_solicitud[0]["sede"] . '</td>
+                    </tr>
+                    <tr>
+                        <td><label>Motivo de la entrevista: </label></td>
+                        <td>' . $lista_solicitud[0]["motivo"] . '</td>
+                    </tr>
+                    <tr>
+                        <td><label>Fecha y hora: </label></td>
+                        <td>' . $lista_solicitud[0]["fecha"] . '</td>
+                    </tr>
+                 </table>
+               </div>';
+
+        $html .= '               
                 <h5>II. INFORME QUE SE LE HARÁ LLEGAR AL PADRE/MADRE/APODERADO:</h5>
-                <div>
-                    <div ><span>' . $solicitud_data[0]["informe"] . '</span>
+                <div class="row space-div" style="font-size:12px">
+                    <label>' . $lista_solicitud[0]["informe"] . '</label>
                 </div>
                 <h5>III. DESARROLLO DE LA ENTREVISTA::</h5>
-                <div>
-                     <label>Planteamiento del padre, madre o apoderado: </label><span >' . $solicitud_data[0]["plan_padre"] . '</span>
-                </div><br>
-                <div >
-                     <label>Planteamiento del docente, tutor/a, psicólogo(a), director(a): </label><span>' . $solicitud_data[0]["plan_docen"] . '</span>
-                </div><br>
-                <div >
-                     <label>Acuerdos - Acciones a realizar por los padres: </label><span>' . $solicitud_data[0]["acuerdos1"] . '</span>
-                </div><br>
-                <div>
-                    <label>Acuerdos - Acciones a realizar por el colegio: </label><span>' . $solicitud_data[0]["acuerdos2"] . '</span>
-                </div>
+                <div class="row space-div">
+                  <table style="font-size:12px">
+                    <tr>
+                        <td><label>Planteamiento del padre, madre o apoderado: </label></td>
+                        <td>' . $lista_solicitud[0]["plan_padre"] . '</td>
+                    </tr>
+                    <tr>
+                        <td><label>Planteamiento del docente, tutor/a, psicólogo(a), director(a): </label></td>
+                        <td>' . $lista_solicitud[0]["plan_docente"] . '</td>
+                    </tr>
+                    <tr>
+                        <td><label>Acuerdos - Acciones a realizar por los padres: </label></td>
+                        <td>' . $lista_solicitud[0]["acuerdos1"] . '</td>
+                    </tr>
+                    <tr>
+                        <td><label>Acuerdos - Acciones a realizar por el colegio: </label></td>
+                        <td>' . $lista_solicitud[0]["acuerdos2"] . '</td>
+                    </tr>
+                </table>
               </div>';
+        $html .= '<div class="row space-div">';
+        $imagen_soli = "";
+        if ($array[0] === "ent") {
+            $imagen_soli = fnc_obtener_firma_entrevista($conexion, $array[1], "1");
+        } else {
+            $imagen_soli = fnc_obtener_firma_subentrevista($conexion, $array[1], "1");
+        }
+        $imagen_soli2 = "";
+        if ($array[0] === "ent") {
+            $imagen_soli2 = fnc_obtener_firma_entrevista($conexion, $array[1], "2");
+        } else {
+            $imagen_soli2 = fnc_obtener_firma_subentrevista($conexion, $array[1], "2");
+        }
+        $html .= '<table style="text-align:center">
+                    <tr>
+                        <td>
+                            <img id="ruta_img1" src="' . "../../php/" . str_replace("../", "", $imagen_soli[0]["imagen"]) . '" style="width:50%" />
+                        </td>
+                        <td>
+                            <img id="ruta_img2" src="' . "../../php/" . str_replace("../", "", $imagen_soli2[0]["imagen"]) . '" style="width:50%"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-size:12px">------------------------------------------------------------------<br/>'
+                . str_replace(" - ", "<br/>", strtoupper($lista_solicitud[0]["alumno"])) .
+                '</td>
+                        <td style="font-size:12px">------------------------------------------------------------------<br/>' .
+                strtoupper($lista_solicitud[0]["usuario"]) . '<br/>' . $lista_solicitud[0]["dni"]
+                . '</td>
+                    </tr>
+                    </table>';
+        $html .= ''
+                . '</div>';
     }
+    //</div>
+    $html .= ''
+            . '</body>
+</html>';
 }
-$str_html = $html . $html2 . "</div>";
-//echo $str_html;
-$dompdf->loadHtml($str_html);
+//echo $html;
+$dompdf->loadHtml($html);
 $dompdf->setPaper('A4', 'lnandscape');
 $dompdf->render();
 $pdf_nombre = $nombre_pdf . "_" . fnc_generate_random_string(5) . ".pdf";
-$dompdf->stream($pdf_nombre);
+$dompdf->stream($pdf_nombre, array("Attachment" => 1));

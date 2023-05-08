@@ -7,23 +7,32 @@ $conexion = $con->connect();
 $nombre = $_POST["nombre_opcion"];
 $codigo = $_POST["codigo_menu"];
 $codigo_user = $_SESSION["psi_user"]["id"];
-$userData = fnc_datos_usuario($conexion, $codigo_user);
-$sedesData = fnc_sedes_x_perfil($conexion, $userData[0]["sedeId"]);
-$perfilId = $userData[0]["perfil"];
+$perfil = $_SESSION["psi_user"]["perfCod"];
+$sedeCodigo = $_SESSION["psi_user"]["sedCod"];
+
+$sedesData = fnc_sedes_x_perfil($conexion, $sedeCodigo);
 $fechas = fnc_fechas_rango($conexion);
 $sedeCodi = "";
 $usuarioCodi = "";
-if ($perfilId === "1" || $perfilId === "2") {
+$privacidad = "";
+if ($sedeCodigo == "1" && ($perfil == "1" || $perfil == "5")) {
     $sedeCodi = "0";
     $usuarioCodi = "";
-} else if ($perfilId === "3" || $perfilId === "4") {
-    $sedeCodi = $sedesData[0]["id"];
-    $usuarioCodi = "";
-} else if ($perfilId === "2") {
-    $sedeCodi = $sedesData[0]["id"];
-    $usuarioCodi = $userData[0]["usuCodi"];
+    $privacidad = "0,1";
+} else {
+    $privacidad = "0";
+    if ($perfil === "1") {
+        $sedeCodi = $sedeCodigo;
+        $usuarioCodi = "";
+    } elseif ($perfil === "2") {
+        $sedeCodi = $sedeCodigo;
+        $usuarioCodi = $codigo_user;
+    } else {
+        $sedeCodi = $sedeCodigo;
+        $usuarioCodi = "";
+    }
 }
-$lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["date_ayer"], $fechas[0]["date_hoy"], $usuarioCodi);
+$lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["date_ayer"], $fechas[0]["date_hoy"], $usuarioCodi, $privacidad);
 ?>
 
 <section class="content-header">
@@ -133,10 +142,11 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                                         <td>" . $lista["estado"] . "</td>
                                         <td align='center'>"
                                             . "<i class='nav-icon fas fa-plus green' title='Nueva Subentrevista' data-toggle='modal' data-target='#modal-subentrevista' data-backdrop='static' data-entrevista='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
-                                            . "<a href='php/aco_php/psi_generar_pdf.php?val=$solicitudCod'><i class='nav-icon fas fa-file-pdf rojo' title='Descargar'></i></a>&nbsp;&nbsp;&nbsp;"
+                                            . "<i class='nav-icon fas fa-file-pdf rojo' title='Descargar' data-toggle='modal' data-target='#modal-descargar' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
                                             . "<i class='nav-icon fas fa-info-circle celeste' title='Detalle' data-toggle='modal' data-target='#modal-detalle-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "' data-grupo_nombre='" . $lista["id"] . "'></i>&nbsp;&nbsp;&nbsp;"
                                             . "<i class='nav-icon fas fa-edit naranja' title='Editar' data-toggle='modal' data-target='#modal-editar-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
-                                            . "<i class='nav-icon fas fa-trash rojo' title='Eliminar' data-toggle='modal' data-target='#modal-eliminar-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;" .
+                                            . "<i class='nav-icon fas fa-trash rojo' title='Eliminar' data-toggle='modal' data-target='#modal-eliminar-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
+                                            . "<i class='nav-icon fas fa-paper-plane azul' title='Enviar al correo' data-toggle='modal' data-target='#modal-enviar-solicitud' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;" .
                                             "</tr>";
                                     $num++;
                                 }
@@ -304,7 +314,7 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
          ">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Detalle de solicitud de entrevista </h4>
+                <h4 class="modal-title">Detalle de solicitud </h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -315,9 +325,9 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
                 <div style="float: right">
                     <label></label>
-                    <button type="button" id="btnImprimirSolicitud" class="btn btn-primary swalDefaultError" 
+                    <!--<button type="button" id="btnImprimirSolicitud" class="btn btn-primary swalDefaultError" 
                             onclick="return imprimir_ficha_entrevista();"
-                            >Imprimir</button>
+                            >Imprimir</button>-->
                 </div>
             </div>
         </div>
@@ -402,7 +412,7 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
 </div>
 
 <div class="modal fade" id="modal-eliminar-solicitud-alumno" role="dialog" aria-hidden="true" aria-labelledby="modal-eliminar-solicitud-alumno">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog" style="max-width: 60%;">
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title">Eliminar solicitud</h4>
@@ -424,11 +434,11 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
     </div>
     <!-- /.modal-dialog -->
 </div>
-<div class="modal fade" id="modal-activar-carga-alumno" role="dialog" aria-hidden="true" aria-labelledby="modal-activar-carga-alumno">
-    <div class="modal-dialog modal-lg">
+<div class="modal fade" id="modal-descargar" role="dialog" aria-hidden="true" aria-labelledby="modal-descargar">
+    <div class="modal-dialog" style="max-width: 90%;">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Activar carga de Alumnos</h4>
+                <h4 class="modal-title">Descargar PDF</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -439,7 +449,6 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
                 <div style="float: right">
                     <label></label>
-                    <button type="button" id="btnActivarCargaAlumno" class="btn btn-primary swalDefaultError" onclick="return activar_carga_alumnos()">Activar carga Alumnos</button>
                 </div>
             </div>
         </div>
@@ -447,6 +456,30 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
     </div>
     <!-- /.modal-dialog -->
 </div>
+<div class="modal fade" id="modal-enviar-solicitud" role="dialog" aria-hidden="true" aria-labelledby="modal-enviar-solicitud">
+    <div class="modal-dialog" style="max-width: 60%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Enviar al correo</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                <div style="float: right">
+                    <label></label>
+                    <button type="button" id="btnEnviarSolicitudAlumno" class="btn btn-primary swalDefaultError" onclick="return enviar_solicitud()">Enviar solicitud</button>
+                </div>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
 <script>
     $(function () {
         $("#fecha1").daterangepicker({
@@ -559,6 +592,19 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
             var solicitud = button.data('solicitud');
             mostrar_eliminar_solicitud(modal, solicitud);
         });
+        $('#modal-descargar').on('show.bs.modal', function (event) {
+            var modal = $(this);
+            var button = $(event.relatedTarget);
+            var solicitud = button.data('solicitud');
+            mostrar_descargar_solicitud(modal, solicitud);
+        });
+        $('#modal-enviar-solicitud').on('show.bs.modal', function (event) {
+            var modal = $(this);
+            var button = $(event.relatedTarget);
+            var solicitud = button.data('solicitud');
+            mostrar_enviar_solicitud(modal, solicitud);
+        });
+        
 
         $("#tableSolicitudesRegistradas").DataTable({
             "responsive": true,

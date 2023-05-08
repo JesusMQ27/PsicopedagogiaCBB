@@ -30,6 +30,7 @@ $s_planDocente = strip_tags(trim($_POST["s_planDocente"]));
 $s_acuerdosPadres = strip_tags(trim($_POST["s_acuerdosPadres"]));
 $s_acuerdosColegio = strip_tags(trim($_POST["s_acuerdosColegio"]));
 $s_apoderado = strip_tags(trim($_POST["s_apoderado"]));
+$s_privacidad = strip_tags(trim($_POST["s_privacidad"]));
 $s_img1 = $_POST['s_dataURL1'];
 $s_img2 = $_POST['s_dataURL2'];
 
@@ -37,7 +38,7 @@ try {
     $sol_codigo = "ent_" . $s_docAlumno . "_" . fnc_generate_random_string(6);
     $cadena = "('" . $sol_codigo . "','" . $sol_matricula . "','" . $codigo_usuario . "','" . $s_solicitud_tipo . "','" . $s_subcategoria .
             "','" . $s_motivo . "',NOW(),'" . $s_sede . "','" . $s_planEstudiante . "','" . $s_planEntrevistador . "','"
-            . $s_acuerdos . "','" . $s_informe . "','" . $s_planPadre . "','" . $s_planDocente . "','" . $s_acuerdosPadres . "','" . $s_acuerdosColegio . "','" . $s_apoderado . "','1')";
+            . $s_acuerdos . "','" . $s_informe . "','" . $s_planPadre . "','" . $s_planDocente . "','" . $s_acuerdosPadres . "','" . $s_acuerdosColegio . "','" . $s_apoderado . "','" . $s_privacidad . "','1')";
     $solicitud_id = fnc_registrar_solicitud_estudiante($conexion, $cadena);
     if ($solicitud_id) {
         if (strpos($s_img1, 'data:image/png;base64') === 0) {
@@ -51,7 +52,7 @@ try {
             }
             if (file_put_contents($file, $data)) {
                 $cadena_imag1 = "('" . $solicitud_id . "','" . $sol_matricula . "','" . $psi_usuario . "','" . $s_apoderado .
-                        "','" . $file . "',NOW(),'1')";
+                        "','" . $file . "',NOW(),'1','1')";
                 fnc_registrar_solicitud_firmas($conexion, $cadena_imag1);
             } else {
                 echo "***0***Error al registrar la imagen del entrevistado.***<br/>";
@@ -67,7 +68,7 @@ try {
 
             if (file_put_contents($file2, $data2)) {
                 $cadena_imag2 = "('" . $solicitud_id . "','" . $sol_matricula . "','" . $psi_usuario . "','" . $s_apoderado .
-                        "','" . $file2 . "',NOW(),'1')";
+                        "','" . $file2 . "',NOW(),'2','1')";
                 fnc_registrar_solicitud_firmas($conexion, $cadena_imag2);
             } else {
                 echo "***0***Error al registrar la imagen del entrevistador.***<br/>";

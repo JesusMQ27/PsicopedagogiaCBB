@@ -8,7 +8,11 @@ require_once '../../php/aco_fun/aco_fun.php';
 
 session_start();
 $psi_usuario = $_SESSION["psi_user"]["id"];
+$perfil = $_SESSION["psi_user"]["perfCod"];
+$sedeCodigo = $_SESSION["psi_user"]["sedCod"];
 define("p_usuario", $psi_usuario);
+define("p_perfil", $perfil);
+define("p_sede", $sedeCodigo);
 
 if (isset($_POST['opcion'])) {
     $opcion = $_POST['opcion'];
@@ -20,7 +24,13 @@ function formulario_registro_nuevo_usuario() {
     $conexion = $con->connect();
     $l_tipo_usuarios = fnc_lista_tipo_usuarios($conexion, "", "");
     $l_tipo_documentos = fnc_lista_tipo_documentos($conexion, "");
-    $l_sedes = fnc_lista_sede($conexion, "");
+    $str_sede = "";
+    if (p_sede === "1") {
+        $str_sede = "";
+    } else {
+        $str_sede = p_sede;
+    }
+    $l_sedes = fnc_lista_sede($conexion, $str_sede);
     ?>
     <div class="row space-div">
         <div class="col-md-6" style="margin-bottom: 0px;">
@@ -136,10 +146,16 @@ function formulario_editar_usuario() {
     $eu_codigo = strip_tags(trim($_POST["u_e_codigo"]));
     $eu_cod1 = explode("-", $eu_codigo);
     $eu_codi = explode("/", $eu_cod1[1]);
-    $usuario_dta = fnc_lista_usuarios($conexion, $eu_codi[0]);
+    $usuario_dta = fnc_lista_usuarios($conexion, $eu_codi[0], "");
     $l_tipo_usuarios = fnc_lista_tipo_usuarios($conexion, "", "");
     $l_tipo_documentos = fnc_lista_tipo_documentos($conexion, "");
-    $l_sedes = fnc_lista_sede($conexion, "");
+    $str_sede = "";
+    if (p_sede === "1") {
+        $str_sede = "";
+    } else {
+        $str_sede = p_sede;
+    }
+    $l_sedes = fnc_lista_sede($conexion, $str_sede);
     ?>
     <div class="row space-div">
         <div class="col-md-6" style="margin-bottom: 0px;">
@@ -322,7 +338,7 @@ function operacion_editar_usuario() {
     $u_estadoEdi = strip_tags(trim($_POST["u_estadoEdi"]));
 
     $valicant_ndoced = fnc_lista_tipo_documentos($conexion, $u_tipoDocEdi);
-    $usuario_dta = fnc_lista_usuarios($conexion, $u_codiUsuIdEdi);
+    $usuario_dta = fnc_lista_usuarios($conexion, $u_codiUsuIdEdi, "");
     $boolean = true;
     if (count($valicant_ndoced) > 0) {
         if ($valicant_ndoced[0]["cantidad"] * 1 !== strlen($u_numDocEdi) * 1) {
@@ -423,7 +439,7 @@ function formulario_cambiar_clave_usuario() {
     $eu_codigo = strip_tags(trim($_POST["u_cc_codigo"]));
     $eu_cod1 = explode("-", $eu_codigo);
     $eu_codi = explode("/", $eu_cod1[1]);
-    $usuario_dta = fnc_lista_usuarios($conexion, $eu_codi[0]);
+    $usuario_dta = fnc_lista_usuarios($conexion, $eu_codi[0], "");
     $str_nombre = "";
     if (count($usuario_dta) > 0) {
         $str_nombre = $usuario_dta[0]["nombres"] . " " . $usuario_dta[0]["paterno"] . " " . $usuario_dta[0]["materno"];
@@ -1244,7 +1260,7 @@ function load_modal_carga_alumnos() {
     $count2 = 0;
     $count_t = 0;
     $html = "<input type='hidden' id='hdnNumeral' value='" . $codigo . "'><div class='col-md-12 table-responsive' id='divPreCargaAlumnos' >"
-            . "<table id='tablePreCargaAlumnos' class='table' style='font-size: 13px;width:100% !important'>"
+            . "<table id='tablePreCargaAlumnos' class='table' style='font-size: 13px;width:100% '>"
             . "<thead>"
             . "<th>Nro.</th>"
             . "<th>Cod. Alumno</th>"
@@ -1419,7 +1435,7 @@ function formulario_detalle_grupo() {
     $lista = func_lista_grupo_detalle($conexion, $grupo_codi[0]);
     $aux = 1;
     $html = "<div class='col-md-12 table-responsive' id='divGrupoDetalle' >"
-            . "<table id='tableGrupoDetalle' class='table' style='font-size: 13px;width:100% !important'>"
+            . "<table id='tableGrupoDetalle' class='table' style='font-size: 13px;width:100% '>"
             . "<thead>"
             . "<th>Nro.</th>"
             . "<th>Cod. Alumno</th>"
@@ -1559,7 +1575,7 @@ function load_modal_carga_usuarios() {
     $count2 = 0;
     $count_correos = 0;
     $html = "<input type='hidden' id='hdnNumeralUsu' value='" . $codigo . "'><div class='col-md-12 table-responsive' id='divPreCargaAlumnos' >"
-            . "<table id='tablePreCargaUsuarios' class='table' style='font-size: 13px;width:100% !important'>"
+            . "<table id='tablePreCargaUsuarios' class='table' style='font-size: 13px;width:100% '>"
             . "<thead>"
             . "<th>Nro.</th>"
             . "<th>Tipo Personal</th>"
@@ -1644,7 +1660,7 @@ function formulario_detalle_grupo_usuarios() {
     $lista = func_lista_grupo_detalle_usuarios($conexion, $grupo_codi[0]);
     $aux = 1;
     $html = "<div class='col-md-12 table-responsive' id='divGrupoDetalleUsuarios' >"
-            . "<table id='tableGrupoDetalleUsuarios' class='table' style='font-size: 13px;width:100% !important'>"
+            . "<table id='tableGrupoDetalleUsuarios' class='table' style='font-size: 13px;width:100% '>"
             . "<thead>"
             . "<th>Nro.</th>"
             . "<th>Tipo Personal</th>"
@@ -1877,6 +1893,13 @@ function formulario_detalle_tipo_solicitud() {
               </div>
               <div class="card-body">
                 <h5>I. DATOS INFORMATIVOS:</h5>
+                <div class="row space-div"> 
+                    <div class="col-md-12 icheck-success d-inline">
+                        <label for="checkPrivacidad"> PRIVACIDAD:
+                        </label>&nbsp;&nbsp;&nbsp;
+                        <input type="checkbox" id="checkPrivacidad" style="transform : scale(1.8);">
+                    </div>
+                </div>
                 <div class="row space-div">
                     <div class="col-md-3" style="margin-bottom: 0px;">
                         <label>Nombre del estudiante: </label>
@@ -1967,6 +1990,13 @@ function formulario_detalle_tipo_solicitud() {
               </div>
               <div class="card-body">
                 <h5>I. DATOS INFORMATIVOS:</h5>
+                <div class="row space-div"> 
+                    <div class="col-md-12 icheck-success d-inline">
+                        <label for="checkPrivacidad"> PRIVACIDAD:
+                        </label>&nbsp;&nbsp;&nbsp;
+                        <input type="checkbox" id="checkPrivacidad" style="transform : scale(1.8);">
+                    </div>
+                </div>
                 <div class="row space-div">
                     <input type="hidden" id="txtAlumCodig" value="' . $matricula[0]["aluId"] . '"/>
                     <div class="col-md-3" style="margin-bottom: 0px;">
@@ -2402,224 +2432,92 @@ function formulario_detalle_solicitud() {
     $con = new DB(1111);
     $conexion = $con->connect();
     $s_solicitud = strip_tags(trim($_POST["s_solicitud"]));
-    $eu_codgrupo = explode("-", $s_solicitud);
-    $solicitud = explode("/", $eu_codgrupo[1]);
-    $solicitud_data = fnc_solicitud_alumno($conexion, $solicitud[0]);
-    $html = "";
-    $html2 = "";
-    if (count($solicitud_data) > 0) {
-        $html = '<div class = "row space-div">
-        <div class = "col-md-3" style = "margin-bottom: 0px;">
-        <label>Tipo de Solicitud: </label>
-        </div>
-        <div class = "col-md-9"><span>' . $solicitud_data[0]["entrevista"] . '</span></div>
-        </div>' .
-                '<div class = "row space-div">
-        <div class = "col-md-3" style = "margin-bottom: 0px;">
-        <label>Categoria: </label>
-        </div>
-        <div class = "col-md-9"><span>' . $solicitud_data[0]["categoria"] . '</span></div>
-        </div>' .
-                '<div class = "row space-div">
-        <div class = "col-md-3" style = "margin-bottom: 0px;">
-        <label>Subcategoria: </label>
-        </div>
-        <div class = "col-md-9"><span>' . $solicitud_data[0]["subcategoria"] . '</span></div>
-        </div>';
-        $html .= '<div class = "card card-primary">';
-        if ($solicitud_data[0]["entreId"] === "1") {
-            $html2 = '<div class = "card-header">
-        <h3 class = "card-title">FICHA DE ENTREVISTA A ESTUDIANTE</h3>
-        </div>
-        <div class = "card-body">
-        <h5>I. DATOS INFORMATIVOS:</h5>
-        <div class = "row space-div">
-        <div class = "col-md-3" style = "margin-bottom: 0px;">
-        <label>Nombre del estudiante: </label>
-        </div>
-        <div class = "col-md-4"><span>' . $solicitud_data[0]["alumno"] . '</span></div>
-        <div class = "col-md-2" style = "margin-bottom: 0px;">
-        <label>Grado, sección y nivel: </label>
-        </div>
-        <div class = "col-md-3"><span>' . $solicitud_data[0]["grado"] . '</span></div>
-        </div>
-        <div class = "row space-div">
-        <div class = "col-md-3" style = "margin-bottom: 0px;">
-        <label>Entrevistador: </label>
-        </div>
-        <div class = "col-md-4"><span>' . $solicitud_data[0]["usuario"] . '</span></div>
-        <div class = "col-md-2" style = "margin-bottom: 0px;">
-        <label>Sede: </label>
-        </div>
-        <div class = "col-md-3"><span>' . $solicitud_data[0]["sede"] . '</span></div>
-        </div>
-        <div class = "row space-div">
-        <div class = "col-md-3" style = "margin-bottom: 0px;">
-        <label>Motivo de la entrevista: </label>
-        </div>
-        <div class = "col-md-4"><span>' . $solicitud_data[0]["motivo"] . '</span>
-        </div>
-        <div class = "col-md-2" style = "margin-bottom: 0px;">
-        <label>Fecha y hora: </label>
-        </div>
-        <div class = "col-md-3"><span>' . $solicitud_data[0]["fecha"] . '</span></div>
-        </div>
-        <h5>II. DESARROLLO DE LA ENTREVISTA:</h5>
-        <div class = "row space-div">
-        <div class = "col-md-3" style = "margin-bottom: 0px;">
-        <label>Planteamiento del estudiante: </label>
-        </div>
-        <div class = "col-md-9"><textarea class = "form-control" rows = "3" placeholder = "" disabled>' . $solicitud_data[0]["plan_estu"] . '</textarea></div>
-        </div>
-        <div class = "row space-div">
-        <div class = "col-md-3" style = "margin-bottom: 0px;">
-        <label>Planteamiento del entrevistador(a): </label>
-        </div>
-        <div class = "col-md-9"><textarea class = "form-control" rows = "3" placeholder = "" disabled>' . $solicitud_data[0]["plan_entre"] . '</textarea></div>
-        </div>
-        <div class = "row space-div">
-        <div class = "col-md-3" style = "margin-bottom: 0px;">
-        <label>Acuerdos: </label>
-        </div>
-        <div class = "col-md-9"><textarea class = "form-control" rows = "3" placeholder = "" disabled>' . $solicitud_data[0]["acuerdos"] . '</textarea></div>
-        </div>
-        </div>';
-        } elseif ($solicitud_data[0]["entreId"] === "2") {
-            $html2 = '<div class = "card-header">
-        <h3 class = "card-title">FICHA DE ENTREVISTA A PADRES DE FAMILIA</h3>
-        </div>
-        <div class = "card-body">
-        <h5>I. DATOS INFORMATIVOS:</h5>
-        <div class = "row space-div">
-        <div class = "col-md-3" style = "margin-bottom: 0px;">
-        <label>Nombre del estudiante: </label>
-        </div>
-        <div class = "col-md-4"><span>' . $solicitud_data[0]["alumno"] . '</span></div>
-        <div class = "col-md-2" style = "margin-bottom: 0px;">
-        <label>Grado, sección y nivel: </label>
-        </div>
-        <div class = "col-md-3"><span>' . $solicitud_data[0]["grado"] . '</span></div>
-        </div>
-        <div class = "row space-div">
-        <div class = "col-md-3" style = "margin-bottom: 0px;">
-        <label>Nombre del padre/madre/apoderado: </label>
-        </div>
-        <div class = "col-md-4"><span>';
-            if (trim($solicitud_data[0]["padre"]) === '' && trim($solicitud_data[0]["madre"]) === "") {
-                $html2 .= '';
-            } else if (trim($solicitud_data[0]["padre"]) === '' && trim($solicitud_data[0]["madre"]) != "") {
-                $html2 .= trim($solicitud_data[0]["padre"]) . trim($solicitud_data[0]["madre"]);
-            } else {
-                $html2 .= trim($solicitud_data[0]["padre"]) . "<br>" . trim($solicitud_data[0]["madre"]);
-            }
-            $html2 .= '</span></div>
-        <div class = "col-md-2" style = "margin-bottom: 0px;">
-        <label>Teléfono, correo: </label>
-        </div>
-        <div class = "col-md-3"><span>';
-            if (trim($solicitud_data[0]["data_padre"]) === '' && trim($solicitud_data[0]["data_madre"]) === "") {
-                $html2 .= '';
-            } else if (trim($solicitud_data[0]["data_padre"]) === '' && trim($solicitud_data[0]["data_madre"]) != "") {
-                $html2 .= trim($solicitud_data[0]["data_padre"]) . trim($solicitud_data[0]["data_madre"]);
-            } else {
-                $html2 .= trim($solicitud_data[0]["data_padre"]) . "<br>" . trim($solicitud_data[0]["data_madre"]);
-            }
-            $html2 .= '</span></div>
-        </div>
-        <div class = "row space-div">
-        <div class = "col-md-3" style = "margin-bottom: 0px;">
-        <label>Entrevistador: </label>
-        </div>
-        <div class = "col-md-4"><span>' . $solicitud_data[0]["usuario"] . '</span></div>
-        <div class = "col-md-2" style = "margin-bottom: 0px;">
-        <label>Sede: </label>
-        </div>
-        <div class = "col-md-3"><span>' . $solicitud_data[0]["sede"] . '</span></div>
-        </div>
-        <div class = "row space-div">
-        <div class = "col-md-3" style = "margin-bottom: 0px;">
-        <label>Motivo de la entrevista: </label>
-        </div>
-        <div class = "col-md-4"><span>' . $solicitud_data[0]["motivo"] . '</span>';
-            $html2 .= '</div>
-        <div class = "col-md-2" style = "margin-bottom: 0px;">
-        <label>Fecha y hora: </label>
-        </div>
-        <div class = "col-md-3"><span>' . $solicitud_data[0]["fecha"] . '</span></div>
-        </div>
-        <h5>II. INFORME QUE SE LE HARÁ LLEGAR AL PADRE/MADRE/APODERADO:</h5>
-        <div class = "row space-div">
-        <div class = "col-md-12"><textarea class = "form-control" rows = "3" id = "txtInforme" placeholder = "" disabled>' . $solicitud_data[0]["informe"] . '</textarea></div>
-        </div>
-        <h5>III. DESARROLLO DE LA ENTREVISTA::</h5>
-        <div class = "row space-div">
-        <div class = "col-md-3" style = "margin-bottom: 0px;">
-        <label>Planteamiento del padre, madre o apoderado: </label>
-        </div>
-        <div class = "col-md-9"><textarea class = "form-control" rows = "3" id = "txtPlanPadre" placeholder = "" disabled>' . $solicitud_data[0]["plan_padre"] . '</textarea></div>
-        </div>
-        <div class = "row space-div">
-        <div class = "col-md-3" style = "margin-bottom: 0px;">
-        <label>Planteamiento del docente, tutor/a, psicólogo(a), director(a): </label>
-        </div>
-        <div class = "col-md-9"><textarea class = "form-control" rows = "3" placeholder = "" disabled>' . $solicitud_data[0]["plan_docen"] . '</textarea></div>
-        </div>
-        <div class = "row space-div">
-        <div class = "col-md-3" style = "margin-bottom: 0px;">
-        <label>Acuerdos - Acciones a realizar por los padres: </label>
-        </div>
-        <div class = "col-md-9"><textarea class = "form-control" rows = "3" placeholder = "" disabled>' . $solicitud_data[0]["acuerdos1"] . '</textarea></div>
-        </div>
-        <div class = "row space-div">
-        <div class = "col-md-3" style = "margin-bottom: 0px;">
-        <label>Acuerdos - Acciones a realizar por el colegio: </label>
-        </div>
-        <div class = "col-md-9"><textarea class = "form-control" rows = "3" placeholder = "" disabled>' . $solicitud_data[0]["acuerdos2"] . '</textarea></div>
-        </div>
-        </div>';
-        }
+    $eu_codsolicitud = explode("-", $s_solicitud);
+    $solicitud_codigo = explode("/", $eu_codsolicitud[1]);
+    $lista_sol = fnc_listar_todas_solicitudes_x_entrevista($conexion, $solicitud_codigo[0], "1", "1", p_perfil, p_sede);
+    $html = '<div class="row space-div">
+            <div class="col-md-2" style="margin-bottom: 0px;">
+              <label>Entrevista / Subentrevista</label>
+            </div>
+            <div class="col-md-10">';
+    $html .= '<select id="cbbTipoSolicitudCodis" name="cbbTipoSolicitudCodis" class="form-control select2" style="width: 100%" onchange="cargar_solicitudes_a_detallar(this)">
+                <option value="" >-- Seleccione --</option>';
+    foreach ($lista_sol as $value) {
+        $html .= '<option value="' . $value["id"] . '" >' . $value["detalle"] . '</option>';
     }
-    echo $html . $html2;
+    $html .= '</select></div>
+        </div>
+        <div id="divDetalleEntrevista"></div>';
+    echo $html;
 }
 
 function formulario_eliminar_solicitud() {
     $con = new DB(1111);
     $conexion = $con->connect();
-    $so_codigo = strip_tags(trim($_POST["s_solicitud"]));
-    $so_cod1 = explode("-", $so_codigo);
-    $soalu_codi = explode("/", $so_cod1[1]);
-    $solicitud_data = fnc_solicitud_alumno($conexion, $soalu_codi[0]);
-    ?>
-    <div class="row space-div">
-        <div class="col-md-12" style="margin-bottom: 0px;">
-            <input type="hidden" id="hdnCodiSoliAlu" class="form-control" value="<?php echo trim($soalu_codi[0]); ?>"/>
-            <label>&iquest;Esta seguro de eliminar la solicitud del alumno "<?php echo $solicitud_data[0]["alumno"]; ?>" ?</label>
+    $s_solicitud = strip_tags(trim($_POST["s_solicitud"]));
+    $eu_codsolicitud = explode("-", $s_solicitud);
+    $solicitud_codigo = explode("/", $eu_codsolicitud[1]);
+    $lista_sol = fnc_listar_todas_solicitudes_x_entrevista($conexion, $solicitud_codigo[0], "1", "1", p_perfil, p_sede);
+    $html = '<div class="row space-div">
+            <div class="col-md-2" style="margin-bottom: 0px;">
+              <label>Entrevista / Subentrevista</label>
+            </div>
+            <div class="col-md-10">';
+    $html .= '<select id="cbbTipoSolicitudCodisElis" class="form-control select2" style="width: 100%" onchange="cargar_solicitudes_a_eliminar(this)">
+                <option value="" >-- Seleccione --</option>';
+    foreach ($lista_sol as $value) {
+        $html .= '<option value="' . $value["id"] . '" >' . $value["detalle"] . '</option>';
+    }
+    $html .= '</select></div>
         </div>
-    </div>
-    <?php
+        <div id="divDetalleEliminarEntrevista"></div>';
+    echo $html;
 }
 
 function operacion_eliminar_solicitud() {
     $con = new DB(1111);
     $conexion = $con->connect();
     $sm_codigoEdi = strip_tags(trim($_POST["sm_codigo"]));
-    $u_codiSoliEliAlu = strip_tags(trim($_POST["u_codiSoliEliAlu"]));
+    $u_codiSoliEliAlu = strip_tags(trim($_POST["u_codiSolicitud"]));
     try {
-        fnc_eliminar_solicitud_alumno($conexion, $u_codiSoliEliAlu, "0");
-        $str_submenu = "";
-        $str_menu_id = "";
-        $str_menu_nombre = "";
-        $submenu = fnc_consultar_submenu($conexion, $sm_codigoEdi);
-        if (count($submenu) > 0) {
-            $str_submenu = $submenu[0]["ruta"];
-            $str_menu_id = $submenu[0]["id"];
-            $str_menu_nombre = $submenu[0]["nombre"];
-        } else {
+        $array = explode("-", $u_codiSoliEliAlu);
+        if ($array[0] === "ent") {
+            fnc_eliminar_solicitud_alumno($conexion, $array[1], "0");
             $str_submenu = "";
             $str_menu_id = "";
             $str_menu_nombre = "";
+            $submenu = fnc_consultar_submenu($conexion, $sm_codigoEdi);
+            if (count($submenu) > 0) {
+                $str_submenu = $submenu[0]["ruta"];
+                $str_menu_id = $submenu[0]["id"];
+                $str_menu_nombre = $submenu[0]["nombre"];
+            } else {
+                $str_submenu = "";
+                $str_menu_id = "";
+                $str_menu_nombre = "";
+            }
+            echo "***1***Solicitud eliminada correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
+        } elseif ($array[1] === "sub") {
+            fnc_eliminar_sub_solicitud_alumno($conexion, $array[1], "0");
+            $str_submenu = "";
+            $str_menu_id = "";
+            $str_menu_nombre = "";
+            $submenu = fnc_consultar_submenu($conexion, $sm_codigoEdi);
+            if (count($submenu) > 0) {
+                $str_submenu = $submenu[0]["ruta"];
+                $str_menu_id = $submenu[0]["id"];
+                $str_menu_nombre = $submenu[0]["nombre"];
+            } else {
+                $str_submenu = "";
+                $str_menu_id = "";
+                $str_menu_nombre = "";
+            }
+            echo "***1***Solicitud eliminada correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
         }
-        echo "***1***Solicitud eliminada correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
+
+        if ($array[0] !== "ent" || $array[0] !== "sub") {
+            echo "***0***Error al eliminar solicitud.***<br/>";
+        }
     } catch (Exception $exc) {
         echo "***0***Error al eliminar solicitud.***<br/>";
     }
@@ -2752,6 +2650,13 @@ function formulario_detalle_tipo_solicitud_sub() {
               </div>
               <div class="card-body">
                 <h5>I. DATOS INFORMATIVOS:</h5>
+                <div class="row space-div"> 
+                    <div class="col-md-12 icheck-success d-inline">
+                        <label for="checkPrivacidad_sub"> PRIVACIDAD:
+                        </label>&nbsp;&nbsp;&nbsp;
+                        <input type="checkbox" id="checkPrivacidad_sub" style="transform : scale(1.8);">
+                    </div>
+                </div>
                 <div class="row space-div">
                     <div class="col-md-3" style="margin-bottom: 0px;">
                         <label>Nombre del estudiante: </label>
@@ -2842,6 +2747,13 @@ function formulario_detalle_tipo_solicitud_sub() {
               </div>
               <div class="card-body">
                 <h5>I. DATOS INFORMATIVOS:</h5>
+                <div class="row space-div"> 
+                    <div class="col-md-12 icheck-success d-inline">
+                        <label for="checkPrivacidad_sub"> PRIVACIDAD:
+                        </label>&nbsp;&nbsp;&nbsp;
+                        <input type="checkbox" id="checkPrivacidad_sub" style="transform : scale(1.8);">
+                    </div>
+                </div>
                 <div class="row space-div">
                     <input type="hidden" id="txtAlumCodig_sub" value="' . $matricula[0]["aluId"] . '"/>
                     <div class="col-md-3" style="margin-bottom: 0px;">
@@ -3279,13 +3191,13 @@ function formulario_editar_solicitud() {
     $s_solicitud = strip_tags(trim($_POST["s_solicitud"]));
     $eu_codsolicitud = explode("-", $s_solicitud);
     $solicitud_codigo = explode("/", $eu_codsolicitud[1]);
-    $lista_sol = fnc_listar_todas_solicitudes_x_entrevista($conexion, $solicitud_codigo[0], "1", "1");
+    $lista_sol = fnc_listar_todas_solicitudes_x_entrevista($conexion, $solicitud_codigo[0], "1", "1", p_perfil, p_sede);
     $html = '<div class="row space-div">
             <div class="col-md-2" style="margin-bottom: 0px;">
               <label>Entrevista / Subentrevista</label>
             </div>
             <div class="col-md-10">';
-    $html .= '<select id="cbbTipoSolicitudCodis" class="form-control select2" style="width: 100%" onchange="cargar_solicitudes_a_editar(this)">
+    $html .= '<select id="cbbTipoSolicitudCodisEdi" class="form-control select2" style="width: 100%" onchange="cargar_solicitudes_a_editar(this)">
                 <option value="" >-- Seleccione --</option>';
     foreach ($lista_sol as $value) {
         $html .= '<option value="' . $value["id"] . '" >' . $value["detalle"] . '</option>';
@@ -3319,6 +3231,7 @@ function formulario_carga_solicitudes() {
             </div>
             <div class="col-md-10">
                 <label>' . $lista_solicitud[0]["codigo"] . '</label>
+                <input type="hidden" id="cod_solicitud_edi" value="' . $s_solicitud . '"/>
                 <input type="hidden" id="codi_solicitud_edi" value="' . $array[1] . '"/>
             </div>
         </div>
@@ -3393,7 +3306,7 @@ function formulario_carga_solicitudes() {
             }
         }
         $html .= '</select>';
-        $html .= '</div><input type="hidden" id="txt_sede_sub" value="' . $lista_solicitud[0]["sedeId"] . '">
+        $html .= '</div><input type="hidden" id="txt_sede_edi" value="' . $lista_solicitud[0]["sedeId"] . '">
         </div>';
         $html .= '<div class="card card-warning" id="divSubEntrevista_edi">';
         if ($lista_solicitud[0]["ent_id"] === "1") {
@@ -3402,6 +3315,13 @@ function formulario_carga_solicitudes() {
               </div>
               <div class="card-body">
                 <h5>I. DATOS INFORMATIVOS:</h5>
+                <div class="row space-div"> 
+                    <div class="col-md-12 icheck-success d-inline">
+                        <label for="checkPrivacidad_edi"> PRIVACIDAD:
+                        </label>&nbsp;&nbsp;&nbsp;
+                        <input type="checkbox" id="checkPrivacidad_edi" style="transform : scale(1.8);" ' . ($lista_solicitud[0]['privacidad'] == '1' ? 'checked' : '') . '>
+                    </div>
+                </div>
                 <div class="row space-div">
                     <div class="col-md-3" style="margin-bottom: 0px;">
                         <label>Nombre del estudiante: </label>
@@ -3455,15 +3375,24 @@ function formulario_carga_solicitudes() {
                 </div>
               </div>'
                     . '<div class="row space-div">'
-                    . '<div class="col-md-5" style="margin-bottom: 0px;">'
-                    . '<div id="signature-pad-sub" class="signature-pad" style="margin-left: 20px;">
+                    . '<div class="col-md-5" style="margin-bottom: 0px;">';
+            $imagen_soli = "";
+            if ($array[0] === "ent") {
+                $imagen_soli = fnc_obtener_firma_entrevista($conexion, $array[1], "1");
+            } else {
+                $imagen_soli = fnc_obtener_firma_subentrevista($conexion, $array[1], "1");
+            }
+            $html .= '<div id="signature-pad-edi" class="signature-pad" style="margin-left: 20px;">
+                        <input type="hidden" id="firma1" value="' . $imagen_soli[0]["id"] . '"/>
                     <div class="description">Firma del estudiante</div>
                     <div class="signature-pad--body">
-                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas1_sub"></canvas>
+                        <img id="ruta_img1" src="' . "./php/" . str_replace("../", "", $imagen_soli[0]["imagen"]) . '" style="width: 80%;cursor:pointer;border: 1px black solid;" height="152"/>
+                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid;display:none" id="canvas1_edi" height="152" width="531"></canvas>
+                        <br/>
                     </div>
                    </div>
                    <div style="margin-left: 20px;">
-                        <button type="button" class="btn btn-default" onclick="limpiar_firma_sub();">Limpiar firma</button>
+                        <button type="button" class="btn btn-default" onclick="limpiar_firma_edi();">Limpiar firma</button>
                    </div>
                    <div style="margin-left: 20px;">
                        <label id="divApoderadoNombreDNI_edi">' . str_replace(" - ", "<br/>", strtoupper($lista_solicitud[0]["alumno"])) . '<label/>
@@ -3471,14 +3400,23 @@ function formulario_carga_solicitudes() {
                     . '</div>'
                     . '<div class="col-md-2" style="margin-bottom: 0px;">'
                     . '</div>'
-                    . '<div class="col-md-5" style="margin-bottom: 0px;">'
-                    . '<div id="signature-pad-entrevistador-sub" class="signature-pad" >
+                    . '<div class="col-md-5" style="margin-bottom: 0px;">';
+            $imagen_soli2 = "";
+            if ($array[0] === "ent") {
+                $imagen_soli2 = fnc_obtener_firma_entrevista($conexion, $array[1], "2");
+            } else {
+                $imagen_soli2 = fnc_obtener_firma_subentrevista($conexion, $array[1], "2");
+            }
+            $html .= '<div id="signature-pad-entrevistador-edi" class="signature-pad" >
+                        <input type="hidden" id="firma2" value="' . $imagen_soli2[0]["id"] . '"/>
                     <div class="description">Firma del entrevistador</div>
                     <div class="signature-pad--body">
-                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas2_sub"></canvas>
+                        <img id="ruta_img2" src="' . "./php/" . str_replace("../", "", $imagen_soli2[0]["imagen"]) . '" style="width: 80%;cursor:pointer;border: 1px black solid;" height="152"/>
+                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid;display:none" id="canvas2_edi" height="152" width="531"></canvas>
+                        <br/>
                     </div>
                     <div>
-                        <button type="button" class="btn btn-default" onclick="limpiar_firma_entrevistador_sub();">Limpiar firma</button>
+                        <button type="button" class="btn btn-default" onclick="limpiar_firma_entrevistador_edi();">Limpiar firma</button>
                    </div>
                    <div style="margin-left: 20px;">
                        <label>' . strtoupper($lista_solicitud[0]["usuario"]) . '<br/>' . $lista_solicitud[0]["dni"] . '<label/>
@@ -3493,6 +3431,13 @@ function formulario_carga_solicitudes() {
               </div>
               <div class="card-body">
                 <h5>I. DATOS INFORMATIVOS:</h5>
+                <div class="row space-div"> 
+                    <div class="col-md-12 icheck-success d-inline">
+                        <label for="checkPrivacidad_edi"> PRIVACIDAD:
+                        </label>&nbsp;&nbsp;&nbsp;
+                        <input type="checkbox" id="checkPrivacidad_edi" style="transform : scale(1.8);" ' . ($lista_solicitud[0]['privacidad'] == '1' ? 'checked' : '') . '>
+                    </div>
+                </div>
                 <div class="row space-div">
                     <input type="hidden" id="txtAlumCodig_edi" value="' . $lista_solicitud[0]["aluId"] . '"/>
                     <div class="col-md-3" style="margin-bottom: 0px;">
@@ -3590,15 +3535,24 @@ function formulario_carga_solicitudes() {
                 </div>
               </div>'
                     . '<div class="row space-div">'
-                    . '<div class="col-md-5" style="margin-bottom: 0px;">'
-                    . '<div id="signature-pad-sub" class="signature-pad" style="margin-left: 20px;">
+                    . '<div class="col-md-5" style="margin-bottom: 0px;">';
+            $imagen_soli = "";
+            if ($array[0] === "ent") {
+                $imagen_soli = fnc_obtener_firma_entrevista($conexion, $array[1], "1");
+            } else {
+                $imagen_soli = fnc_obtener_firma_subentrevista($conexion, $array[1], "1");
+            }
+            $html .= '<div id="signature-pad-edi" class="signature-pad" style="margin-left: 20px;">
+                        <input type="hidden" id="firma1" value="' . $imagen_soli[0]["id"] . '"/>
                     <div class="description">Firma del padre, madre o apoderado</div>
                     <div class="signature-pad--body">
-                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas1_sub"></canvas>
+                        <img id="ruta_img1" src="' . "./php/" . str_replace("../", "", $imagen_soli[0]["imagen"]) . '" style="width: 80%;cursor:pointer;border: 1px black solid;" height="152"/>
+                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid;display:none" id="canvas1_edi" height="152" width="531"></canvas>
+                        <br/>
                     </div>
                    </div>
                    <div style="margin-left: 20px;">
-                        <button type="button" class="btn btn-default" onclick="limpiar_firma();">Limpiar firma</button>
+                        <button type="button" class="btn btn-default" onclick="limpiar_firma_edi();">Limpiar firma</button>
                    </div>
                    <div style="margin-left: 20px;" id="divApoderadoNombreDNI_edi">
                        <label>' . strtoupper($apoderado[0]["nombre"]) . '<br/>' . $apoderado[0]["dni"] . '<label/>
@@ -3606,14 +3560,23 @@ function formulario_carga_solicitudes() {
                     . '</div>'
                     . '<div class="col-md-2" style="margin-bottom: 0px;">'
                     . '</div>'
-                    . '<div class="col-md-5" style="margin-bottom: 0px;">'
-                    . '<div id="signature-pad-entrevistador-sub" class="signature-pad" >
+                    . '<div class="col-md-5" style="margin-bottom: 0px;">';
+            $imagen_soli2 = "";
+            if ($array[0] === "ent") {
+                $imagen_soli2 = fnc_obtener_firma_entrevista($conexion, $array[1], "2");
+            } else {
+                $imagen_soli2 = fnc_obtener_firma_subentrevista($conexion, $array[1], "2");
+            }
+            $html .= '<div id="signature-pad-entrevistador-edi" class="signature-pad" >
+                        <input type="hidden" id="firma2" value="' . $imagen_soli2[0]["id"] . '"/>
                     <div class="description">Firma del entrevistador</div>
                     <div class="signature-pad--body">
-                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas2_sub"></canvas>
+                        <img id="ruta_img2" src="' . "./php/" . str_replace("../", "", $imagen_soli2[0]["imagen"]) . '" style="width: 80%;cursor:pointer;border: 1px black solid;" height="152"/>
+                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid;display:none" id="canvas2_edi" height="152" width="531"></canvas>
+                        <br/>
                     </div>
                     <div>
-                        <button type="button" class="btn btn-default" onclick="limpiar_firma_entrevistador();">Limpiar firma</button>
+                        <button type="button" class="btn btn-default" onclick="limpiar_firma_entrevistador_edi();">Limpiar firma</button>
                    </div>
                    <div style="margin-left: 20px;">
                        <label>' . strtoupper($lista_solicitud[0]["usuario"]) . '<br/>' . $lista_solicitud[0]["dni"] . '<label/>
@@ -3964,6 +3927,722 @@ function operacion_registrar_apoderado_edi() {
             $html_apo_nombreDni = '<label>' . strtoupper($nombres) . '<br>' . $dni . '</label>';
             $html = "1***Datos de Apoderado registrados correctamente***" . $htmlSelect . "***" . $html_editarInfoApoderado . "***" . $html_detalle_apo . "***" . $html_apo_nombreDni;
         }
+    }
+    echo $html;
+}
+
+function formulario_carga_solicitudes_detalla() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_solicitud = strip_tags(trim($_POST["sol_cod"]));
+    $array = explode("-", $s_solicitud);
+    $entre_sub = "";
+    $html = "";
+    if ($array[0] === "ent") {
+        $entre_sub = "Entrevista";
+    } else {
+        $entre_sub = "Subentrevista";
+    }
+    $lista_solicitud = fnc_obtener_solicitud_x_codigo($conexion, $array[0], $array[1]);
+    if (count($lista_solicitud) > 0) {
+        $tipos_entrevistas = fnc_lista_tipo_entrevistas($conexion, "");
+        $lista_categorias = fnc_lista_categorias($conexion, "");
+        $lista_subcategorias = fnc_lista_subcategorias($conexion, $lista_solicitud[0]["categoria"], "");
+        $html = '<div class="row space-div">
+            <div class="col-md-2" style="margin-bottom: 0px;">
+                <label>C&oacute;digo de ' . $entre_sub . ': </label>
+            </div>
+            <div class="col-md-10">
+                <label>' . $lista_solicitud[0]["codigo"] . '</label>
+            </div>
+        </div>
+        <div class="row space-div">
+        <div class="col-md-2" style="margin-bottom: 0px;">
+            <label>Categoria: </label>
+        </div>
+        <div class="col-md-4">';
+        $html .= '<select id="cbbCategoria_edi" class="form-control select2" style="width: 100%" onchange="cargar_subcategorias_edi(this)" disabled>
+               <option value="">-- Seleccione --</option>';
+        if (count($lista_categorias) > 0) {
+            $selected_cate = "";
+            foreach ($lista_categorias as $lista) {
+                if ($lista["id"] === $lista_solicitud[0]["categoria"]) {
+                    $selected_cate = " selected ";
+                } else {
+                    $selected_cate = "";
+                }
+                $html .= "<option value='" . $lista["id"] . "' $selected_cate>" . $lista["nombre"] . "</option>";
+            }
+        }
+        $html .= '</select>';
+        $html .= '</div>
+        <div class="col-md-2" style="margin-bottom: 0px;">
+            <label>Subcategoria: </label>
+        </div>
+        <div class="col-md-4">';
+        $html .= '<select id="cbbSubcategoria_edi" class="form-control select2" style="width: 100%" disabled>
+                <option value="">-- Seleccione --</option>';
+        if (count($lista_subcategorias) > 0) {
+            $selected_subcate = "";
+            foreach ($lista_subcategorias as $lista) {
+                if ($lista["id"] === $lista_solicitud[0]["subcategorgia"]) {
+                    $selected_subcate = " selected ";
+                } else {
+                    $selected_subcate = "";
+                }
+                $html .= "<option value='" . $lista["id"] . "' $selected_subcate>" . $lista["nombre"] . "</option>";
+            }
+        }
+        $html .= '</select>';
+        $html .= '</div>
+       </div>';
+        $html .= '<div class="row space-div">
+            <div class="col-md-2" style="margin-bottom: 0px;">
+                <label>Tipo de entrevista: </label>
+            </div>
+            <div class="col-md-3">';
+        $html .= '<select id="cbbTipoSolicitud_edi" class="form-control select2" style="width: 100%" disabled>
+                <option value="">-- Seleccione --</option>';
+        if (count($tipos_entrevistas) > 0) {
+            $selected_tips = "";
+            foreach ($tipos_entrevistas as $lista) {
+                if ($lista["id"] === $lista_solicitud[0]["ent_id"]) {
+                    $selected_tips = " selected ";
+                } else {
+                    $selected_tips = "";
+                }
+                $html .= "<option value='" . $lista["id"] . "' $selected_tips>" . $lista["nombre"] . "</option>";
+            }
+        }
+        $html .= '</select>';
+        $html .= '</div><input type="hidden" id="txt_sede_edi" value="' . $lista_solicitud[0]["sedeId"] . '">
+        </div>';
+        $html .= '<div class="card card-warning" id="divSubEntrevista_edi">';
+        if ($lista_solicitud[0]["ent_id"] === "1") {
+            $html .= '<div class="card-header">
+                <h3 class="card-title">FICHA DE ENTREVISTA A ESTUDIANTE</h3>
+              </div>
+              <div class="card-body">
+                <h5>I. DATOS INFORMATIVOS:</h5>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Nombre del estudiante: </label>
+                    </div>
+                    <div class="col-md-4"><span id="nombre_estu_edi">' . strtoupper($lista_solicitud[0]["alumno"]) . '</span></div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Grado, sección y nivel: </label>
+                    </div>
+                    <div class="col-md-3"><span id="grado_estu_id">' . $lista_solicitud[0]["grado"] . '</span></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Entrevistador: </label>
+                    </div>
+                    <div class="col-md-4"><span>' . $lista_solicitud[0]["usuario"] . '</span></div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Sede: </label>
+                    </div>
+                    <div class="col-md-3"><span id="sede_estu_id">' . $lista_solicitud[0]["sede"] . '</span></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Motivo de la entrevista: </label>
+                    </div>
+                    <div class="col-md-4"><textarea class="form-control" rows="3" id="txtMotivo_edi" placeholder="" disabled>' . $lista_solicitud[0]["motivo"] . '</textarea>
+                        ';
+            $html .= '  </div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Fecha y hora: </label>
+                    </div>
+                    <div class="col-md-3"><span>' . $lista_solicitud[0]["fecha"] . '</span></div>
+                </div>
+                <h5>II. DESARROLLO DE LA ENTREVISTA:</h5>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Planteamiento del estudiante: </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" rows="3" id="txtPlanEstudiante_edi" placeholder="" disabled>' . $lista_solicitud[0]["plan_estudiante"] . '</textarea></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Planteamiento del entrevistador(a): </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" rows="3" id="txtPlanEntrevistador_edi" placeholder="" disabled>' . $lista_solicitud[0]["plan_entrevistador"] . '</textarea></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Acuerdos: </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" id="txtAcuerdos_edi" rows="3" placeholder="" disabled>' . $lista_solicitud[0]["acuerdos"] . '</textarea></div>
+                </div>
+              </div>'
+                    . '<div class="row space-div">'
+                    . '<div class="col-md-5" style="margin-bottom: 0px;">';
+            $imagen_soli = "";
+            if ($array[0] === "ent") {
+                $imagen_soli = fnc_obtener_firma_entrevista($conexion, $array[1], "1");
+            } else {
+                $imagen_soli = fnc_obtener_firma_subentrevista($conexion, $array[1], "1");
+            }
+            $html .= '<div id="signature-pad-edi" class="signature-pad" style="margin-left: 20px;">
+                        <input type="hidden" id="firma1" value="' . $imagen_soli[0]["id"] . '"/>
+                    <div class="description">Firma del estudiante</div>
+                    <div class="signature-pad--body">
+                        <img id="ruta_img1" src="' . "./php/" . str_replace("../", "", $imagen_soli[0]["imagen"]) . '" style="width: 80%;cursor:pointer;border: 1px black solid;" height="152"/>
+                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid;display:none" id="canvas1_edi" height="152" width="531"></canvas>
+                        <br/>
+                    </div>
+                   </div>
+                   <div style="margin-left: 20px;">
+                       <label id="divApoderadoNombreDNI_edi">' . str_replace(" - ", "<br/>", strtoupper($lista_solicitud[0]["alumno"])) . '<label/>
+                   </div>'
+                    . '</div>'
+                    . '<div class="col-md-2" style="margin-bottom: 0px;">'
+                    . '</div>'
+                    . '<div class="col-md-5" style="margin-bottom: 0px;">';
+            $imagen_soli2 = "";
+            if ($array[0] === "ent") {
+                $imagen_soli2 = fnc_obtener_firma_entrevista($conexion, $array[1], "2");
+            } else {
+                $imagen_soli2 = fnc_obtener_firma_subentrevista($conexion, $array[1], "2");
+            }
+            $html .= '<div id="signature-pad-entrevistador-edi" class="signature-pad" >
+                        <input type="hidden" id="firma2" value="' . $imagen_soli2[0]["id"] . '"/>
+                    <div class="description">Firma del entrevistador</div>
+                    <div class="signature-pad--body">
+                        <img id="ruta_img2" src="' . "./php/" . str_replace("../", "", $imagen_soli2[0]["imagen"]) . '" style="width: 80%;cursor:pointer;border: 1px black solid;" height="152"/>
+                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid;display:none" id="canvas2_edi" height="152" width="531"></canvas>
+                        <br/>
+                    </div>
+                   <div style="margin-left: 20px;">
+                       <label>' . strtoupper($lista_solicitud[0]["usuario"]) . '<br/>' . $lista_solicitud[0]["dni"] . '<label/>
+                   </div>'
+                    . ' </div>'
+                    . '</div>';
+        } elseif ($lista_solicitud[0]["ent_id"] === "2") {
+            $lista_apoderados = fnc_lista_apoderados_de_alumno($conexion, $lista_solicitud[0]["aluId"], "");
+            $apoderado = fnc_lista_apoderados_de_alumno($conexion, $lista_solicitud[0]["aluId"], $lista_solicitud[0]["apoderado"]);
+            $html .= '<div class="card-header">
+                <h3 class="card-title">FICHA DE ENTREVISTA A PADRES DE FAMILIA</h3>
+              </div>
+              <div class="card-body">
+                <h5>I. DATOS INFORMATIVOS:</h5>
+                <div class="row space-div">
+                    <input type="hidden" id="txtAlumCodig_edi" value="' . $lista_solicitud[0]["aluId"] . '"/>
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Nombre del estudiante: </label>
+                    </div>
+                    <div class="col-md-4"><span id="nombre_estu_edi">' . strtoupper($lista_solicitud[0]["alumno"]) . '</span></div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Grado, sección y nivel: </label>
+                    </div>
+                    <div class="col-md-3"><span id="grado_estu_id">' . $lista_solicitud[0]["grado"] . '</span></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Nombre del padre/madre/apoderado: </label>
+                    </div>
+                    <div class="col-md-4">';
+            $html .= '<select id="cbbTipoApoderado_edi" class="form-control select2" style="width: 100%" disabled>
+                <option value="">-- Seleccione --</option>';
+            if (count($lista_apoderados) > 0) {
+                $selected_apoderado = "";
+                foreach ($lista_apoderados as $lista) {
+                    if ($lista["codigo"] == $lista_solicitud[0]["apoderado"]) {
+                        $selected_apoderado = " selected ";
+                    } else {
+                        $selected_apoderado = "";
+                    }
+                    $html .= '<option value="' . $lista["codigo"] . '" ' . $selected_apoderado . '>' . $lista["tipo"] . ' - ' . $lista["dni"] . ' - ' . strtoupper($lista["nombre"]) . '</option>';
+                }
+            }
+            $html .= ' <option value="-1" >-- Otro --</option></select>';
+            $html .= '</div><div class="col-md-3" id="divEditarInfoApoderado_edi">
+                </div></div>
+                <div class="row space-div" id="detalleApoderado_edi">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Correo: </label>
+                    </div>
+                    <div class="col-md-4">' . $apoderado[0]["correo"] . '</div>
+                    <div class="col-md-2">
+                        <label>Teléfono: </label>
+                    </div>
+                    <div class="col-md-3">' . $apoderado[0]["telefono"] . '</div>
+                </div>';
+            $html .= '
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Entrevistador: </label>
+                    </div>
+                    <div class="col-md-4"><span>' . strtoupper($lista_solicitud[0]["usuario"]) . '</span></div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Sede: </label>
+                    </div>
+                    <div class="col-md-3"><span id="sede_estu_id">' . $lista_solicitud[0]["sede"] . '</span></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Motivo de la entrevista: </label>
+                    </div>
+                    <div class="col-md-4"><textarea class="form-control" rows="3" id="txtMotivo_edi" placeholder="" disabled>' . $lista_solicitud[0]["motivo"] . '</textarea>';
+            $html .= '  </div>
+                    <div class="col-md-2" style="margin-bottom: 0px;">
+                        <label>Fecha y hora: </label>
+                    </div>
+                    <div class="col-md-3"><span>' . $lista_solicitud[0]["fecha"] . '</span></div>
+                </div>
+                <h5>II. INFORME QUE SE LE HARÁ LLEGAR AL PADRE/MADRE/APODERADO:</h5>
+                <div class="row space-div">
+                    <div class="col-md-12"><textarea class="form-control" rows="3" id="txtInforme_edi" placeholder="" disabled>' . $lista_solicitud[0]["informe"] . '</textarea></div>
+                </div>
+
+                <h5>III. DESARROLLO DE LA ENTREVISTA::</h5>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Planteamiento del padre, madre o apoderado: </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" rows="3" id="txtPlanPadre_edi" placeholder="" disabled>' . $lista_solicitud[0]["plan_padre"] . '</textarea></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Planteamiento del docente, tutor/a, psicólogo(a), director(a): </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" rows="3" id="txtPlanDocente_edi" placeholder="" disabled>' . $lista_solicitud[0]["plan_docente"] . '</textarea></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Acuerdos - Acciones a realizar por los padres: </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" id="txtAcuerdosPadres_edi" rows="3" placeholder="" disabled>' . $lista_solicitud[0]["acuerdos1"] . '</textarea></div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-3" style="margin-bottom: 0px;">
+                        <label>Acuerdos - Acciones a realizar por el colegio: </label>
+                    </div>
+                    <div class="col-md-9"><textarea class="form-control" id="txtAcuerdosColegio_edi" rows="3" placeholder="" disabled>' . $lista_solicitud[0]["acuerdos2"] . '</textarea></div>
+                </div>
+              </div>'
+                    . '<div class="row space-div">'
+                    . '<div class="col-md-5" style="margin-bottom: 0px;">';
+            $imagen_soli = "";
+            if ($array[0] === "ent") {
+                $imagen_soli = fnc_obtener_firma_entrevista($conexion, $array[1], "1");
+            } else {
+                $imagen_soli = fnc_obtener_firma_subentrevista($conexion, $array[1], "1");
+            }
+            $html .= '<div id="signature-pad-edi" class="signature-pad" style="margin-left: 20px;">
+                        <input type="hidden" id="firma1" value="' . $imagen_soli[0]["id"] . '"/>
+                    <div class="description">Firma del padre, madre o apoderado</div>
+                    <div class="signature-pad--body">
+                        <img id="ruta_img1" src="' . "./php/" . str_replace("../", "", $imagen_soli[0]["imagen"]) . '" style="width: 80%;cursor:pointer;border: 1px black solid;" height="152"/>
+                        <br/>
+                    </div>
+                   </div>
+                   <div style="margin-left: 20px;">
+                   </div>
+                   <div style="margin-left: 20px;" id="divApoderadoNombreDNI_edi">
+                       <label>' . strtoupper($apoderado[0]["nombre"]) . '<br/>' . $apoderado[0]["dni"] . '<label/>
+                   </div>'
+                    . '</div>'
+                    . '<div class="col-md-2" style="margin-bottom: 0px;">'
+                    . '</div>'
+                    . '<div class="col-md-5" style="margin-bottom: 0px;">';
+            $imagen_soli2 = "";
+            if ($array[0] === "ent") {
+                $imagen_soli2 = fnc_obtener_firma_entrevista($conexion, $array[1], "2");
+            } else {
+                $imagen_soli2 = fnc_obtener_firma_subentrevista($conexion, $array[1], "2");
+            }
+            $html .= '<div id="signature-pad-entrevistador-edi" class="signature-pad" >
+                        <input type="hidden" id="firma2" value="' . $imagen_soli2[0]["id"] . '"/>
+                    <div class="description">Firma del entrevistador</div>
+                    <div class="signature-pad--body">
+                        <img id="ruta_img2" src="' . "./php/" . str_replace("../", "", $imagen_soli2[0]["imagen"]) . '" style="width: 80%;cursor:pointer;border: 1px black solid;" height="152"/>
+                        <br/>
+                    </div>
+                    <div>
+                   </div>
+                   <div style="margin-left: 20px;">
+                       <label>' . strtoupper($lista_solicitud[0]["usuario"]) . '<br/>' . $lista_solicitud[0]["dni"] . '<label/>
+                   </div>'
+                    . ' </div>'
+                    . '</div>';
+        }
+        $html .= '</div>';
+    }
+    echo $html;
+}
+
+function formulario_carga_solicitudes_eliminar() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_solicitud = strip_tags(trim($_POST["sol_cod"]));
+    $array = explode("-", $s_solicitud);
+    $entre_sub = "";
+    $html = "";
+    if ($array[0] === "ent") {
+        $entre_sub = "Entrevista";
+    } else {
+        $entre_sub = "Subentrevista";
+    }
+    $lista_solicitud = fnc_obtener_solicitud_x_codigo($conexion, $array[0], $array[1]);
+    if (count($lista_solicitud) > 0) {
+        $html .= '<div class="row space-div">
+        <div class="col-md-12" style="margin-bottom: 0px;">
+            <input type="hidden" id="hdnCodiSolicitud" class="form-control" value="' . $s_solicitud . '"/>
+            <label>&iquest;Esta seguro de eliminar la ' . $entre_sub . ' con c&oacute;digo ' . $lista_solicitud[0]["codigo"] . ' del alumno ' . $lista_solicitud[0]["alumno"] . '?</label>
+        </div>
+    </div>';
+    }
+    echo $html;
+}
+
+function formulario_registro_nueva_sede() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    ?>
+    <div class="row space-div">
+        <div class="col-md-6" style="margin-bottom: 0px;">
+            <label>Nombre: </label>
+        </div>
+        <div class="col-md-6">
+            <input type="text" id="txtNombreSed" class="form-control" style="width: 100%;text-transform: uppercase;" onkeypress="return solo_letras(event);"/>
+        </div>
+    </div>
+    <div class="row space-div">
+        <div class="col-md-6" style="margin-bottom: 0px;">
+            <label>Descripci&oacute;n: </label>
+        </div>
+        <div class="col-md-6">
+            <input type="text" id="txtDescripcionSed" class="form-control" style="width: 100%;text-transform: uppercase;" onkeypress="return solo_letras(event);"/>
+        </div>
+    </div>
+    <div class="row space-div">
+        <div class="col-md-6" style="margin-bottom: 0px;">
+            <label>Color: </label>
+        </div>
+        <div class="col-md-6">
+            <select id="cbbColorSed" data-show-content="true" class="form-control" style="width: 100%">
+                <option value="0">-- Seleccione --</option>
+                <?php
+                $l_iconos = fnc_lista_colores();
+                foreach ($l_iconos as $iconos) {
+                    echo "<option value='" . $iconos . "' data-content=" . '"' . "<i class='fas fa-circle nav-icon' style='font-size:18px;color:" . $iconos . "'>&nbsp;&nbsp;" . $iconos . "</i>" . '"' . "></option>";
+                }
+                ?>
+            </select>
+        </div>
+    </div>
+    <?php
+}
+
+function proceso_registro_nueva_sede() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $sm_codigoMenu = strip_tags(trim($_POST["sm_codigo"]));
+    $m_nombre = strip_tags(trim($_POST["m_nombre"]));
+    $m_descripcion = strip_tags(trim($_POST["m_descripcion"]));
+    $m_imagen = strip_tags(trim($_POST["m_imagen"]));
+    $m_codigo = strtoupper(substr($m_descripcion, 0, 4)) . "_" . fnc_generate_random_string(5);
+    $cadena = "('" . $m_codigo . "','" . strtoupper($m_nombre) . "','" . $m_descripcion . "','" . $m_imagen . "','1')";
+    $registrar_menu = fnc_registrar_sede($conexion, $cadena);
+    if ($registrar_menu) {
+        $str_submenu = "";
+        $str_menu_id = "";
+        $str_menu_nombre = "";
+        $submenu = fnc_consultar_submenu($conexion, $sm_codigoMenu);
+        if (count($submenu) > 0) {
+            $str_submenu = $submenu[0]["ruta"];
+            $str_menu_id = $submenu[0]["id"];
+            $str_menu_nombre = $submenu[0]["nombre"];
+        } else {
+            $str_submenu = "";
+            $str_menu_id = "";
+            $str_menu_nombre = "";
+        }
+        echo "***1***Sede registrado correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
+    } else {
+        echo "***0***Error al registrar la sede.***<br/>";
+    }
+}
+
+function formulario_editar_sede() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $u_em_codigo = strip_tags(trim($_POST["u_sede_codigo"]));
+    $eu_codsede = explode("-", $u_em_codigo);
+    $sede_codi = explode("/", $eu_codsede[1]);
+    $lista_sede = fnc_lista_sedes($conexion, $sede_codi[0], "");
+    ?>
+    <div class="row space-div">
+        <div class="col-md-6" style="margin-bottom: 0px;">
+            <label>Nombre: </label>
+        </div>
+        <div class="col-md-6">
+            <input type="hidden" id="hdnCodiSede" class="form-control" value="<?php echo trim($sede_codi[0]); ?>"/>
+            <input type="text" id="txtNombreSedEdi" class="form-control" style="width: 100%;text-transform: uppercase;" 
+                   onkeypress="return solo_letras(event);" value="<?php echo trim($lista_sede[0]["nombre"]); ?>"/>
+        </div>
+    </div>
+    <div class="row space-div">
+        <div class="col-md-6" style="margin-bottom: 0px;">
+            <label>Descripci&oacute;n: </label>
+        </div>
+        <div class="col-md-6">
+            <input type="text" id="txtDescripcionSedEdi" class="form-control" style="width: 100%;text-transform: uppercase;" 
+                   onkeypress="return solo_letras(event);" value="<?php echo trim($lista_sede[0]["descripcion"]); ?>"/>
+        </div>
+    </div>
+    <div class="row space-div">
+        <div class="col-md-6" style="margin-bottom: 0px;">
+            <label>Imagen: </label>
+        </div>
+        <div class="col-md-6">
+            <select id="cbbImagenSedeEdi" data-show-content="true" class="form-control" style="width: 100%">
+                <option value="0">-- Seleccione --</option>
+                <?php
+                $selectedsede = "";
+                $l_iconos = fnc_lista_colores();
+                foreach ($l_iconos as $icono) {
+                    if ($icono == $lista_sede[0]["color"]) {
+                        $selectedsede = " selected ";
+                    } else {
+                        $selectedsede = "";
+                    }
+                    echo "<option value='" . $icono . "' $selectedsede data-content=" . '"' . "<i class='fas fa-circle nav-icon' style='font-size:18px;color:" . $icono . "' >&nbsp;&nbsp;" . $icono . "</i>" . '"' . "></option>";
+                }
+                ?>
+            </select>
+        </div>
+    </div>
+    <div class="row space-div">
+        <div class="col-md-6" style="margin-bottom: 0px;">
+            <label>Estado: </label>
+        </div>
+        <div class="col-md-6">
+            <select id="cbbEstadoSedeEdi" class="form-control select2" style="width: 100%">
+                <option value="-1">-- Seleccione --</option>
+                <?php
+                $selectedestado = "";
+                $array_estado = array();
+                array_push($array_estado, ["id" => "1", "nombre" => "Activo"]);
+                array_push($array_estado, ["id" => "0", "nombre" => "Inactivo"]);
+                foreach ($array_estado as $listestado) {
+                    if ($listestado["id"] == $lista_sede[0]["estadoId"]) {
+                        $selectedestado = " selected ";
+                    } else {
+                        $selectedestado = "";
+                    }
+                    echo "<option value='" . $listestado["id"] . "' $selectedestado>" . $listestado["nombre"] . "</option>";
+                }
+                ?>
+            </select>
+        </div>
+    </div>
+    <?php
+}
+
+function proceso_editar_sede() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $sm_codigoMenu = strip_tags(trim($_POST["sm_codigo"]));
+    $m_codigoEdi = strip_tags(trim($_POST["m_codigoEdi"]));
+    $m_nombreEdi = strip_tags(trim($_POST["m_nombreEdi"]));
+    $m_descripcion = strip_tags(trim($_POST["m_descripcionEdi"]));
+    $m_imagen = strip_tags(trim($_POST["m_imagenEdi"]));
+    $m_estado = strip_tags(trim($_POST["m_estadoMeEdi"]));
+    try {
+        fnc_editar_sede($conexion, $m_codigoEdi, strtoupper($m_nombreEdi), $m_descripcion, $m_imagen, $m_estado);
+        $str_submenu = "";
+        $str_menu_id = "";
+        $str_menu_nombre = "";
+        $submenu = fnc_consultar_submenu($conexion, $sm_codigoMenu);
+        if (count($submenu) > 0) {
+            $str_submenu = $submenu[0]["ruta"];
+            $str_menu_id = $submenu[0]["id"];
+            $str_menu_nombre = $submenu[0]["nombre"];
+        } else {
+            $str_submenu = "";
+            $str_menu_id = "";
+            $str_menu_nombre = "";
+        }
+        echo "***1***Sede editada correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
+    } catch (Exception $exc) {
+        echo "***0***Error al editar sede.***<br/>";
+    }
+}
+
+function formulario_eliminar_sede() {
+    $eu_codigo = strip_tags(trim($_POST["u_elsede_codigo"]));
+    $eu_cod1 = explode("-", $eu_codigo);
+    $eu_codi = explode("/", $eu_cod1[1]);
+    ?>
+    <div class="row space-div">
+        <div class="col-md-12" style="margin-bottom: 0px;">
+            <input type="hidden" id="hdnCodiSedeEli" class="form-control" value="<?php echo trim($eu_codi[0]); ?>"/>
+            <label>&iquest;Esta seguro de cambiar el estado de la sede a inactivo?</label>
+        </div>
+    </div>
+    <?php
+}
+
+function operacion_eliminar_sede() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $sm_codigoEdi = strip_tags(trim($_POST["sm_codigo"]));
+    $u_codiSedeIdEli = strip_tags(trim($_POST["u_codiSedeIdEli"]));
+    try {
+        fnc_eliminar_sede($conexion, $u_codiSedeIdEli);
+        $str_submenu = "";
+        $str_menu_id = "";
+        $str_menu_nombre = "";
+        $submenu = fnc_consultar_submenu($conexion, $sm_codigoEdi);
+        if (count($submenu) > 0) {
+            $str_submenu = $submenu[0]["ruta"];
+            $str_menu_id = $submenu[0]["id"];
+            $str_menu_nombre = $submenu[0]["nombre"];
+        } else {
+            $str_submenu = "";
+            $str_menu_id = "";
+            $str_menu_nombre = "";
+        }
+        echo "***1***Sede eliminada correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
+    } catch (Exception $exc) {
+        echo "***0***Error al eliminar la sede.***<br/>";
+    }
+}
+
+function formulario_modificar_matriculas() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $eu_codigo = strip_tags(trim($_POST["s_sede"]));
+    $sede_data = fnc_lista_sedes($conexion, $eu_codigo, "");
+    $str_cadena = "";
+    if ($sede_data[0]["id"] == "1") {
+        $str_cadena = ' de "TODAS" las sedes ';
+    } else {
+        $str_cadena = ' de la sede "' . $sede_data[0]["nombre"] . '" ';
+    }
+    ?>
+    <div class="row space-div">
+        <div class="col-md-12" style="margin-bottom: 0px;">
+            <input type="hidden" id="hdnCodiSedeMatri" class="form-control" value="<?php echo trim($eu_codigo); ?>"/>
+            <label>&iquest;Esta seguro de cambiar los estados de las matriculas <?php echo trim($str_cadena); ?> a inactivas?</label>
+        </div>
+    </div>
+    <?php
+}
+
+function operacion_modificar_matriculas_por_sede() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $sm_codigoEdi = strip_tags(trim($_POST["sm_codigo"]));
+    $u_codiSedeIdEli = strip_tags(trim($_POST["u_codiSedeId"]));
+    $u_anio = strip_tags(trim($_POST["sm_anio"]));
+    try {
+        $anio = fnc_fecha_actual($conexion);
+        if ($u_anio == $anio[0]["anio"]) {
+            echo "***0***No puede modificar las matrículas a inactivas de un año actual - " . $anio[0]["anio"] . ".***<br/>";
+        } else {
+            fnc_eliminar_matriculas_sede($conexion, $u_codiSedeIdEli, $u_anio);
+            $str_submenu = "";
+            $str_menu_id = "";
+            $str_menu_nombre = "";
+            $submenu = fnc_consultar_submenu($conexion, $sm_codigoEdi);
+            if (count($submenu) > 0) {
+                $str_submenu = $submenu[0]["ruta"];
+                $str_menu_id = $submenu[0]["id"];
+                $str_menu_nombre = $submenu[0]["nombre"];
+            } else {
+                $str_submenu = "";
+                $str_menu_id = "";
+                $str_menu_nombre = "";
+            }
+            echo "***1***Matrículas del " . $u_anio . " modificadas correctamente a estados inactivos." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
+        }
+    } catch (Exception $exc) {
+        echo "***0***Error al modificar estados de matrículas a inactivas.***<br/>";
+    }
+}
+
+function formulario_descargar_solicitud() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_solicitud = strip_tags(trim($_POST["s_solicitud"]));
+    $eu_codsolicitud = explode("-", $s_solicitud);
+    $solicitud_codigo = explode("/", $eu_codsolicitud[1]);
+    $lista_sol = fnc_listar_todas_solicitudes_x_entrevista($conexion, $solicitud_codigo[0], "1", "1", p_perfil, p_sede);
+    $html = '<div class="row space-div">
+            <div class="col-md-2" style="margin-bottom: 0px;">
+              <label>Entrevista / Subentrevista</label>
+            </div>
+            <div class="col-md-10">';
+    $html .= '<select id="cbbTipoSolicitudCodisDes" class="form-control select2" style="width: 100%" onchange="cargar_solicitudes_a_descargar(this)">
+                <option value="" >-- Seleccione una opción para descargar --</option>';
+    foreach ($lista_sol as $value) {
+        $html .= '<option value="' . $value["id"] . '" >' . $value["detalle"] . '</option>';
+    }
+    $html .= '</select></div>
+        </div>
+        <div id="divDetalleDescargarEntrevista"></div>';
+    echo $html;
+}
+
+function formulario_enviar_solicitud() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_solicitud = strip_tags(trim($_POST["s_solicitud"]));
+    $eu_codsolicitud = explode("-", $s_solicitud);
+    $solicitud_codigo = explode("/", $eu_codsolicitud[1]);
+    $lista_sol = fnc_listar_todas_solicitudes_x_entrevista($conexion, $solicitud_codigo[0], "1", "1", p_perfil, p_sede);
+    $html = '<div class="row space-div">
+            <div class="col-md-2" style="margin-bottom: 0px;">
+              <label>Entrevista / Subentrevista</label>
+            </div>
+            <div class="col-md-10">';
+    $html .= '<select id="cbbTipoSolicitudCodisEnv" class="form-control select2" style="width: 100%" onchange="cargar_solicitudes_a_enviar(this)">
+                <option value="" >-- Seleccione --</option>';
+    foreach ($lista_sol as $value) {
+        $html .= '<option value="' . $value["id"] . '" >' . $value["detalle"] . '</option>';
+    }
+    $html .= '</select></div>
+        </div>
+        <div id="divDetalleEnviarEntrevista"></div>';
+    echo $html;
+}
+
+function formulario_carga_solicitudes_enviar() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_solicitud = strip_tags(trim($_POST["sol_cod"]));
+    $lista_correos = array();
+    $array = explode("-", $s_solicitud);
+    $entre_sub = "";
+    $html = "";
+    if ($array[0] === "ent") {
+        $entre_sub = "Entrevista";
+        $lista_correos = fnc_lista_correos_estudiantes_y_apoderados_entrevistas($conexion, $array[1]);
+    } else {
+        $entre_sub = "Subentrevista";
+        $lista_correos = fnc_lista_correos_estudiantes_y_apoderados_sub_entrevistas($conexion, $array[1]);
+    }
+    $lista_solicitud = fnc_obtener_solicitud_x_codigo($conexion, $array[0], $array[1]);
+    if (count($lista_correos) > 0) {
+        $html = '1***<input type="hidden" id="hdnCodiSolicitudEnv" class="form-control" value="' . $s_solicitud . '"/>'
+                . '<div class="row space-div"><div id="checkboxesEnv">';
+        foreach ($lista_correos as $lista) {
+            $html .= '<div class="checkbox">
+                        <label style="color:#007bff">
+                          <input type="checkbox" value="' . $lista["codigo"] . '**' . $lista["correo"] . '**' . $lista["persona"] . '">
+                          ' . $lista["dato"] . '
+                        </label>
+                      </div>';
+        }
+        $html .= '</div></div>';
+    } else {
+        $html = '0***<div class="row space-div">
+           <span><i class="nav-icon fa fa-info-circle" style="color: red"></i> Nota: La ' . $entre_sub . ' con c&oacute;digo ' . $lista_solicitud[0]["codigo"] . ' no tiene correo registrados del estudiante y/o apoderado(s).</span>';
+        $html .= '</div>';
     }
     echo $html;
 }

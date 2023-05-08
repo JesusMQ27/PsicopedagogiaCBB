@@ -1,7 +1,7 @@
 <?php
 
 function con_consulta_login($p_usua, $p_clave) {
-    $sql = "SELECT usu_id as id,usu_num_doc as num_doc,usu_nombres, CONCAT(usu_paterno,' ',usu_materno) as apellidos "
+    $sql = "SELECT usu_id as id,usu_num_doc as num_doc,usu_nombres, CONCAT(usu_paterno,' ',usu_materno) as apellidos,perf_id as perfCod,sed_id as sedCod  "
             . " FROM tb_usuario WHERE usu_num_doc='$p_usua' AND usu_clave='$p_clave';";
     return $sql;
 }
@@ -55,7 +55,7 @@ function con_consultar_submenu($id) {
     return $sql;
 }
 
-function con_lista_usuarios($id) {
+function con_lista_usuarios($id, $sede) {
     $sql = "SELECT usu_id as id,a.perf_id as perfId,perf_nombre as perfilNombre,a.tipo_doc_id as tipoDocId,tipo_doc_nombre as tipoDoc,
 usu_num_doc as numDoc,CONCAT(usu_paterno,' ',usu_materno,' ', usu_nombres) as fullnombre,
 usu_paterno as paterno,usu_materno as materno, usu_nombres as nombres,
@@ -68,8 +68,11 @@ INNER JOIN tb_perfil b ON a.perf_id=b.perf_id
 INNER JOIN tb_documento_tipo c ON a.tipo_doc_id=c.tipo_doc_id
 INNER JOIN tb_sede d ON a.sed_id=d.sed_id
 WHERE 1=1 ";
-    if ($id != "") {
-        $sql .= " AND usu_id=$id";
+    if ($id !== "") {
+        $sql .= " AND usu_id=$id ";
+    }
+    if ($sede !== "") {
+        $sql .= " AND a.sed_id=$sede ";
     }
     $sql .= " ORDER BY 1;";
     return $sql;
@@ -118,7 +121,7 @@ function con_lista_tipo_usuarios($id, $estado) {
         $sql .= "";
     }
     if ($estado !== "") {
-        $slq .= " AND perf_estado='$estado' ";
+        $sql .= " AND perf_estado='$estado' ";
     } else {
         $sql .= "";
     }
@@ -186,6 +189,23 @@ FROM tb_menu WHERE 1=1 ";
     }
     if ($estado !== "") {
         $cadena .= " AND men_estado=1;";
+    } else {
+        $cadena .= "  ";
+    }
+    $sql .= $cadena;
+    return $sql;
+}
+
+function con_lista_sedes($id, $estado) {
+    $cadena = "";
+    $sql = "SELECT sed_id as id,sed_codigo as codigo, sed_nombre as nombre, sed_descripcion as descripcion,
+sed_color as color,CASE sed_estado WHEN 1 THEN 'Activo' WHEN 0 THEN 'Inactivo' ELSE '' END AS estado,sed_estado as estadoId 
+FROM tb_sede WHERE 1=1 ";
+    if ($id !== "") {
+        $sql .= " AND sed_id in ('$id') ";
+    }
+    if ($estado !== "") {
+        $cadena .= " AND sed_estado=1;";
     } else {
         $cadena .= "  ";
     }
@@ -764,7 +784,7 @@ function con_fechas_rango() {
     return $sql;
 }
 
-function con_lista_solicitudes($sede, $fechaInicio, $fechaFin, $codigoUsuario) {
+function con_lista_solicitudes($sede, $fechaInicio, $fechaFin, $codigoUsuario, $privacidad) {
     $sql = "SELECT sol_id as id,
 DATE(sol_fecha) as fecha,
 CONCAT(gra_nombre, ' - ',REPLACE(sec_nombre,'Seccion ','')) as grado, 
@@ -799,6 +819,11 @@ WHERE sol_fecha BETWEEN '$fechaInicio 00:00:00' AND '$fechaFin 23:59:59' ";
     }
     if ($codigoUsuario !== "") {
         $sql .= " AND a.usu_id IN ($codigoUsuario) ";
+    }
+    if ($privacidad !== "0") {
+        $sql .= " AND sol_privacidad in ($privacidad)";
+    } else {
+        $sql .= " AND sol_privacidad in ($privacidad)";
     }
     $sql .= ";";
     return $sql;
@@ -1001,6 +1026,7 @@ function con_registrar_solicitud_estudiante($cadena) {
         sol_acuerdos_1,
         sol_acuerdos_2,
         apo_id,
+        sol_privacidad,
         sol_estado)
         VALUES $cadena";
     return $sql;
@@ -1014,6 +1040,7 @@ function con_registrar_solicitud_firmas($cadena) {
         apo_id,
         firm_imagen,
         firm_fecha,
+        firm_tipo,
         firm_estado)
         VALUES $cadena";
     return $sql;
@@ -1048,6 +1075,12 @@ function con_solicitud_alumno($codigo) {
 function con_eliminar_solicitud_alumno($id, $estado) {
     $sql = "UPDATE tb_solicitudes SET sol_estado='$estado' "
             . " WHERE sol_id='$id';";
+    return $sql;
+}
+
+function con_eliminar_sub_solicitud_alumno($id, $estado) {
+    $sql = "UPDATE tb_sub_solicitudes SET ssol_estado='$estado' "
+            . " WHERE ssol_id='$id';";
     return $sql;
 }
 
@@ -1108,6 +1141,7 @@ function con_registrar_sub_solicitud_estudiante($cadena) {
         ssol_acuerdos_1,
         ssol_acuerdos_2,
         apo_id,
+        ssol_privacidad,
         ssol_estado)
         VALUES $cadena";
     return $sql;
@@ -1121,12 +1155,13 @@ function con_registrar_sub_solicitud_firmas($cadena) {
         apo_id,
         sfirm_imagen,
         sfirm_fecha,
+        sfirm_tipo,
         sfirm_estado)
         VALUES $cadena";
     return $sql;
 }
 
-function con_listar_todas_solicitudes_x_entrevista($codigo, $entre, $sub) {
+function con_listar_todas_solicitudes_x_entrevista($codigo, $entre, $sub, $privacidad) {
     $sql = "SELECT id,CONCAT(nomb,' - ',codigo ,' - ',ent_nombre,' - ',alu_dni,' - ', alu_nombres) as detalle FROM ( ";
     if ($entre === "") {
         $sql .= "";
@@ -1136,8 +1171,9 @@ function con_listar_todas_solicitudes_x_entrevista($codigo, $entre, $sub) {
             INNER JOIN tb_entrevista b ON a.ent_id=b.ent_id
             INNER JOIN tb_matricula c ON a.mat_id=c.mat_id
             INNER JOIN tb_alumno d ON c.alu_id=d.alu_id
-            WHERE sol_id=$codigo
-            UNION ";
+            WHERE sol_id=$codigo ";
+        $sql .= " AND sol_privacidad in ($privacidad) ";
+        $sql .= " UNION ";
     }
 
     if ($sub === "") {
@@ -1149,6 +1185,7 @@ function con_listar_todas_solicitudes_x_entrevista($codigo, $entre, $sub) {
             INNER JOIN tb_matricula c ON a.mat_id=c.mat_id
             INNER JOIN tb_alumno d ON c.alu_id=d.alu_id
             WHERE sol_id=$codigo ";
+        $sql .= " AND ssol_privacidad in ($privacidad)";
     }
     $sql .= " ) as p1 ORDER BY orden;";
     return $sql;
@@ -1159,7 +1196,7 @@ function con_obtener_solicitud_x_codigo($tipo, $codi) {
     if ($tipo === "ent") {
         $sql = "SELECT sol_codigo as codigo,a.mat_id as matricula,a0.alu_id as aluId,CONCAT(alu_dni,' - ',alu_nombres) as alumno_busq,CONCAT(alu_nombres,' - ',alu_dni) as alumno,f.cat_id as categoria,a.subca_id as subcategorgia,a.ent_id,CONCAT(gra_nombre,' - ',sec_nombre) as grado,
 a.sed_id as sedeId,sed_nombre as sede,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as usuario,usu_num_doc as dni,sol_motivo as motivo, DATE_FORMAT(sol_fecha, '%d/%m/%Y %H:%i:%s') as fecha,sol_plan_estu as plan_estudiante,sol_plan_entre as plan_entrevistador,sol_acuerdos as acuerdos,sol_informe as informe,sol_plan_padre as plan_padre,
-sol_plan_docen as plan_docente,sol_acuerdos_1 as acuerdos1, sol_acuerdos_2 as acuerdos2,apo_id as apoderado,sol_estado as estadoId,
+sol_plan_docen as plan_docente,sol_acuerdos_1 as acuerdos1, sol_acuerdos_2 as acuerdos2,apo_id as apoderado,sol_estado as estadoId,sol_privacidad as privacidad,
 CASE sol_estado WHEN 0 THEN 'Inactivo' WHEN 1 THEN 'Activo' END as estado 
 FROM tb_solicitudes a
 INNER JOIN tb_matricula a0 ON a.mat_id=a0.mat_id
@@ -1175,7 +1212,7 @@ WHERE sol_id=$codi;";
         $sql = "
 SELECT ssol_codigo as codigo,a.mat_id as matricula,a0.alu_id as aluId,CONCAT(alu_dni,' - ',alu_nombres) as alumno_busq,CONCAT(alu_nombres,' - ',alu_dni) as alumno,f.cat_id as categoria,a.subca_id as subcategorgia,a.ent_id,CONCAT(gra_nombre,' - ',sec_nombre) as grado,
 a.sed_id as sedeId,sed_nombre as sede,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as usuario,usu_num_doc as dni,ssol_motivo as motivo, DATE_FORMAT(ssol_fecha, '%d/%m/%Y %H:%i:%s') as fecha,ssol_plan_estu as plan_estudiante,ssol_plan_entre as plan_entrevistador,ssol_acuerdos as acuerdos,ssol_informe as informe,ssol_plan_padre as plan_padre,
-ssol_plan_docen as plan_docente,ssol_acuerdos_1 as acuerdos1, ssol_acuerdos_2 as acuerdos2,apo_id as apoderado,ssol_estado as estadoId,
+ssol_plan_docen as plan_docente,ssol_acuerdos_1 as acuerdos1, ssol_acuerdos_2 as acuerdos2,apo_id as apoderado,ssol_estado as estadoId,ssol_privacidad as privacidad,
 CASE ssol_estado WHEN 0 THEN 'Inactivo' WHEN 1 THEN 'Activo' END as estado 
 FROM tb_sub_solicitudes a
 INNER JOIN tb_matricula a0 ON a.mat_id=a0.mat_id
@@ -1188,5 +1225,184 @@ INNER JOIN tb_categoria g ON f.cat_id=g.cat_id
 INNER JOIN tb_usuario h ON a.usu_id=h.usu_id
 WHERE ssol_id=$codi;";
     }
+    return $sql;
+}
+
+function con_obtener_firma_entrevista($codigo, $tipo) {
+    $sql = "SELECT firm_id as id,firm_fecha as fecha,firm_imagen as imagen,firm_tipo as tipo 
+FROM tb_solicitudes_firmas WHERE sol_id=$codigo AND firm_tipo=$tipo AND firm_estado='1';";
+    return $sql;
+}
+
+function con_obtener_firma_subentrevista($codigo, $tipo) {
+    $sql = "SELECT sfirm_id as id,sfirm_fecha as fecha,sfirm_imagen as imagen,sfirm_tipo as tipo 
+FROM tb_sub_solicitudes_firmas WHERE ssol_id=$codigo AND sfirm_tipo=$tipo AND sfirm_estado='1';";
+    return $sql;
+}
+
+function con_modificar_solicitud_entrevista($codigo, $matricual, $usuario, $solicitud_tipo, $s_subcategoria, $s_motivo, $fecha, $sede, $s_planEstudiante, $s_planEntrevistador, $s_acuerdos, $s_informe, $s_planPadre, $s_planDocente, $s_acuerdosPadres, $s_acuerdosColegio, $s_apoderado, $_privacidad, $estado) {
+    $sql = "UPDATE tb_solicitudes SET 
+            mat_id='$matricual',
+            usu_id='$usuario',
+            ent_id='$solicitud_tipo',
+            subca_id='$s_subcategoria',
+            sol_motivo='$s_motivo',
+            sol_fecha=$fecha,
+            sed_id='$sede',
+            sol_plan_estu='$s_planEstudiante',
+            sol_plan_entre='$s_planEntrevistador',
+            sol_acuerdos='$s_acuerdos',
+            sol_informe='$s_informe',
+            sol_plan_padre='$s_planPadre',
+            sol_plan_docen='$s_planDocente',
+            sol_acuerdos_1='$s_acuerdosPadres',
+            sol_acuerdos_2='$s_acuerdosColegio',
+            apo_id='$s_apoderado',
+            sol_privacidad='$_privacidad',
+            sol_estado='$estado' "
+            . " WHERE sol_id='$codigo';";
+    return $sql;
+}
+
+function con_modificar_solicitud_entrevista_firmas($codigo, $tipo, $matricual, $usuario, $s_apoderado, $imagen, $fecha, $estado) {
+    $sql = "UPDATE tb_solicitudes_firmas SET 
+        mat_id='$matricual',
+        usu_id='$usuario',
+        apo_id='$s_apoderado',
+        firm_imagen='$imagen',
+        firm_fecha=$fecha,
+        firm_estado='$estado'
+         WHERE sol_id='$codigo' and firm_tipo='$tipo';";
+    return $sql;
+}
+
+function con_modificar_solicitud_sub_entrevista($codigo, $matricual, $usuario, $solicitud_tipo, $s_subcategoria, $s_motivo, $fecha, $sede, $s_planEstudiante, $s_planEntrevistador, $s_acuerdos, $s_informe, $s_planPadre, $s_planDocente, $s_acuerdosPadres, $s_acuerdosColegio, $s_apoderado, $_privacidad, $estado) {
+    $sql = "UPDATE tb_sub_solicitudes SET 
+            mat_id='$matricual',
+            usu_id='$usuario',
+            ent_id='$solicitud_tipo',
+            subca_id='$s_subcategoria',
+            ssol_motivo='$s_motivo',
+            ssol_fecha=$fecha,
+            sed_id='$sede',
+            ssol_plan_estu='$s_planEstudiante',
+            ssol_plan_entre='$s_planEntrevistador',
+            ssol_acuerdos='$s_acuerdos',
+            ssol_informe='$s_informe',
+            ssol_plan_padre='$s_planPadre',
+            ssol_plan_docen='$s_planDocente',
+            ssol_acuerdos_1='$s_acuerdosPadres',
+            ssol_acuerdos_2='$s_acuerdosColegio',
+            apo_id='$s_apoderado',
+            ssol_privacidad='$_privacidad',
+            ssol_estado='$estado' "
+            . " WHERE ssol_id='$codigo';";
+    return $sql;
+}
+
+function con_modificar_solicitud_sub_entrevista_firmas($codigo, $tipo, $matricual, $usuario, $s_apoderado, $imagen, $fecha, $estado) {
+    $sql = "UPDATE tb_sub_solicitudes_firmas SET 
+        mat_id='$matricual',
+        usu_id='$usuario',
+        apo_id='$s_apoderado',
+        sfirm_imagen='$imagen',
+        sfirm_fecha=$fecha,
+        sfirm_estado='$estado'
+         WHERE ssol_id='$codigo' and sfirm_tipo='$tipo';";
+    return $sql;
+}
+
+function con_registrar_sede($cadena) {
+    $sql = "INSERT INTO tb_sede(
+        sed_codigo,
+        sed_nombre,
+        sed_descripcion,
+        sed_color,
+        sed_estado)
+        VALUES $cadena";
+    return $sql;
+}
+
+function con_editar_sede($id, $nombre, $descripcion, $icono, $estado) {
+    $sql = "UPDATE tb_sede SET sed_nombre='$nombre',sed_descripcion='$descripcion',sed_color='$icono',sed_estado='$estado' "
+            . " WHERE sed_id='$id';";
+    return $sql;
+}
+
+function con_eliminar_sede($id) {
+    $sql = "UPDATE tb_sede SET sed_estado='0' "
+            . " WHERE sed_id='$id';";
+    return $sql;
+}
+
+function con_eliminar_matriculas_sede($id, $anio) {
+    $sql = "UPDATE tb_matricula SET mat_estado='0' "
+            . " WHERE sed_id='$id' AND YEAR(mat_fech_regi)=$anio;";
+    return $sql;
+}
+
+function con_lista_anios() {
+    $sql = "SELECT YEAR(NOW()) as fecha
+        UNION
+        SELECT YEAR(DATE_SUB(NOW(), INTERVAL 1 YEAR)) as fecha
+        UNION
+        SELECT YEAR(DATE_SUB(NOW(), INTERVAL 2 YEAR)) as fecha";
+    return $sql;
+}
+
+function con_fecha_actual() {
+    $sql = "SELECT YEAR(NOW()) as anio,NOW() as hoy";
+    return $sql;
+}
+
+function con_modificar_matriculas_sedes($id) {
+    $cadena = "";
+    $sql = "UPDATE tb_matriculas SET mat_estado='0' "
+            . " WHERE 1=1 ";
+    if ($id === "1") {
+        $cadena = "";
+    } else {
+        $cadena = " AND sed_id='$id' ";
+    }
+    $sql .= $cadena . " AND YEAR(mat_fech_regi)=YEAR(DATE_SUB(NOW(), INTERVAL 1 YEAR)); ";
+    return $sql;
+}
+
+function con_lista_correos_estudiantes_y_apoderados_entrevistas($codigo) {
+    $sql = "SELECT * FROM (
+SELECT DISTINCT CONCAT('alu-',b.alu_id) as codigo,CONCAT('ESTUDIANTE - ',UPPER(alu_nombres),' - ',alu_correo) as dato, 
+trim(alu_correo) as correo,UPPER(alu_nombres) as persona
+FROM tb_solicitudes a
+INNER JOIN tb_matricula b ON a.mat_id=b.mat_id
+INNER JOIN tb_alumno c ON b.alu_id=c.alu_id
+WHERE sol_id=$codigo 
+UNION ALL
+SELECT DISTINCT CONCAT('apo-',b.apo_id) as codigo,CONCAT(tip_nombre,' - ',UPPER(apo_nombres),' - ',apo_correo) as dato,
+trim(apo_correo) as correo,UPPER(apo_nombres) as persona
+FROM tb_solicitudes a
+INNER JOIN tb_alumno_apoderado b ON a.apo_id=b.apo_id
+INNER JOIN tb_tipo_apoderado c ON b.tip_id=c.tip_id
+WHERE sol_id=$codigo
+) AS p1 WHERE p1.correo!='';";
+    return $sql;
+}
+
+function con_lista_correos_estudiantes_y_apoderados_sub_entrevistas($codigo) {
+    $sql = "
+SELECT * FROM (
+SELECT DISTINCT CONCAT('alu-',b.alu_id) as codigo,CONCAT('ESTUDIANTE - ',UPPER(alu_nombres),' - ',alu_correo) as dato, 
+trim(alu_correo) as correo,UPPER(alu_nombres) as persona
+FROM tb_sub_solicitudes a
+INNER JOIN tb_matricula b ON a.mat_id=b.mat_id
+INNER JOIN tb_alumno c ON b.alu_id=c.alu_id
+WHERE ssol_id=$codigo
+UNION ALL
+SELECT DISTINCT CONCAT('apo-',b.apo_id) as codigo,CONCAT(tip_nombre,' - ',UPPER(apo_nombres),' - ',apo_correo) as dato,
+trim(apo_correo) as correo,UPPER(apo_nombres) as persona
+FROM tb_sub_solicitudes a
+INNER JOIN tb_alumno_apoderado b ON a.apo_id=b.apo_id
+INNER JOIN tb_tipo_apoderado c ON b.tip_id=c.tip_id
+WHERE ssol_id=$codigo
+) AS p1 WHERE p1.correo!='';";
     return $sql;
 }

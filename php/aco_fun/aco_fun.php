@@ -67,9 +67,9 @@ function fnc_consultar_submenu($conexion, $id) {
     return $arreglo;
 }
 
-function fnc_lista_usuarios($conexion, $id) {
+function fnc_lista_usuarios($conexion, $id, $sede) {
     $arreglo = array();
-    $sql = con_lista_usuarios($id);
+    $sql = con_lista_usuarios($id, $sede);
     $stmt = $conexion->query($sql);
     foreach ($stmt as $data) {
         array_push($arreglo, $data);
@@ -218,6 +218,16 @@ function fnc_eliminar_usuario($conexion, $id) {
 function fnc_lista_menus($conexion, $id, $estado) {
     $arreglo = array();
     $sql = con_lista_menus($id, $estado);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_sedes($conexion, $id, $estado) {
+    $arreglo = array();
+    $sql = con_lista_sedes($id, $estado);
     $stmt = $conexion->query($sql);
     foreach ($stmt as $data) {
         array_push($arreglo, $data);
@@ -554,9 +564,9 @@ function fnc_fechas_rango($conexion) {
     return $arreglo;
 }
 
-function fnc_lista_solicitudes($conexion, $sede, $fechaInicio, $fechaFin, $codigoUsuario) {
+function fnc_lista_solicitudes($conexion, $sede, $fechaInicio, $fechaFin, $codigoUsuario, $privacidad) {
     $arreglo = array();
-    $sql = con_lista_solicitudes($sede, $fechaInicio, $fechaFin, $codigoUsuario);
+    $sql = con_lista_solicitudes($sede, $fechaInicio, $fechaFin, $codigoUsuario, $privacidad);
     $stmt = $conexion->query($sql);
     foreach ($stmt as $data) {
         array_push($arreglo, $data);
@@ -724,6 +734,12 @@ function fnc_eliminar_solicitud_alumno($conexion, $id, $estado) {
     return $stmt;
 }
 
+function fnc_eliminar_sub_solicitud_alumno($conexion, $id, $estado) {
+    $sql = con_eliminar_sub_solicitud_alumno($id, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
 function convertirFecha($fecha) {
     $date = explode("/", $fecha);
     $rfecha = $date[2] . "-" . $date[1] . "-" . $date[0];
@@ -762,9 +778,15 @@ function fnc_registrar_sub_solicitud_firmas($conexion, $cadena) {
     return $conexion->lastInsertId();
 }
 
-function fnc_listar_todas_solicitudes_x_entrevista($conexion, $codi, $entre, $sub) {
+function fnc_listar_todas_solicitudes_x_entrevista($conexion, $codi, $entre, $sub, $perfil, $sede) {
     $arreglo = array();
-    $sql = con_listar_todas_solicitudes_x_entrevista($codi, $entre, $sub);
+    $privacidad = "";
+    if ($sede == "1" && ($perfil == "1" || $perfil == "5")) {
+        $privacidad = "0,1";
+    } else {
+        $privacidad = "0";
+    }
+    $sql = con_listar_todas_solicitudes_x_entrevista($codi, $entre, $sub, $privacidad);
     $stmt = $conexion->query($sql);
     foreach ($stmt as $data) {
         array_push($arreglo, $data);
@@ -775,6 +797,125 @@ function fnc_listar_todas_solicitudes_x_entrevista($conexion, $codi, $entre, $su
 function fnc_obtener_solicitud_x_codigo($conexion, $tipo, $codi) {
     $arreglo = array();
     $sql = con_obtener_solicitud_x_codigo($tipo, $codi);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_obtener_firma_entrevista($conexion, $codigo, $tipo) {
+    $arreglo = array();
+    $sql = con_obtener_firma_entrevista($codigo, $tipo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_obtener_firma_subentrevista($conexion, $codigo, $tipo) {
+    $arreglo = array();
+    $sql = con_obtener_firma_subentrevista($codigo, $tipo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_modificar_solicitud_entrevista($conexion, $codigo, $matricual, $usuario, $solicitud_tipo, $s_subcategoria, $s_motivo, $fecha, $sede, $s_planEstudiante, $s_planEntrevistador, $s_acuerdos, $s_informe, $s_planPadre, $s_planDocente, $s_acuerdosPadres, $s_acuerdosColegio, $s_apoderado, $_privacidad, $estado) {
+    $sql = con_modificar_solicitud_entrevista($codigo, $matricual, $usuario, $solicitud_tipo, $s_subcategoria, $s_motivo, $fecha, $sede, $s_planEstudiante, $s_planEntrevistador, $s_acuerdos, $s_informe, $s_planPadre, $s_planDocente, $s_acuerdosPadres, $s_acuerdosColegio, $s_apoderado, $_privacidad, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_modificar_solicitud_entrevista_firmas($conexion, $codigo, $tipo, $matricual, $usuario, $s_apoderado, $imagen, $fecha, $estado) {
+    $sql = con_modificar_solicitud_entrevista_firmas($codigo, $tipo, $matricual, $usuario, $s_apoderado, $imagen, $fecha, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_modificar_solicitud_sub_entrevista($conexion, $codigo, $matricual, $usuario, $solicitud_tipo, $s_subcategoria, $s_motivo, $fecha, $sede, $s_planEstudiante, $s_planEntrevistador, $s_acuerdos, $s_informe, $s_planPadre, $s_planDocente, $s_acuerdosPadres, $s_acuerdosColegio, $s_apoderado, $_privacidad, $estado) {
+    $sql = con_modificar_solicitud_sub_entrevista($codigo, $matricual, $usuario, $solicitud_tipo, $s_subcategoria, $s_motivo, $fecha, $sede, $s_planEstudiante, $s_planEntrevistador, $s_acuerdos, $s_informe, $s_planPadre, $s_planDocente, $s_acuerdosPadres, $s_acuerdosColegio, $s_apoderado, $_privacidad, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_modificar_solicitud_sub_entrevista_firmas($conexion, $codigo, $tipo, $matricual, $usuario, $s_apoderado, $imagen, $fecha, $estado) {
+    $sql = con_modificar_solicitud_sub_entrevista_firmas($codigo, $tipo, $matricual, $usuario, $s_apoderado, $imagen, $fecha, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_lista_colores() {
+    $array = array('#4f5962', '#fd7e14', '#28a745', '#007bff', '#6f42c1', '#001f3f', '#6610f2', '#3c8dbc', '#3d9970');
+    return $array;
+}
+
+function fnc_registrar_sede($conexion, $cadena) {
+    $sql = con_registrar_sede($cadena);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_editar_sede($conexion, $id, $nombre, $descripcion, $icono, $estado) {
+    $sql = con_editar_sede($id, $nombre, $descripcion, $icono, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_eliminar_sede($conexion, $id, $anio) {
+    $sql = con_eliminar_sede($id, $anio);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_eliminar_matriculas_sede($conexion, $id, $anio) {
+    $sql = con_eliminar_matriculas_sede($id, $anio);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_modificar_matriculas_sedes($conexion, $id, $anio) {
+    $sql = con_modificar_matriculas_sedes($id, $anio);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_lista_anios($conexion) {
+    $arreglo = array();
+    $sql = con_lista_anios();
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_fecha_actual($conexion) {
+    $arreglo = array();
+    $sql = con_fecha_actual();
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_correos_estudiantes_y_apoderados_entrevistas($conexion, $codigo) {
+    $arreglo = array();
+    $sql = con_lista_correos_estudiantes_y_apoderados_entrevistas($codigo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_correos_estudiantes_y_apoderados_sub_entrevistas($conexion, $codigo) {
+    $arreglo = array();
+    $sql = con_lista_correos_estudiantes_y_apoderados_sub_entrevistas($codigo);
     $stmt = $conexion->query($sql);
     foreach ($stmt as $data) {
         array_push($arreglo, $data);

@@ -20,7 +20,7 @@ $conexion = $con->connect();
 
 $sm_codigo = strip_tags(trim($_POST["sm_codigo"]));
 $u_hdnCodiUsua = strip_tags(trim($_POST["u_hdnCodiUsuaCam"]));
-$usuario_dta = fnc_lista_usuarios($conexion, $u_hdnCodiUsua);
+$usuario_dta = fnc_lista_usuarios($conexion, $u_hdnCodiUsua,"");
 if (count($usuario_dta) > 0) {
     $u_numDocumento = $usuario_dta[0]["numDoc"];
     $clave = fnc_generate_random_string(3) . $u_numDocumento . fnc_generate_random_string(5);

@@ -23,7 +23,7 @@ if ($perfilId === "1" || $perfilId === "2") {
     $sedeCodi = $sedesData[0]["id"];
     $usuarioCodi = $userData[0]["usuCodi"];
 }
-$lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["date_ayer"], $fechas[0]["date_hoy"], $usuarioCodi);
+$lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["date_ayer"], $fechas[0]["date_hoy"], $usuarioCodi, "");
 ?>
 
 <section class="content-header">

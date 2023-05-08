@@ -7,6 +7,10 @@ var canvas1_sub = {};
 var canvas2_sub = {};
 var signaturePad_sub = {};
 var signaturePad_entrevistador_sub = {};
+var canvas1_edi = {};
+var canvas2_edi = {};
+var signaturePad_edi = {};
+var signaturePad_entrevistador_edi = {};
 function cargar_opcion(codigo, ruta, nombre) {
     $.ajax({
         url: ruta,
@@ -2078,6 +2082,7 @@ function editar_apoderado() {
             title: mensaje,
             showConfirmButton: false
         });
+        $("#btnEditarApoderado").attr("disabled", false);
     } else {
         $.ajax({
             url: "php/aco_php/controller.php",
@@ -2187,6 +2192,7 @@ function registrar_nuevo_apoderado() {
             title: mensaje,
             showConfirmButton: false
         });
+        $("#btnNuevoApoderado").attr("disabled", false);
     } else {
         $.ajax({
             url: "php/aco_php/controller.php",
@@ -2456,6 +2462,13 @@ function registrar_solicitud() {
     var canvas_1 = wrapper.querySelector("canvas");
     var wrapper_entrevistador = document.getElementById("signature-pad-entrevistador");
     var canvas_2 = wrapper_entrevistador.querySelector("canvas");
+    var checkPrivacidad = $("#checkPrivacidad").is(':checked');
+    var privacidad_value = "";
+    if (checkPrivacidad) {
+        privacidad_value = "1";
+    } else {
+        privacidad_value = "0";
+    }
     if (categoria === "") {
         mensaje += "*Seleccione la categoria<br>";
         $("#cbbCategoria").addClass("is-invalid");
@@ -2584,6 +2597,7 @@ function registrar_solicitud() {
                 s_acuerdosPadres: acuerdosPadres,
                 s_acuerdosColegio: acuerdosColegio,
                 s_apoderado: apoderado,
+                s_privacidad: privacidad_value,
                 s_dataURL1: dataURL1,
                 s_dataURL2: dataURL2
             },
@@ -2628,7 +2642,6 @@ function registrar_solicitud() {
 
 }
 
-
 function mostrar_detalle_solicitud(modal, solicitud) {
     $.ajax({
         url: "php/aco_php/controller.php",
@@ -2645,6 +2658,11 @@ function mostrar_detalle_solicitud(modal, solicitud) {
             modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
             //$('.select2').select2();
             modal.find('.modal-body').html(datos);
+            var select = $("#cbbTipoSolicitudCodis option").length;
+            if (select === 2) {
+                $('select[id=cbbTipoSolicitudCodis] option:eq(1)').attr('selected', 'selected');
+                cargar_solicitudes_a_detallar("");
+            }
         }
     });
 }
@@ -2665,66 +2683,88 @@ function mostrar_eliminar_solicitud(modal, solicitud) {
             modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
             //$('.select2').select2();
             modal.find('.modal-body').html(datos);
+            $("#cbbTipoSolicitudCodisElis").change(function () {
+                var value = $(this).val();
+                if (value !== '' && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+            var select = $("#cbbTipoSolicitudCodisElis option").length;
+            if (select === 2) {
+                $('select[id=cbbTipoSolicitudCodisElis] option:eq(1)').attr('selected', 'selected');
+                cargar_solicitudes_a_eliminar("");
+            }
         }
     });
 }
 
 function eliminar_solicitud() {
-    $("#btnEliminarSolicitudAlumno").attr("disabled", true);
     var Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
         showConfirmButton: false,
         timer: 4000
     });
-    var codSMenu = $("#hdnCodiSR");
-    var hdnCodiGrupoEli = $("#hdnCodiSoliAlu");
-    $.ajax({
-        url: "php/aco_php/controller.php",
-        dataType: "html",
-        type: "POST",
-        data: {
-            opcion: "operacion_eliminar_solicitud",
-            sm_codigo: $.trim(codSMenu.val()),
-            u_codiSoliEliAlu: $.trim(hdnCodiGrupoEli.val())
-        },
-        beforeSend: function (objeto) {
-            $("#modal-eliminar-solicitud-alumno").find('.modal-footer div label').html("");
-            $("#modal-eliminar-solicitud-alumno").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            //$("#contentMenu").html(xhr.responseText);
-        },
-        success: function (datos) {
-            var resp = datos.split("***");
-            if (resp[1] === "1") {
-                var lista_sm = resp[3].split("--");
-                $("#modal-eliminar-solicitud-alumno").find('.modal-footer div label').html('');
-                Toast.fire({
-                    position: 'top-end',
-                    icon: 'success',
-                    title: resp[2],
-                    showConfirmButton: false
-                });
-                setTimeout(function () {
-                    $('#modal-eliminar-solicitud-alumno').modal('hide');
-                    $("#btnEliminarSolicitudAlumno").attr("disabled", false);
-                    $('.modal-backdrop').remove();
-                    cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
-                }, 4500);
-            } else {
-                Toast.fire({
-                    position: 'top-end',
-                    icon: 'error',
-                    title: resp[2],
-                    showConfirmButton: false
-                });
-                setTimeout(function () {
-                    $("#btnEliminarSolicitudAlumno").attr("disabled", false);
-                }, 4500);
+    var cbbTipoSolicitudCodis = $("#cbbTipoSolicitudCodisElis").select().val();
+    if (cbbTipoSolicitudCodis === "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: 'Seleccione la Entrevista / Subentrevista',
+            showConfirmButton: false
+        });
+        $("#cbbTipoSolicitudCodisElis").addClass("is-invalid");
+    } else {
+        $("#btnEliminarSolicitudAlumno").attr("disabled", true);
+        var codSMenu = $("#hdnCodiSR");
+        var hdnCodiSolicitud = $("#hdnCodiSolicitud");
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "operacion_eliminar_solicitud",
+                sm_codigo: $.trim(codSMenu.val()),
+                u_codiSolicitud: $.trim(hdnCodiSolicitud.val())
+            },
+            beforeSend: function (objeto) {
+                $("#modal-eliminar-solicitud-alumno").find('.modal-footer div label').html("");
+                $("#modal-eliminar-solicitud-alumno").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                var resp = datos.split("***");
+                if (resp[1] === "1") {
+                    var lista_sm = resp[3].split("--");
+                    $("#modal-eliminar-solicitud-alumno").find('.modal-footer div label').html('');
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $('#modal-eliminar-solicitud-alumno').modal('hide');
+                        $("#btnEliminarSolicitudAlumno").attr("disabled", false);
+                        $('.modal-backdrop').remove();
+                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                    }, 4500);
+                } else {
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $("#btnEliminarSolicitudAlumno").attr("disabled", false);
+                    }, 4500);
+                }
             }
-        }
-    });
+        });
+    }
 }
 
 function imprimir_ficha_entrevista() {
@@ -3021,6 +3061,13 @@ function registrar_sub_solicitud() {
     var canvas_1 = wrapper.querySelector("canvas");
     var wrapper_entrevistador = document.getElementById("signature-pad-entrevistador-sub");
     var canvas_2 = wrapper_entrevistador.querySelector("canvas");
+    var checkPrivacidad = $("#checkPrivacidad_sub").is(':checked');
+    var privacidad_value = "";
+    if (checkPrivacidad) {
+        privacidad_value = "1";
+    } else {
+        privacidad_value = "0";
+    }
     if (categoria === "") {
         mensaje += "*Seleccione la categoria<br>";
         $("#cbbCategoria_sub").addClass("is-invalid");
@@ -3150,6 +3197,7 @@ function registrar_sub_solicitud() {
                 s_acuerdosPadres: acuerdosPadres,
                 s_acuerdosColegio: acuerdosColegio,
                 s_apoderado: apoderado,
+                s_privacidad: privacidad_value,
                 s_dataURL1_sub: dataURL1,
                 s_dataURL2_sub: dataURL2
             },
@@ -3540,12 +3588,24 @@ function mostrar_editar_solicitud(modal, solicitud) {
             modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
             //$('.select2').select2();
             modal.find('.modal-body').html(datos);
+            $("#cbbTipoSolicitudCodisEdi").change(function () {
+                var value = $(this).val();
+                if (value !== '' && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+            var select = $("#cbbTipoSolicitudCodisEdi option").length;
+            if (select === 2) {
+                $('select[id=cbbTipoSolicitudCodisEdi] option:eq(1)').attr('selected', 'selected');
+                cargar_solicitudes_a_editar("");
+            }
         }
     });
 }
 
 function cargar_solicitudes_a_editar(solicitud) {
-    if (solicitud.value === "") {
+    var soli = $("#cbbTipoSolicitudCodisEdi").select().val();
+    if (soli === "") {
         $('#divDetalleEditar').html("");
     } else {
         $.ajax({
@@ -3554,7 +3614,7 @@ function cargar_solicitudes_a_editar(solicitud) {
             type: "POST",
             data: {
                 opcion: "formulario_carga_solicitudes",
-                sol_cod: solicitud.value
+                sol_cod: soli
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 //$("#contentMenu").html(xhr.responseText);
@@ -3590,6 +3650,117 @@ function cargar_solicitudes_a_editar(solicitud) {
                         mostrar_tipo_solicitud_edi("");
                     }
                 });
+                //var canvas1_edi_val = $("#canvas1_edi").is(':visible');
+                //var canvas2_edi_val = $("#canvas_2edi").is(':visible');
+                //if (canvas1_edi_val === true) {
+                var wrapper = document.getElementById("signature-pad-edi");
+                canvas1_edi = wrapper.querySelector("canvas");
+                signaturePad_edi = new SignaturePad(canvas1_edi, {
+                    backgroundColor: 'rgb(255, 255, 255)'
+                });
+                function resizeCanvas() {
+                    var ratio = Math.max(window.devicePixelRatio || 1, 1);
+                    canvas1_edi.width = canvas1_edi.offsetWidth * ratio;
+                    canvas1_edi.height = canvas1_edi.offsetHeight * ratio;
+                    canvas1_edi.getContext("2d").scale(ratio, ratio);
+                    signaturePad_edi.clear();
+                }
+                window.onresize = resizeCanvas;
+                resizeCanvas();
+                canvas1_edi.addEventListener("click", function (event) {
+                    if (!signaturePad_edi.isEmpty()) {
+                        canvas1_edi.style.border = '1px solid black';
+                    }
+                });
+                //}
+                //if (canvas2_edi_val === true) {
+                var wrapper_entrevistador = document.getElementById("signature-pad-entrevistador-edi");
+                canvas2_edi = wrapper_entrevistador.querySelector("canvas");
+                signaturePad_entrevistador_edi = new SignaturePad(canvas2_edi, {
+                    backgroundColor: 'rgb(255, 255, 255)'
+                });
+                function resizeCanvas2() {
+                    var ratio = Math.max(window.devicePixelRatio || 1, 1);
+                    canvas2_edi.width = canvas2_edi.offsetWidth * ratio;
+                    canvas2_edi.height = canvas2_edi.offsetHeight * ratio;
+                    canvas2_edi.getContext("2d").scale(ratio, ratio);
+                    signaturePad_entrevistador_edi.clear();
+                }
+                window.onresize = resizeCanvas2;
+                resizeCanvas2();
+                canvas2_edi.addEventListener("click", function (event) {
+                    if (!signaturePad_entrevistador_edi.isEmpty()) {
+                        canvas2_edi.style.border = '1px solid black';
+                    }
+                });
+                //}
+
+                $("#cbbSubcategoria_edi").change(function () {
+                    var value = $(this).val();
+                    if (value > 0 && $(this).is(".is-invalid")) {
+                        $(this).removeClass("is-invalid");
+                    }
+                });
+                $("#cbbCategoria_edi").change(function () {
+                    var value = $(this).val();
+                    if (value > 0 && $(this).is(".is-invalid")) {
+                        $(this).removeClass("is-invalid");
+                    }
+                });
+                $("#txtMotivo_edi").keyup(function () {
+                    var value = $(this).val().length;
+                    if (value > 0 && $(this).is(".is-invalid")) {
+                        $(this).removeClass("is-invalid");
+                    }
+                }).keyup();
+                $("#txtPlanEstudiante_edi").keyup(function () {
+                    var value = $(this).val().length;
+                    if (value > 0 && $(this).is(".is-invalid")) {
+                        $(this).removeClass("is-invalid");
+                    }
+                }).keyup();
+                $("#txtPlanEntrevistador_edi").keyup(function () {
+                    var value = $(this).val().length;
+                    if (value > 0 && $(this).is(".is-invalid")) {
+                        $(this).removeClass("is-invalid");
+                    }
+                }).keyup();
+                $("#txtAcuerdos_edi").keyup(function () {
+                    var value = $(this).val().length;
+                    if (value > 0 && $(this).is(".is-invalid")) {
+                        $(this).removeClass("is-invalid");
+                    }
+                }).keyup();
+                $("#txtInforme_edi").keyup(function () {
+                    var value = $(this).val().length;
+                    if (value > 0 && $(this).is(".is-invalid")) {
+                        $(this).removeClass("is-invalid");
+                    }
+                }).keyup();
+                $("#txtPlanPadre_edi").keyup(function () {
+                    var value = $(this).val().length;
+                    if (value > 0 && $(this).is(".is-invalid")) {
+                        $(this).removeClass("is-invalid");
+                    }
+                }).keyup();
+                $("#txtPlanDocente_edi").keyup(function () {
+                    var value = $(this).val().length;
+                    if (value > 0 && $(this).is(".is-invalid")) {
+                        $(this).removeClass("is-invalid");
+                    }
+                }).keyup();
+                $("#txtAcuerdosPadres_edi").keyup(function () {
+                    var value = $(this).val().length;
+                    if (value > 0 && $(this).is(".is-invalid")) {
+                        $(this).removeClass("is-invalid");
+                    }
+                }).keyup();
+                $("#txtAcuerdosColegio_edi").keyup(function () {
+                    var value = $(this).val().length;
+                    if (value > 0 && $(this).is(".is-invalid")) {
+                        $(this).removeClass("is-invalid");
+                    }
+                }).keyup();
             }
         });
     }
@@ -3988,6 +4159,930 @@ function registrar_nuevo_apoderado_edi() {
         });
     }
 }
+
+function editar_solicitud() {
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var cbbTipoSolicitudCodis = $("#cbbTipoSolicitudCodis").select().val();
+    if (cbbTipoSolicitudCodis === "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: 'Seleccione la Entrevista / Subentrevista',
+            showConfirmButton: false
+        });
+        $("#cbbTipoSolicitudCodis").addClass("is-invalid");
+    } else {
+        $("#btnEditarSolicitud").attr("disabled", true);
+        var codi_solicitud = $("#cod_solicitud_edi").val();
+        var solicitud_tipo = $("#cbbTipoSolicitud_edi").val();
+        var docAlumno = $("#dataAlumno_edi").html().split(" - ");
+        var matricula = $("#matric_edi").val();
+        var sede = $("#txt_sede_edi").val();
+        var categoria = $("#cbbCategoria_edi").select().val();
+        var subcategoria = $("#cbbSubcategoria_edi").select().val();
+        var txtMotivo = "";
+        var planEstudiante = "";
+        var planEntrevistador = "";
+        var acuerdos = "";
+        var informe = "";
+        var planPadre = "";
+        var planDocente = "";
+        var acuerdosPadres = "";
+        var acuerdosColegio = "";
+        var apoderado = "";
+        var mensaje = "";
+        var ruta_img1 = $("#ruta_img1").is(':visible');
+        var ruta_img2 = $("#ruta_img2").is(':visible');
+        var canvas_1 = document.getElementById("canvas1_edi");
+        var canvas_2 = document.getElementById("canvas2_edi");
+        var checkPrivacidad = $("#checkPrivacidad_edi").is(':checked');
+        var privacidad_value = "";
+        if (checkPrivacidad) {
+            privacidad_value = "1";
+        } else {
+            privacidad_value = "0";
+        }
+        if (categoria === "") {
+            mensaje += "*Seleccione la categoria<br>";
+            $("#cbbCategoria_edi").addClass("is-invalid");
+        }
+        if (subcategoria === "") {
+            mensaje += "*Seleccione la subcategoria<br>";
+            $("#cbbSubcategoria_edi").addClass("is-invalid");
+        }
+
+        if (solicitud_tipo === "1") {
+            txtMotivo = $("#txtMotivo_edi").val();
+            planEstudiante = $("#txtPlanEstudiante_edi").val();
+            planEntrevistador = $("#txtPlanEntrevistador_edi").val();
+            acuerdos = $("#txtAcuerdos_edi").val();
+            informe = "";
+            planPadre = "";
+            planDocente = "";
+            acuerdosPadres = "";
+            acuerdosColegio = "";
+            apoderado = "";
+            if ($.trim(txtMotivo) == "") {
+                mensaje += "*Ingrese el motivo de solicitud<br>";
+                $("#txtMotivo_edi").addClass("is-invalid");
+            }
+            if ($.trim(planEstudiante) == '') {
+                mensaje += "*Ingrese el Planteamiento del estudiante<br>";
+                $("#txtPlanEstudiante_edi").addClass("is-invalid");
+            }
+            if ($.trim(planEntrevistador) == '') {
+                mensaje += "*Ingrese el Planteamiento del entrevistador(a)<br>";
+                $("#txtPlanEntrevistador_edi").addClass("is-invalid");
+            }
+            if ($.trim(acuerdos) == '') {
+                mensaje += "*Ingrese los Acuerdos<br>";
+                $("#txtAcuerdos_edi").addClass("is-invalid");
+            }
+            if (ruta_img1 == false) {
+                if (signaturePad_edi.isEmpty()) {
+                    mensaje += "*Ingrese la firma del estudiante<br>";
+                    canvas_1.style.border = '1px solid #dc3545';
+                }
+            }
+            if (ruta_img2 == false) {
+                if (signaturePad_entrevistador_edi.isEmpty()) {
+                    mensaje += "*Ingrese la firma del entrevistador<br>";
+                    canvas_2.style.border = '1px solid #dc3545';
+                }
+            }
+        } else {
+            txtMotivo = $("#txtMotivo_edi").val();
+            planEstudiante = "";
+            planEntrevistador = "";
+            acuerdos = "";
+            informe = $("#txtInforme_edi").val();
+            planPadre = $("#txtPlanPadre_edi").val();
+            planDocente = $("#txtPlanDocente_edi").val();
+            acuerdosPadres = $("#txtAcuerdosPadres_edi").val();
+            acuerdosColegio = $("#txtAcuerdosColegio_edi").val();
+            apoderado = $("#cbbTipoApoderado_edi").select().val();
+            if ($.trim(apoderado) < 0 || $.trim(apoderado) === "") {
+                mensaje += "*Seleccione el apoderado<br>";
+                $("#cbbTipoApoderado_edi").addClass("is-invalid");
+            }
+            if ($.trim(txtMotivo) == "") {
+                mensaje += "*Ingrese el motivo de solicitud<br>";
+                $("#txtMotivo_edi").addClass("is-invalid");
+            }
+            if ($.trim(informe) == '') {
+                mensaje += "*Ingrese el Informe<br>";
+                $("#txtInforme_edi").addClass("is-invalid");
+            }
+            if ($.trim(planPadre) == '') {
+                mensaje += "*Ingrese el Planteamiento del padre, madre <br>";
+                $("#txtPlanPadre_edi").addClass("is-invalid");
+            }
+            if ($.trim(planDocente) == '') {
+                mensaje += "*Ingrese el Planteamiento del docente<br>";
+                $("#txtPlanDocente_edi").addClass("is-invalid");
+            }
+            if ($.trim(acuerdosPadres) == '') {
+                mensaje += "*Ingrese las acciones a realizar por los padres<br>";
+                $("#txtAcuerdosPadres_edi").addClass("is-invalid");
+            }
+            if ($.trim(acuerdosColegio) == '') {
+                mensaje += "*Ingrese las acciones a realizar por el colegio<br>";
+                $("#txtAcuerdosColegio_edi").addClass("is-invalid");
+            }
+            /*if (signaturePad.isEmpty()) {
+             mensaje += "Ingrese la firma del padre, madre o apoderado<br>";
+             canvas.style.border = '1px solid #dc3545';
+             }*/
+            if (ruta_img2 == false) {
+                if (signaturePad_entrevistador_edi.isEmpty()) {
+                    mensaje += "*Ingrese la firma del entrevistador<br>";
+                    canvas_2.style.border = '1px solid #dc3545';
+                }
+            }
+        }
+        if (mensaje !== "") {
+            Toast.fire({
+                position: 'top-end',
+                icon: 'error',
+                title: mensaje,
+                showConfirmButton: false
+            });
+            $("#btnEditarSolicitud").attr("disabled", false);
+        } else {
+            var codSMenu = $("#hdnCodiSR");
+            var canvas1 = {};
+            var dataURL1 = {};
+            var canvas2 = {};
+            var dataURL2 = {};
+            if (ruta_img1 == false) {
+                canvas1 = document.getElementById('canvas1_edi');
+                dataURL1 = canvas1.toDataURL();
+            } else {
+                dataURL1 = $("#ruta_img1").attr("src");
+            }
+
+            if (ruta_img2 == false) {
+                canvas2 = document.getElementById('canvas2_edi');
+                dataURL2 = canvas2.toDataURL();
+            } else {
+                dataURL2 = $("#ruta_img2").attr("src");
+            }
+
+            $.ajax({
+                url: "php/aco_php/psi_editar_entrevista.php",
+                dataType: "html",
+                type: "POST",
+                data: {
+                    sm_codigo: $.trim(codSMenu.val()),
+                    s_codi_solicitud: $.trim(codi_solicitud),
+                    s_docAlumno: $.trim(docAlumno[0]),
+                    s_solicitud_tipo: solicitud_tipo,
+                    s_matricula: matricula,
+                    s_sede: sede,
+                    s_categoria: categoria,
+                    s_subcategoria: subcategoria,
+                    s_motivo: txtMotivo,
+                    s_planEstudiante: planEstudiante,
+                    s_planEntrevistador: planEntrevistador,
+                    s_acuerdos: acuerdos,
+                    s_informe: informe,
+                    s_planPadre: planPadre,
+                    s_planDocente: planDocente,
+                    s_acuerdosPadres: acuerdosPadres,
+                    s_acuerdosColegio: acuerdosColegio,
+                    s_apoderado: apoderado,
+                    s_privacidad: privacidad_value,
+                    s_dataURL1: dataURL1,
+                    s_dataURL2: dataURL2
+                },
+                beforeSend: function (objeto) {
+                    $("#modal-editar-solicitud-alumno").find('.modal-footer div label').html("");
+                    $("#modal-editar-solicitud-alumno").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    //$("#contentMenu").html(xhr.responseText);
+                },
+                success: function (datos) {
+                    var resp = datos.split("***");
+                    if (resp[1] === "1") {
+                        var lista_sm = resp[3].split("--");
+                        $("#modal-editar-solicitud-alumno").find('.modal-footer div label').html('');
+                        Toast.fire({
+                            position: 'top-end',
+                            icon: 'success',
+                            title: resp[2],
+                            showConfirmButton: false
+                        });
+                        setTimeout(function () {
+                            $('#modal-editar-solicitud-alumno').modal('hide');
+                            $("#btnEditarSolicitud").attr("disabled", false);
+                            $('.modal-backdrop').remove();
+                            cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                        }, 4500);
+                    } else {
+                        Toast.fire({
+                            position: 'top-end',
+                            icon: 'error',
+                            title: resp[2],
+                            showConfirmButton: false
+                        });
+                        setTimeout(function () {
+                            $("#btnEditarSolicitud").attr("disabled", false);
+                        }, 4500);
+                    }
+                }
+            });
+        }
+    }
+}
+
+function limpiar_firma_edi() {
+    var ruta_img1 = $("#ruta_img1").is(':visible');
+    var canvas1_edi = $("#canvas1_edi");
+    var canvas1_edi_1 = document.getElementById("canvas1_edi");
+    if (ruta_img1 == true) {
+        $("#ruta_img1").attr("src", "");
+        $("#ruta_img1").hide();
+        canvas1_edi_1.width = 500;
+        canvas1_edi_1.height = 150;
+        canvas1_edi.show();
+    } else {
+        $("#ruta_img1").src = "";
+        signaturePad_edi.clear();
+    }
+}
+
+function limpiar_firma_entrevistador_edi() {
+    var ruta_img2 = $("#ruta_img2").is(':visible');
+    var canvas2_edi = $("#canvas2_edi");
+    var canvas1_edi_2 = document.getElementById("canvas2_edi");
+    if (ruta_img2 == true) {
+        $("#ruta_img2").attr("src", "");
+        $("#ruta_img2").hide();
+        canvas1_edi_2.width = 500;
+        canvas1_edi_2.height = 150;
+        canvas2_edi.show();
+    } else {
+        $("#ruta_img2").src = "";
+        signaturePad_entrevistador_edi.clear();
+    }
+}
+
+function cargar_solicitudes_a_detallar(solicitud) {
+    var solici = $("#cbbTipoSolicitudCodis").val();
+    if (solici === "") {
+        $('#divDetalleEntrevista').html("");
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "formulario_carga_solicitudes_detalla",
+                sol_cod: solici
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                $('#divDetalleEntrevista').html(datos);
+            }
+        });
+    }
+}
+
+function cargar_solicitudes_a_eliminar(solicitud) {
+    var solici = $("#cbbTipoSolicitudCodisElis").select().val();
+    if (solici === "") {
+        $('#divDetalleEliminarEntrevista').html("");
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "formulario_carga_solicitudes_eliminar",
+                sol_cod: solici
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                $('#divDetalleEliminarEntrevista').html(datos);
+            }
+        });
+    }
+}
+
+function mostrar_registra_nueva_sede(modal) {//jesus
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_registro_nueva_sede"
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+            $('#cbbColorSed').selectpicker();
+            $("#txtNombreSed").keyup(function () {
+                var value = $(this).val().length;
+                if (value > 0 && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            }).keyup();
+            $("#txtDescripcionSed").keyup(function () {
+                var value = $(this).val().length;
+                if (value > 0 && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            }).keyup();
+            $("#cbbColorSed").change(function () {
+                var value = $(this).val();
+                if (value !== "0" && $(this).parent().is(".is-invalid")) {
+                    $(this).parent().removeClass("is-invalid");
+                }
+            });
+        }
+    });
+}
+
+function registrar_sede() {
+    $("#btnRegistrarSede").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiSe");
+    var nombre = $("#txtNombreSed");
+    var descripcion = $("#txtDescripcionSed");
+    var imagen = $("#cbbColorSed");
+    var mensaje = "";
+    if ($.trim(nombre.val()) == "") {
+        mensaje += "Ingrese el nombre de la sede<br>";
+        $("#txtNombreSed").addClass("is-invalid");
+    }
+    if ($.trim(descripcion.val()) == "") {
+        mensaje += "Ingrese la descripción de la sede<br>";
+        $("#txtDescripcionSed").addClass("is-invalid");
+    }
+    if ($.trim(imagen.select().val()) == 0) {
+        mensaje += "Ingrese el color de la sede<br>";
+        $("#cbbColorSed").parent().addClass("is-invalid");
+    }
+    if (mensaje !== "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: mensaje,
+            showConfirmButton: false
+        });
+        $("#btnRegistrarSede").attr("disabled", false);
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "proceso_registro_nueva_sede",
+                sm_codigo: $.trim(codSMenu.val()),
+                m_nombre: $.trim(nombre.val()),
+                m_descripcion: $.trim(descripcion.val()),
+                m_imagen: $.trim(imagen.select().val())
+            },
+            beforeSend: function (objeto) {
+                $("#modal-nueva-sede").find('.modal-footer div label').html("");
+                $("#modal-nueva-sede").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                var resp = datos.split("***");
+                if (resp[1] === "1") {
+                    var lista_sm = resp[3].split("--");
+                    $("#modal-nueva-sede").find('.modal-footer div label').html('');
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $('#modal-nueva-sede').modal('hide');
+                        $("#btnRegistrarSede").attr("disabled", false);
+                        $('.modal-backdrop').remove();
+                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                    }, 4500);
+                } else {
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $("#btnRegistrarSede").attr("disabled", false);
+                    }, 4500);
+                }
+            }
+        });
+    }
+}
+
+function mostrar_editar_sede(modal, codigo) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_editar_sede",
+            u_sede_codigo: codigo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+            $('#cbbImagenSedeEdi').selectpicker();
+            $("#txtNombreSedEdi").keyup(function () {
+                var value = $(this).val().length;
+                if (value > 0 && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            }).keyup();
+            $("#txtDescripcionSedEdi").keyup(function () {
+                var value = $(this).val().length;
+                if (value > 0 && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            }).keyup();
+            $("#cbbImagenSedeEdi").change(function () {
+                var value = $(this).val();
+                if (value !== "0" && $(this).parent().is(".is-invalid")) {
+                    $(this).parent().removeClass("is-invalid");
+                }
+            });
+            $("#cbbEstadoSedeEdi").change(function () {
+                var value = $(this).val();
+                if (value !== "-1" && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+        }
+    });
+}
+
+function editar_sede() {
+    $("#btnEditarSede").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiSe");
+    var codSede = $("#hdnCodiSede");
+    var nombreEdi = $("#txtNombreSedEdi");
+    var descripcionEdi = $("#txtDescripcionSedEdi");
+    var imagenEdi = $("#cbbImagenSedeEdi");
+    var estadoMeEdi = $("#cbbEstadoSedeEdi");
+    var mensaje = "";
+    if ($.trim(nombreEdi.val()) == "") {
+        mensaje += "Ingrese el nombre de la sede<br>";
+        $("#txtNombreSedEdi").addClass("is-invalid");
+    }
+    if ($.trim(descripcionEdi.val()) == "") {
+        mensaje += "Ingrese la descripción de la sede<br>";
+        $("#txtDescripcionSedEdi").addClass("is-invalid");
+    }
+    if ($.trim(imagenEdi.select().val()) == 0) {
+        mensaje += "Ingrese el color de la sede<br>";
+        $("#cbbImagenSedeEdi").parent().addClass("is-invalid");
+    }
+    if ($.trim(estadoMeEdi.select().val()) == -1) {
+        mensaje += "Ingrese el estado de la sede<br>";
+        $("#cbbEstadoSedeEdi").addClass("is-invalid");
+    }
+    if (mensaje !== "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: mensaje,
+            showConfirmButton: false
+        });
+        $("#btnEditarSede").attr("disabled", false);
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "proceso_editar_sede",
+                sm_codigo: $.trim(codSMenu.val()),
+                m_codigoEdi: $.trim(codSede.val()),
+                m_nombreEdi: $.trim(nombreEdi.val()),
+                m_descripcionEdi: $.trim(descripcionEdi.val()),
+                m_imagenEdi: $.trim(imagenEdi.select().val()),
+                m_estadoMeEdi: $.trim(estadoMeEdi.select().val())
+            },
+            beforeSend: function (objeto) {
+                $("#modal-editar-sede").find('.modal-footer div label').html("");
+                $("#modal-editar-sede").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                var resp = datos.split("***");
+                if (resp[1] === "1") {
+                    var lista_sm = resp[3].split("--");
+                    $("#modal-editar-sede").find('.modal-footer div label').html('');
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $('#modal-editar-sede').modal('hide');
+                        $("#btnEditarSede").attr("disabled", false);
+                        $('.modal-backdrop').remove();
+                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                    }, 4500);
+                } else {
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $("#btnEditarSede").attr("disabled", false);
+                    }, 4500);
+                }
+            }
+        });
+    }
+}
+
+function mostrar_eliminar_sede(modal, codigo) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_eliminar_sede",
+            u_elsede_codigo: codigo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            modal.find('.modal-body').html(datos);
+        }
+    });
+}
+
+function eliminar_sede() {
+    $("#btnEliminarSede").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiSe");
+    var hdnCodiSedeEli = $("#hdnCodiSedeEli");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_eliminar_sede",
+            sm_codigo: $.trim(codSMenu.val()),
+            u_codiSedeIdEli: $.trim(hdnCodiSedeEli.val())
+        },
+        beforeSend: function (objeto) {
+            $("#modal-eliminar-sede").find('.modal-footer div label').html("");
+            $("#modal-eliminar-sede").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            var resp = datos.split("***");
+            if (resp[1] === "1") {
+                var lista_sm = resp[3].split("--");
+                $("#modal-eliminar-sede").find('.modal-footer div label').html('');
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $('#modal-eliminar-sede').modal('hide');
+                    $("#btnEliminarSede").attr("disabled", false);
+                    $('.modal-backdrop').remove();
+                    cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                }, 4500);
+            } else {
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'error',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $("#btnEliminarSede").attr("disabled", false);
+                }, 4500);
+            }
+        }
+    });
+}
+
+function mostrar_modificar_matriculas(modal) {
+    var sede = $("#cbbSedes").select().val();
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_modificar_matriculas",
+            s_sede: sede
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+            $('#cbbSubImagen').selectpicker();
+        }
+    });
+}
+
+function modificar_matriculas() {
+    $("#btnEliminarSede").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiMM");
+    var hdnCodiSedeEli = $("#hdnCodiSedeMatri");
+    var anio = $("#cbbAnios");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_modificar_matriculas_por_sede",
+            sm_codigo: $.trim(codSMenu.val()),
+            u_codiSedeId: $.trim(hdnCodiSedeEli.val()),
+            sm_anio: $.trim(anio.val())
+        },
+        beforeSend: function (objeto) {
+            $("#modal-eliminar-sede").find('.modal-footer div label').html("");
+            $("#modal-eliminar-sede").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            var resp = datos.split("***");
+            if (resp[1] === "1") {
+                var lista_sm = resp[3].split("--");
+                $("#modal-eliminar-sede").find('.modal-footer div label').html('');
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $('#modal-eliminar-sede').modal('hide');
+                    $("#btnEliminarSede").attr("disabled", false);
+                    $('.modal-backdrop').remove();
+                    cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                }, 4500);
+            } else {
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'error',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $("#btnEliminarSede").attr("disabled", false);
+                }, 4500);
+            }
+        }
+    });
+}
+
+function mostrar_descargar_solicitud(modal, solicitud) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_descargar_solicitud",
+            s_solicitud: solicitud
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);formulario_editar_submenu
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+            /*$("#cbbTipoSolicitudCodisElis").change(function () {
+             var value = $(this).val();
+             if (value !== '' && $(this).is(".is-invalid")) {
+             $(this).removeClass("is-invalid");
+             }
+             });*/
+            var select = $("#cbbTipoSolicitudCodisDes option").length;
+            if (select === 2) {
+                $('select[id=cbbTipoSolicitudCodisDes] option:eq(1)').attr('selected', 'selected');
+                cargar_solicitudes_a_descargar("");
+            }
+        }
+    });
+}
+
+function cargar_solicitudes_a_descargar(solicitud) {
+    var solici = $("#cbbTipoSolicitudCodisDes").select().val();
+    if (solici === "") {
+        $('#divDetalleDescargarEntrevista').html("");
+    } else {
+        window.location.href = "php/aco_php/psi_generar_pdf.php?sol_cod=" + solici;
+    }
+}
+
+function mostrar_enviar_solicitud(modal, solicitud) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_enviar_solicitud",
+            s_solicitud: solicitud
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);formulario_editar_submenu
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+            $("#cbbTipoSolicitudCodisEnv").change(function () {
+                var value = $(this).val();
+                if (value !== '' && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+            var select = $("#cbbTipoSolicitudCodisEnv option").length;
+            if (select === 2) {
+                $('select[id=cbbTipoSolicitudCodisEnv] option:eq(1)').attr('selected', 'selected');
+                cargar_solicitudes_a_enviar("");
+            }
+        }
+    });
+}
+
+function cargar_solicitudes_a_enviar(solicitud) {
+    var solici = $("#cbbTipoSolicitudCodisEnv").select().val();
+    if (solici === "") {
+        $('#divDetalleEnviarEntrevista').html("");
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "formulario_carga_solicitudes_enviar",
+                sol_cod: solici
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                var array = datos.split("***");
+                if (array[0] === "0") {
+                    $("#btnEnviarSolicitudAlumno").attr("disabled", true);
+                } else {
+                    $("#btnEnviarSolicitudAlumno").attr("disabled", false);
+                }
+                $('#divDetalleEnviarEntrevista').html(array[1]);
+            }
+        });
+    }
+}
+
+function enviar_solicitud() {
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var cbbTipoSolicitudCodis = $("#cbbTipoSolicitudCodisEnv").select().val();
+    if (cbbTipoSolicitudCodis === "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: 'Seleccione la Entrevista / Subentrevista',
+            showConfirmButton: false
+        });
+        $("#cbbTipoSolicitudCodisEnv").addClass("is-invalid");
+        $("#btnEnviarSolicitudAlumno").attr("disabled", false);
+    } else {
+        $("#btnEnviarSolicitudAlumno").attr("disabled", true);
+        var codSMenu = $("#hdnCodiSR");
+        var hdnCodiSolicitud = $("#hdnCodiSolicitudEnv");
+        var selected = [];
+        $('#checkboxesEnv input:checked').each(function () {
+            selected.push($(this).attr('value'));
+        });
+        if (selected.length <= 0) {
+            Toast.fire({
+                position: 'top-end',
+                icon: 'error',
+                title: 'Debe seleccionar por lo menos 1 correo.',
+                showConfirmButton: false
+            });
+            $("#btnEnviarSolicitudAlumno").attr("disabled", false);
+        } else {
+            $.ajax({
+                url: "php/aco_php/psi_enviar_ficha_correo.php",
+                dataType: "html",
+                type: "POST",
+                data: {
+                    sm_codigo: $.trim(codSMenu.val()),
+                    u_codiSolicitud: $.trim(hdnCodiSolicitud.val()),
+                    u_lista_correos: selected
+                },
+                beforeSend: function (objeto) {
+                    $("#modal-enviar-solicitud").find('.modal-footer div label').html("");
+                    $("#modal-enviar-solicitud").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    //$("#contentMenu").html(xhr.responseText);
+                },
+                success: function (datos) {
+                    var resp = datos.split("***");
+                    if (resp[1] === "1") {
+                        var lista_sm = resp[3].split("--");
+                        $("#modal-enviar-solicitud").find('.modal-footer div label').html('');
+                        Toast.fire({
+                            position: 'top-end',
+                            icon: 'success',
+                            title: resp[2],
+                            showConfirmButton: false
+                        });
+                        setTimeout(function () {
+                            $('#modal-enviar-solicitud').modal('hide');
+                            $("#btnEnviarSolicitudAlumno").attr("disabled", false);
+                            $('.modal-backdrop').remove();
+                            cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                        }, 4500);
+                    } else {
+                        Toast.fire({
+                            position: 'top-end',
+                            icon: 'error',
+                            title: resp[2],
+                            showConfirmButton: false
+                        });
+                        setTimeout(function () {
+                            $("#btnEnviarSolicitudAlumno").attr("disabled", false);
+                        }, 4500);
+                    }
+                }
+            });
+        }
+    }
+}
+
 
 function valida_correo(id) {
 // Define our regular expression.
