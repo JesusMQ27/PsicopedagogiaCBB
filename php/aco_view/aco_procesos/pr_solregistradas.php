@@ -67,7 +67,7 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                             <?php
                             if (count($sedesData) > 1) {
                                 ?>
-                                <option value="0">-- Todos --</option>
+                                <option value="1">-- Todos --</option>
                                 <?php
                                 $selectemenu = "";
 
@@ -104,6 +104,12 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                             <input type="text" class="form-control pull-right" id="fecha2" value="<?php echo $fechas[0]["hoy"]; ?>" readonly >
                         </div>
                     </div>
+                    <div class="col-lg-1 col-md-4 col-sm-6 col-12">
+                        <button class="btn btn-success" id="btnBuscarSolicitudes" style="bottom: 0px;margin-top: 30px" 
+                                onclick="buscar_entrevistas();">
+                            <i class="fa fa-search"></i>
+                            Buscar</button>
+                    </div>
                     <div class="col-lg-2 col-md-4 col-sm-6 col-12">
                         <button class="btn btn-primary" id="btnNuevoSolicitud" style="bottom: 0px;margin-top: 30px" 
                                 data-toggle='modal' data-target='#modal-nueva-solicitud' data-backdrop='static'>
@@ -117,11 +123,19 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                             <thead>
                                 <tr>
                                     <th>Nro.</th>
+                                    <th>Sede</th>
                                     <th>Fecha</th>
                                     <th>Grado</th>
                                     <th>Nro. documento</th>
                                     <th>Alumno</th>
                                     <th>Tipo de entrevista</th>
+                                    <?php
+                                    if ($perfil == "1" || $perfil == "5") {
+                                        ?>
+                                        <th>Privacidad</th>
+                                        <?php
+                                    }
+                                    ?>
                                     <th>Estado</th>
                                     <th>Opci&oacute;n</th>
                                 </tr>
@@ -134,12 +148,16 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                                     $solicitudCod = fnc_generate_random_string(6) . "-" . $lista["id"] . "/" . fnc_generate_random_string(6);
                                     $html .= "<tr>
                                 <td>" . $num . "</td>
+                                        <td>" . $lista["sede"] . "</td>
                                         <td>" . $lista["fecha"] . "</td>
                                         <td>" . $lista["grado"] . "</td>
                                         <td>" . $lista["nroDocumento"] . "</td>
                                         <td>" . $lista["alumno"] . "</td>
-                                        <td>" . $lista["entrevista"] . "</td>
-                                        <td>" . $lista["estado"] . "</td>
+                                        <td>" . $lista["entrevista"] . "</td>";
+                                    if ($perfil == "1" || $perfil == "5") {
+                                        $html .= "<td>" . $lista["privacidad"] . "</td>";
+                                    }
+                                    $html .= "<td>" . $lista["estado"] . "</td>
                                         <td align='center'>"
                                             . "<i class='nav-icon fas fa-plus green' title='Nueva Subentrevista' data-toggle='modal' data-target='#modal-subentrevista' data-backdrop='static' data-entrevista='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
                                             . "<i class='nav-icon fas fa-file-pdf rojo' title='Descargar' data-toggle='modal' data-target='#modal-descargar' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
@@ -147,7 +165,8 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                                             . "<i class='nav-icon fas fa-edit naranja' title='Editar' data-toggle='modal' data-target='#modal-editar-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
                                             . "<i class='nav-icon fas fa-trash rojo' title='Eliminar' data-toggle='modal' data-target='#modal-eliminar-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
                                             . "<i class='nav-icon fas fa-paper-plane azul' title='Enviar al correo' data-toggle='modal' data-target='#modal-enviar-solicitud' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;" .
-                                            "</tr>";
+                                            "</td>"
+                                            . "</tr>";
                                     $num++;
                                 }
                                 echo $html;
@@ -180,10 +199,18 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                             onclick="return registrar_solicitud()">Registrar</button>
                 </div>
             </div>
+            <div style="float:left;position:absolute;" class="row" onLoad="">
+                <div class="col-xs-3" style="position: fixed;bottom: 10px;right: 10px;bottom: 60px;text-align: right;padding: 5px 10px;" id="cronometro">
+                    <div id="fecha">
+                        <span id="hora"></span> <span id="puntos1">:</span> <span id="minuto"></span> <span id="puntos2">:</span> <span id="segundo"></span>
+                    </div>
+                </div>
+            </div>
         </div>
-        <!-- /.modal-content -->
     </div>
-    <!-- /.modal-dialog -->
+    <!-- /.modal-content -->
+</div>
+<!-- /.modal-dialog -->
 </div>
 <div class="modal fade" id="modal-editar-apoderado" role="dialog" aria-hidden="true" aria-labelledby="modal-editar-apoderado">
     <div class="modal-dialog modal-lg">
@@ -251,6 +278,13 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                     <label></label>
                     <button type="button" id="btnRegistrarSubSolicitud" class="btn btn-success swalDefaultError"
                             onclick="return registrar_sub_solicitud()">Registrar</button>
+                </div>
+            </div>
+            <div style="float:left;position:absolute;" class="row" onLoad="">
+                <div class="col-xs-3" style="position: fixed;bottom: 10px;right: 10px;bottom: 60px;text-align: right;padding: 5px 10px;" id="cronometro_s">
+                    <div id="fecha_s">
+                        <span id="hora_s"></span> <span id="puntos1_s">:</span> <span id="minuto_s"></span> <span id="puntos2_s">:</span> <span id="segundo_s"></span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -482,6 +516,145 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
 
 <script>
     $(function () {
+        var conteo = new Date(timeLimit * 60000);
+        var estado = 0;
+        //var intervalo = window.setInterval(mostrar_hora, 1); // Frecuencia de actualización
+        intervaloRegresivo = setInterval(regresiva, 1000);
+        var i = 0; // Esta variable me ayudará a definir los estados de intervalo
+        document.getElementById('hora').style.color = "black";
+        document.getElementById('minuto').style.color = "black";
+        document.getElementById('segundo').style.color = "black";
+        document.getElementById('puntos1').style.color = "black";
+        document.getElementById('puntos2').style.color = "black";
+        document.getElementById('hora').classList.remove("parpadea");
+        document.getElementById('minuto').classList.remove("parpadea");
+        document.getElementById('segundo').classList.remove("parpadea");
+        document.getElementById('puntos1').classList.remove("parpadea");
+        document.getElementById('puntos2').classList.remove("parpadea");
+        function mostrar_hora() {
+            // Inserta la hora almacenada en clock en el span con id hora
+            document.getElementById('hora').innerHTML = '00';
+
+            // Inserta los minutos almacenados en clock en el span con id minuto
+            document.getElementById('minuto').innerHTML = conteo.getMinutes();
+
+            // Inserta los segundos almacenados en clock en el span con id segundo
+            document.getElementById('segundo').innerHTML = "0" + conteo.getSeconds();
+        }
+
+        function regresiva() {
+            if (conteo.getTime() > 0 && estado === 0) {
+                conteo.setTime(conteo.getTime() - 1000);
+            } else if (conteo.getTime() === 0) {
+                estado = 1;
+                //clearInterval(intervaloRegresivo);
+                //alert("Fin");
+            }
+            var minutos = (conteo.getMinutes() + '').length;
+            var segundo = (conteo.getSeconds() + '').length;
+            document.getElementById('hora').innerHTML = '00';
+
+            // Inserta los minutos almacenados en clock en el span con id minuto
+            if (minutos === 1) {
+                document.getElementById('minuto').innerHTML = '0' + conteo.getMinutes();
+            } else {
+                document.getElementById('minuto').innerHTML = conteo.getMinutes();
+            }
+
+            // Inserta los segundos almacenados en clock en el span con id segundo
+            if (segundo === 1) {
+                document.getElementById('segundo').innerHTML = '0' + conteo.getSeconds();
+            } else {
+                document.getElementById('segundo').innerHTML = conteo.getSeconds();
+            }
+            if (estado === 0) {
+                if (conteo.getMinutes() < 5 && conteo.getSeconds() <= 59) {
+                    document.getElementById('hora').style.color = "#F61406";
+                    document.getElementById('minuto').style.color = "#F61406";
+                    document.getElementById('segundo').style.color = "#F61406";
+                    document.getElementById('puntos1').style.color = "#F61406";
+                    document.getElementById('puntos2').style.color = "#F61406";
+                }
+            } else if (estado === 1) {
+                conteo.setTime(conteo.getTime() + 1000);
+                document.getElementById('hora').classList.add("parpadea");
+                document.getElementById('minuto').classList.add("parpadea");
+                document.getElementById('segundo').classList.add("parpadea");
+                document.getElementById('puntos1').classList.add("parpadea");
+                document.getElementById('puntos2').classList.add("parpadea");
+            }
+        }
+
+
+        var conteo_s = new Date(timeLimitSub * 60000);
+        var estado_s = 0;
+        //var intervalo = window.setInterval(mostrar_hora_s, 1); // Frecuencia de actualización
+        intervaloRegresivo_s = setInterval(regresiva_s, 1000);
+        var i = 0; // Esta variable me ayudará a definir los estados de intervalo
+        document.getElementById('hora_s').style.color = "black";
+        document.getElementById('minuto_s').style.color = "black";
+        document.getElementById('segundo_s').style.color = "black";
+        document.getElementById('puntos1_s').style.color = "black";
+        document.getElementById('puntos2_s').style.color = "black";
+        document.getElementById('hora_s').classList.remove("parpadea");
+        document.getElementById('minuto_s').classList.remove("parpadea");
+        document.getElementById('segundo_s').classList.remove("parpadea");
+        document.getElementById('puntos1_s').classList.remove("parpadea");
+        document.getElementById('puntos2_s').classList.remove("parpadea");
+        function mostrar_hora_s() {
+            // Inserta la hora almacenada en clock en el span con id hora
+            document.getElementById('hora_s').innerHTML = '00';
+
+            // Inserta los minutos almacenados en clock en el span con id minuto
+            document.getElementById('minuto_s').innerHTML = conteo.getMinutes();
+
+            // Inserta los segundos almacenados en clock en el span con id segundo
+            document.getElementById('segundo_s').innerHTML = "0" + conteo.getSeconds();
+        }
+
+        function regresiva_s() {
+            if (conteo_s.getTime() > 0 && estado_s === 0) {
+                conteo_s.setTime(conteo_s.getTime() - 1000);
+            } else if (conteo_s.getTime() === 0) {
+                estado_s = 1;
+                //clearInterval(intervaloRegresivo);
+                //alert("Fin");
+            }
+            var minutos_s = (conteo_s.getMinutes() + '').length;
+            var segundo_s = (conteo_s.getSeconds() + '').length;
+            document.getElementById('hora_s').innerHTML = '00';
+
+            // Inserta los minutos almacenados en clock en el span con id minuto
+            if (minutos_s === 1) {
+                document.getElementById('minuto_s').innerHTML = '0' + conteo_s.getMinutes();
+            } else {
+                document.getElementById('minuto_s').innerHTML = conteo_s.getMinutes();
+            }
+
+            // Inserta los segundos almacenados en clock en el span con id segundo
+            if (segundo_s === 1) {
+                document.getElementById('segundo_s').innerHTML = '0' + conteo_s.getSeconds();
+            } else {
+                document.getElementById('segundo_s').innerHTML = conteo_s.getSeconds();
+            }
+            if (estado_s === 0) {
+                if (conteo_s.getMinutes() < 5 && conteo_s.getSeconds() <= 59) {
+                    document.getElementById('hora_s').style.color = "#F61406";
+                    document.getElementById('minuto_s').style.color = "#F61406";
+                    document.getElementById('segundo_s').style.color = "#F61406";
+                    document.getElementById('puntos1_s').style.color = "#F61406";
+                    document.getElementById('puntos2_s').style.color = "#F61406";
+                }
+            } else if (estado_s === 1) {
+                conteo_s.setTime(conteo_s.getTime() + 1000);
+                document.getElementById('hora_s').classList.add("parpadea_s");
+                document.getElementById('minuto_s').classList.add("parpadea_s");
+                document.getElementById('segundo_s').classList.add("parpadea_s");
+                document.getElementById('puntos1_s').classList.add("parpadea_s");
+                document.getElementById('puntos2_s').classList.add("parpadea_s");
+            }
+        }
+
         $("#fecha1").daterangepicker({
             autoApply: true,
             showButtonPanel: false,
@@ -542,6 +715,14 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
             var modal = $(this);
             var button = $(event.relatedTarget);
             mostrar_nueva_solicitud(modal);
+            timeLimit = 40; //tiempo en minutos
+            conteo = new Date(timeLimit * 60000);
+            estado = 0;
+            document.getElementById('hora').classList.remove("parpadea");
+            document.getElementById('minuto').classList.remove("parpadea");
+            document.getElementById('segundo').classList.remove("parpadea");
+            document.getElementById('puntos1').classList.remove("parpadea");
+            document.getElementById('puntos2').classList.remove("parpadea");
         });
         $('#modal-editar-apoderado').on('show.bs.modal', function (event) {
             var modal = $(this);
@@ -556,6 +737,14 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
             var button = $(event.relatedTarget);
             var entrevista = button.data('entrevista');
             mostrar_nueva_sub_solicitud(modal, entrevista);
+            timeLimitSub = 40; //tiempo en minutos
+            conteo_s = new Date(timeLimitSub * 60000);
+            estado_s = 0;
+            document.getElementById('hora_s').classList.remove("parpadea_s");
+            document.getElementById('minuto_s').classList.remove("parpadea_s");
+            document.getElementById('segundo_s').classList.remove("parpadea_s");
+            document.getElementById('puntos1_s').classList.remove("parpadea_s");
+            document.getElementById('puntos2_s').classList.remove("parpadea_s");
         });
         $('#modal-editar-apoderado-sub').on('show.bs.modal', function (event) {
             var modal = $(this);
@@ -604,7 +793,7 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
             var solicitud = button.data('solicitud');
             mostrar_enviar_solicitud(modal, solicitud);
         });
-        
+
 
         $("#tableSolicitudesRegistradas").DataTable({
             "responsive": true,

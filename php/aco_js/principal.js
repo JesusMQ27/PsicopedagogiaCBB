@@ -11,6 +11,8 @@ var canvas1_edi = {};
 var canvas2_edi = {};
 var signaturePad_edi = {};
 var signaturePad_entrevistador_edi = {};
+var timeLimit = 40;//tiempo en minutos
+var timeLimitSub = 40;//tiempo en minutos
 function cargar_opcion(codigo, ruta, nombre) {
     $.ajax({
         url: ruta,
@@ -1922,7 +1924,9 @@ function mostrar_nueva_solicitud(modal) {
                     mostrar_tipo_solicitud("");
                 }
             });
-            modal.find('input[id="searchAlumno"]').focus();
+            setTimeout(function () {
+                modal.find('input[id="searchAlumno"]').focus();
+            }, 500);
         }
     });
 }
@@ -2433,6 +2437,45 @@ function limpiar_firma_entrevistador() {
     signaturePad_entrevistador.clear();
 }
 
+function buscar_entrevistas() {
+    var sede = $("#cbbSedes").select().val();
+    var fecha1 = $("#fecha1").val();
+    var fecha2 = $("#fecha2").val();
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "mostrar_busqueda_entrevistas",
+            s_sede: sede,
+            s_fecha1: fecha1,
+            s_fecha2: fecha2
+        },
+        beforeSend: function (objeto) {
+            $("#modal-nueva-solicitud").find('.modal-footer div label').html("");
+            $("#modal-nueva-solicitud").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#tableSolicitudesRegistradas").DataTable().destroy();
+            $("#tableSolicitudesRegistradas tbody").html(datos);
+            $("#tableSolicitudesRegistradas").DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": true,
+                "paging": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+                "buttons": ["new", "colvis"]
+            }).buttons().container().appendTo('#tableSolicitudesRegistradas_wrapper .col-md-6:eq(0)');
+        }
+    });
+}
+
 function registrar_solicitud() {
     $("#btnRegistrarSolicitud").attr("disabled", true);
     var Toast = Swal.mixin({
@@ -2463,6 +2506,16 @@ function registrar_solicitud() {
     var wrapper_entrevistador = document.getElementById("signature-pad-entrevistador");
     var canvas_2 = wrapper_entrevistador.querySelector("canvas");
     var checkPrivacidad = $("#checkPrivacidad").is(':checked');
+    var hora = $("#hora");
+    var minuto = $("#minuto");
+    var segundo = $("#segundo");
+    var hora_total = "";
+    if (hora.hasClass('parpadea')) {//paso los 40 min
+        hora_total = sumarFechas(minutos_a_hora(timeLimit), hora.html(), minuto.html(), segundo.html());
+    } else {//esta dentro los 40 min establecidos
+        var res_horas = restarFechas(minutos_a_hora(timeLimit), $.trim(hora.html()), $.trim(minuto.html()), $.trim(segundo.html()));
+        hora_total = res_horas;
+    }
     var privacidad_value = "";
     if (checkPrivacidad) {
         privacidad_value = "1";
@@ -2552,10 +2605,10 @@ function registrar_solicitud() {
             mensaje += "*Ingrese las acciones a realizar por el colegio<br>";
             $("#txtAcuerdosColegio").addClass("is-invalid");
         }
-        /*if (signaturePad.isEmpty()) {
-         mensaje += "Ingrese la firma del padre, madre o apoderado<br>";
-         canvas.style.border = '1px solid #dc3545';
-         }*/
+        //if (signaturePad.isEmpty()) {
+        //mensaje += "Ingrese la firma del padre, madre o apoderado<br>";
+        //canvas.style.border = '1px solid #dc3545';
+        //}
         if (signaturePad_entrevistador.isEmpty()) {
             mensaje += "*Ingrese la firma del entrevistador<br>";
             canvas_2.style.border = '1px solid #dc3545';
@@ -2599,7 +2652,8 @@ function registrar_solicitud() {
                 s_apoderado: apoderado,
                 s_privacidad: privacidad_value,
                 s_dataURL1: dataURL1,
-                s_dataURL2: dataURL2
+                s_dataURL2: dataURL2,
+                s_hora_total: hora_total
             },
             beforeSend: function (objeto) {
                 $("#modal-nueva-solicitud").find('.modal-footer div label').html("");
@@ -2808,10 +2862,37 @@ function buscar_semaforo_docente() {
             //$("#contentMenu").html(xhr.responseText);
         },
         success: function (datos) {
-            $("#tableSemaforo").find('tbody').html(datos);
+            $("#tableSemaforo").DataTable().destroy();
+            $("#tableSemaforo tbody").html(datos);
+            $("#tableSemaforo").DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": true,
+                "paging": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "buttons": ["copy",
+                    {
+                        extend: 'csv',
+                        text: 'CSV',
+                        title: 'Lista semaforo docentes'
+                    },
+                    {
+                        extend: 'excel',
+                        text: 'Excel',
+                        title: 'Lista semaforo docentes'
+                    },
+                    {
+                        extend: 'print',
+                        text: 'Imprimir',
+                        title: 'Lista semaforo docentes'
+                    }, "colvis"]
+                        //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+                        //"buttons": ["new", "colvis"]
+            }).buttons().container().appendTo('#tableSemaforo_wrapper .col-md-6:eq(0)');
         }
     });
-
 }
 
 function mostrar_nueva_sub_solicitud(modal, entrevista) {
@@ -2859,7 +2940,9 @@ function mostrar_nueva_sub_solicitud(modal, entrevista) {
                     mostrar_tipo_solicitud_sub("");
                 }
             });
-            modal.find('input[id="searchAlumno_sub"]').focus();
+            setTimeout(function () {
+                modal.find('input[id="searchAlumno_sub"]').focus();
+            }, 500);
         }
     });
 }
@@ -3063,6 +3146,16 @@ function registrar_sub_solicitud() {
     var canvas_2 = wrapper_entrevistador.querySelector("canvas");
     var checkPrivacidad = $("#checkPrivacidad_sub").is(':checked');
     var privacidad_value = "";
+    var hora = $("#hora_s");
+    var minuto = $("#minuto_s");
+    var segundo = $("#segundo_s");
+    var hora_total = "";
+    if (hora.hasClass('parpadea_s')) {//paso los 40 min
+        hora_total = sumarFechas(minutos_a_hora(timeLimit), hora.html(), minuto.html(), segundo.html());
+    } else {//esta dentro los 40 min establecidos
+        var res_horas = restarFechas(minutos_a_hora(timeLimit), $.trim(hora.html()), $.trim(minuto.html()), $.trim(segundo.html()));
+        hora_total = res_horas;
+    }
     if (checkPrivacidad) {
         privacidad_value = "1";
     } else {
@@ -3199,7 +3292,8 @@ function registrar_sub_solicitud() {
                 s_apoderado: apoderado,
                 s_privacidad: privacidad_value,
                 s_dataURL1_sub: dataURL1,
-                s_dataURL2_sub: dataURL2
+                s_dataURL2_sub: dataURL2,
+                s_hora_total_sub: hora_total
             },
             beforeSend: function (objeto) {
                 $("#modal-subentrevista").find('.modal-footer div label').html("");
@@ -3650,6 +3744,7 @@ function cargar_solicitudes_a_editar(solicitud) {
                         mostrar_tipo_solicitud_edi("");
                     }
                 });
+
                 //var canvas1_edi_val = $("#canvas1_edi").is(':visible');
                 //var canvas2_edi_val = $("#canvas_2edi").is(':visible');
                 //if (canvas1_edi_val === true) {
@@ -4479,7 +4574,7 @@ function cargar_solicitudes_a_eliminar(solicitud) {
     }
 }
 
-function mostrar_registra_nueva_sede(modal) {//jesus
+function mostrar_registra_nueva_sede(modal) {
     $.ajax({
         url: "php/aco_php/controller.php",
         dataType: "html",
@@ -5083,6 +5178,171 @@ function enviar_solicitud() {
     }
 }
 
+function buscar_alumnos_no_entrevistados() {
+    var sede = $("#cbbSedes").select().val();
+    var fecha_inicio = $("#fecha1").val();
+    var fecha_fin = $("#fecha2").val();
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_buscar_no_entrevistados",
+            s_sede: sede,
+            s_fecha_inicio: fecha_inicio,
+            s_fecha_fin: fecha_fin
+        },
+        beforeSend: function (objeto) {
+            $("#modal-nueva-solicitud-detalle").find('.modal-footer div label').html("");
+            $("#modal-nueva-solicitud-detalle").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#tableNoEntrevistados").DataTable().destroy();
+            $("#tableNoEntrevistados tbody").html(datos);
+            $("#tableNoEntrevistados").DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": true,
+                "paging": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "buttons": ["copy",
+                    {
+                        extend: 'csv',
+                        text: 'CSV',
+                        title: 'Lista de Alumnos no entrevistados'
+                    },
+                    {
+                        extend: 'excel',
+                        text: 'Excel',
+                        title: 'Lista de Alumnos no entrevistados'
+                    },
+                    {
+                        extend: 'print',
+                        text: 'Imprimir',
+                        title: 'Lista de Alumnos no entrevistados'
+                    }, "colvis"]
+                        //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+                        //"buttons": ["new", "colvis"]
+            }).buttons().container().appendTo('#tableNoEntrevistados_wrapper .col-md-6:eq(0)');
+        }
+    });
+}
+
+
+function buscar_entrevistas_alumnos() {
+    var sede = $("#cbbSedes").select().val();
+    var fecha_inicio = $("#fecha1").val();
+    var fecha_fin = $("#fecha2").val();
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_entrevistas_alumnos",
+            s_sede: sede,
+            s_fecha_inicio: fecha_inicio,
+            s_fecha_fin: fecha_fin
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#tableEntrevistas").DataTable().destroy();
+            $("#tableEntrevistas tbody").html(datos);
+            $("#tableEntrevistas").DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": true,
+                "paging": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "buttons": ["copy",
+                    {
+                        extend: 'csv',
+                        text: 'CSV',
+                        title: 'Lista de entrevitas a Alumnos'
+                    },
+                    {
+                        extend: 'excel',
+                        text: 'Excel',
+                        title: 'Lista de entrevitas a Alumnos'
+                    },
+                    {
+                        extend: 'print',
+                        text: 'Imprimir',
+                        title: 'Lista de entrevitas a Alumnos'
+                    }, "colvis"]
+                        //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+                        //"buttons": ["new", "colvis"]
+            }).buttons().container().appendTo('#tableEntrevistas_wrapper .col-md-6:eq(0)');
+        }
+    });
+}
+
+function mostrar_grafico_solicitudes_registradas(){
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_grafico_solicitudes_registradas",
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#contenido_alertas").html(datos);
+        }
+    });
+}
+
+function mostrar_grafico_semaforo_docente(){
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_grafico_semaforo_docente",
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#contenido_alertas").html(datos);
+        }
+    });
+}
+
+function mostrar_grafico_alumnos_no_registrados(){
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_grafico_alumnos_no_registrados",
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#contenido_alertas").html(datos);
+        }
+    });
+}
 
 function valida_correo(id) {
 // Define our regular expression.
@@ -5108,4 +5368,52 @@ function solo_letras(e) {
     patron = /^[a-zA-Z.\x09\xD1\xF1\s]+$/;
     te = String.fromCharCode(tecla);
     return patron.test(te);
+}
+
+function sumarFechas(hora1, hora, minuto, segundo) {
+    var arreglo = hora1.split(":");
+    var s_hora = parseFloat($.trim(arreglo[0]));
+    var s_minuto = parseFloat($.trim(arreglo[1]));
+    var s_segundo = parseFloat($.trim(arreglo[2]));
+    var s_hora2 = parseFloat($.trim(hora));
+    var s_minuto2 = parseFloat($.trim(minuto));
+    var s_segundo2 = parseFloat($.trim(segundo));
+    var result_hora1 = 0;
+    var result_hora2 = 0;
+
+    result_hora1 = s_hora * 3600 + s_minuto * 60 + s_segundo;
+    result_hora2 = s_hora2 * 3600 + s_minuto2 * 60 + s_segundo2;
+
+    var hours = Math.floor((result_hora1 + result_hora2) / 3600);
+    var minutes = Math.floor(((result_hora1 + result_hora2) % 3600) / 60);
+    var seconds = (result_hora1 + result_hora2) % 60;
+    return hours.toString().padStart(2, '0') + ":" + minutes.toString().padStart(2, '0') + ":" + seconds.toString().padStart(2, '0');
+}
+
+function restarFechas(hora1, hora, minuto, segundo) {
+    var arreglo = hora1.split(":");
+    var s_hora = parseFloat($.trim(arreglo[0]));
+    var s_minuto = parseFloat($.trim(arreglo[1]));
+    var s_segundo = parseFloat($.trim(arreglo[2]));
+    var s_hora2 = parseFloat($.trim(hora));
+    var s_minuto2 = parseFloat($.trim(minuto));
+    var s_segundo2 = parseFloat($.trim(segundo));
+    var result_hora1 = 0;
+    var result_hora2 = 0;
+
+    result_hora1 = s_hora * 3600 + s_minuto * 60 + s_segundo;
+    result_hora2 = s_hora2 * 3600 + s_minuto2 * 60 + s_segundo2;
+
+    var hours = Math.floor((result_hora1 - result_hora2) / 3600);
+    var minutes = Math.floor(((result_hora1 - result_hora2) % 3600) / 60);
+    var seconds = (result_hora1 - result_hora2) % 60;
+    return hours.toString().padStart(2, '0') + ":" + minutes.toString().padStart(2, '0') + ":" + seconds.toString().padStart(2, '0');
+}
+
+function minutos_a_hora(minutos) {
+    var data = minutos * 60;
+    var hora = Math.floor(data / 3600);
+    var minuto = Math.floor((data % 3600) / 60);
+    var segundo = data % 60;
+    return  hora + ":" + minuto + ":" + segundo;
 }

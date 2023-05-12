@@ -574,6 +574,16 @@ function fnc_lista_solicitudes($conexion, $sede, $fechaInicio, $fechaFin, $codig
     return $arreglo;
 }
 
+function fnc_lista_solicitudes_alerta($conexion, $sede, $codigoUsuario, $fechaInicio, $fechaFin, $privacidad) {
+    $arreglo = array();
+    $sql = con_lista_solicitudes_alertas($sede, $codigoUsuario, $fechaInicio, $fechaFin, $privacidad);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
 function fnc_lista_tipo_entrevistas($conexion, $codi) {
     $arreglo = array();
     $sql = con_lista_tipo_entrevistas($codi);
@@ -756,6 +766,16 @@ function fnc_buscar_semaforo_docentes($conexion, $sede, $fecha_ini, $fecha_fin, 
     return $arreglo;
 }
 
+function fnc_buscar_semaforo_docentes_alerta($conexion, $sede, $fecha_ini, $fecha_fin, $semaforo) {
+    $arreglo = array();
+    $sql = con_buscar_semaforo_docentes_alerta($sede, $fecha_ini, $fecha_fin, $semaforo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
 function fnc_obtener_codigo_entrevista($conexion, $codi) {
     $arreglo = array();
     $sql = con_obtener_codigo_entrevista($codi);
@@ -916,6 +936,84 @@ function fnc_lista_correos_estudiantes_y_apoderados_entrevistas($conexion, $codi
 function fnc_lista_correos_estudiantes_y_apoderados_sub_entrevistas($conexion, $codigo) {
     $arreglo = array();
     $sql = con_lista_correos_estudiantes_y_apoderados_sub_entrevistas($codigo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_data_cronometro($conexion, $usuario) {
+    $intento = 0;
+    $busca_intento = fnc_busca_intento($conexion, $usuario);
+    if (count($busca_intento) != 0) {
+        $intento = count($busca_intento);
+    } else {
+        $intento = 0;
+    }
+
+    if ($intento == 0) { // Para primer intento
+        date_default_timezone_set('America/Lima');
+        $int_hini = time(); // tiempo actual
+        $int_hfin = time() + (40 * 60); // tiempo en 40 minutos
+        fnc_insertar_intento($conexion, $usuario, $int_hini, $int_hfin);
+        $hms = convertirSegundosaHMS(2400);
+        return $hms;
+    } else {
+        $hora_fin = $busca_intento[0]['int_hfin'];
+        $tiempo_actual = time();
+        $tiempo_restante = $hora_fin - $tiempo_actual;
+        $hms = convertirSegundosaHMS($tiempo_restante);
+        return $hms;
+    }
+}
+
+function fnc_busca_intento($conexion, $usuario) {
+    $arreglo = array();
+    $sql = con_busca_intento($usuario);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_insertar_intento($conexion, $usuario, $int_hini, $int_hfin) {
+    $sql = con_insertar_intento($usuario, $int_hini, $int_hfin);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function convertirSegundosaHMS($segundos) {
+    $horas = floor($segundos / 3600);
+    $minutos = floor(($segundos - ($horas * 3600)) / 60);
+    $segunds = $segundos - ($horas * 3600) - ($minutos * 60);
+    return $horas . "-" . $minutos . "-" . $segunds;
+}
+
+function fnc_buscar_alumnos_no_entrevistados($conexion, $sede, $usuario, $fecha_ini, $fecha_fin) {
+    $arreglo = array();
+    $sql = con_buscar_alumnos_no_entrevistados($sede, $usuario, $fecha_ini, $fecha_fin);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_buscar_alumnos_no_entrevistados_alerta($conexion, $sede, $usuario) {
+    $arreglo = array();
+    $sql = con_buscar_alumnos_no_entrevistados_alerta($sede, $usuario);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_solicitudes_y_subsolicitudes($conexion, $sede, $codigoUsuario, $fechaInicio, $fechaFin, $privacidad) {
+    $arreglo = array();
+    $sql = con_lista_solicitudes_y_subsolicitudes($sede, $codigoUsuario, $fechaInicio, $fechaFin, $privacidad);
     $stmt = $conexion->query($sql);
     foreach ($stmt as $data) {
         array_push($arreglo, $data);

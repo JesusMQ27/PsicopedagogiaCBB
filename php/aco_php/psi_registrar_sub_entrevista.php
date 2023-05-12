@@ -34,12 +34,13 @@ $s_apoderado = strip_tags(trim($_POST["s_apoderado"]));
 $s_privacidad = strip_tags(trim($_POST["s_privacidad"]));
 $s_img1 = $_POST['s_dataURL1_sub'];
 $s_img2 = $_POST['s_dataURL2_sub'];
+$s_hora_total = strip_tags(trim($_POST["s_hora_total_sub"]));
 
 try {
     $sol_codigo = "sub_" . $s_docAlumno . "_" . fnc_generate_random_string(6);
     $cadena = "('" . $s_codi_entre_sub . "','" . $sol_codigo . "','" . $sol_matricula . "','" . $codigo_usuario . "','" . $s_solicitud_tipo . "','" . $s_subcategoria .
             "','" . $s_motivo . "',NOW(),'" . $s_sede . "','" . $s_planEstudiante . "','" . $s_planEntrevistador . "','"
-            . $s_acuerdos . "','" . $s_informe . "','" . $s_planPadre . "','" . $s_planDocente . "','" . $s_acuerdosPadres . "','" . $s_acuerdosColegio . "','" . $s_apoderado . "','" . $s_privacidad . "','1')";
+            . $s_acuerdos . "','" . $s_informe . "','" . $s_planPadre . "','" . $s_planDocente . "','" . $s_acuerdosPadres . "','" . $s_acuerdosColegio . "','" . $s_apoderado . "','" . $s_privacidad . "','" . $s_hora_total . "','1')";
     $solicitud_id = fnc_registrar_sub_solicitud_estudiante($conexion, $cadena);
     if ($solicitud_id) {
         if (strpos($s_img1, 'data:image/png;base64') === 0) {

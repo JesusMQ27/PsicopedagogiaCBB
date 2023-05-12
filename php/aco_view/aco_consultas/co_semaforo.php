@@ -13,17 +13,24 @@ $perfilId = $userData[0]["perfil"];
 $fechas = fnc_fechas_rango($conexion);
 $sedeCodi = "";
 $usuarioCodi = "";
-if ($perfilId === "1" || $perfilId === "2") {
+$privacidad = "";
+if ($userData[0]["sedeId"] == "1" && ($perfilId === "1" || $perfilId === "5")) {
     $sedeCodi = "0";
     $usuarioCodi = "";
-} else if ($perfilId === "3" || $perfilId === "4") {
-    $sedeCodi = $sedesData[0]["id"];
-    $usuarioCodi = "";
-} else if ($perfilId === "2") {
-    $sedeCodi = $sedesData[0]["id"];
-    $usuarioCodi = $userData[0]["usuCodi"];
+    $privacidad = "0,1";
+} else {
+    $privacidad = "0";
+    if ($perfilId === "1") {
+        $sedeCodi = $userData[0]["sedeId"];
+        $usuarioCodi = "";
+    } elseif ($perfilId === "2") {
+        $sedeCodi = $userData[0]["sedeId"];
+        $usuarioCodi = $codigo_user;
+    } else {
+        $sedeCodi = $sedeCodigo;
+        $usuarioCodi = "";
+    }
 }
-$lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["date_ayer"], $fechas[0]["date_hoy"], $usuarioCodi, "");
 ?>
 
 <section class="content-header">
@@ -96,7 +103,7 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                     </div>
                     <div class="col-lg-2 col-md-3 col-sm-6 col-12">
                         <div class="form-group" style="margin-bottom: 0px;">
-                            <label> Sede: </label>
+                            <label> Semaforo - Color: </label>
                         </div>
                         <select id="cbbSemaforo" data-show-content="true" class="form-control" style="width: 100%">
                             <option value="0">-- Todos --</option>
@@ -106,7 +113,7 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                         </select>
                     </div>
                     <div class="col-lg-2 col-md-4 col-sm-6 col-12">
-                        <button class="btn btn-primary" id="btnNuevoSolicitud" style="bottom: 0px;margin-top: 30px" 
+                        <button class="btn btn-success" id="btnNuevoSolicitud" style="bottom: 0px;margin-top: 30px" 
                                 onclick="buscar_semaforo_docente()">
                             <i class="fa fa-search"></i>
                             Buscar</button>
@@ -123,11 +130,43 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                                     <th style='width:200px'>Grado</th>
                                     <th>Cantidad total de estudiantes</th>
                                     <th>Cantidad faltante</th>
-                                    <th >Semaforo</th>
+                                    <th>Cantidad realizados</th>
+                                    <th>Porcentaje</th>
+                                    <th>Semaforo</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                
+                                <?php
+                                $lista = fnc_buscar_semaforo_docentes($conexion, $sedeCodi, $fechas[0]["date_ayer"], $fechas[0]["date_hoy"], "0");
+                                $html = "";
+                                $aux = 1;
+                                if (count($lista) > 0) {
+                                    foreach ($lista as $value) {
+                                        if ($value["color"] == "Rojo") {
+                                            $color = "color:red";
+                                        } else if ($value["color"] == "Ambar") {
+                                            $color = "color:#ff7e00 ";
+                                        } else if ($value["color"] == "Verde") {
+                                            $color = "color:green";
+                                        }
+                                        $html .= "<tr >"
+                                                . "<td>$aux</td>"
+                                                . "<td>" . $value["sede"] . "</td>"
+                                                . "<td >" . $value["docente"] . "</td>"
+                                                . "<td>" . $value["grado"] . "</td>"
+                                                . "<td style='text-align:center'>" . $value["cantidad"] . "</td>"
+                                                . "<td style='text-align:center'>" . $value["cantidad_faltantes"] . "</td>"
+                                                . "<td style='text-align:center'>" . $value["cantidad_realizados"] . "</td>"
+                                                . "<td style='text-align:center'>" . $value["porcentaje"] . "</td>"
+                                                . "<td style='text-align:center;$color'>" . $value["color"] . " <i class='fas fa-circle nav-icon' style='font-size:23px;'></i></td>"
+                                                . "</tr>";
+                                        $aux++;
+                                    }
+                                } else {
+                                    $html = ' <tr class = "odd"><td valign = "top" colspan = "9" class = "dataTables_empty">No hay datos disponibles en la tabla</td></tr>';
+                                }
+                                echo $html;
+                                ?>
                             </tbody>
                         </table>
                     </div>
@@ -192,8 +231,6 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
             $(".calendar-table").find('.today').removeClass("active start-date active end-date");
         });
         //$("#fecha1").click();
-
-
         $("#tableSemaforo").DataTable({
             "responsive": true,
             "lengthChange": true,
@@ -202,8 +239,24 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
             "searching": true,
             "ordering": true,
             "info": true,
-            //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
-            "buttons": ["new", "colvis"]
+            "buttons": ["copy",
+                {
+                    extend: 'csv',
+                    text: 'CSV',
+                    title: 'Lista semaforo docentes'
+                },
+                {
+                    extend: 'excel',
+                    text: 'Excel',
+                    title: 'Lista semaforo docentes'
+                },
+                {
+                    extend: 'print',
+                    text: 'Imprimir',
+                    title: 'Lista semaforo docentes'
+                }, "colvis"]
+                    //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+                    //"buttons": ["new", "colvis"]
         }).buttons().container().appendTo('#tableSemaforo_wrapper .col-md-6:eq(0)');
     });
 

@@ -97,7 +97,7 @@ function con_generate_token_contrasena($id, $token) {
 }
 
 function con_verificar_token_pass($id, $token) {
-    $sql = "SELECT * FROM tb_usuario WHERE usu_id='$id' AND usu_token_clave='$token';";
+    $sql = "SELECT * FROM tb_uscuario WHERE usu_id='$id' AND usu_token_clave='$token';";
     return $sql;
 }
 
@@ -786,6 +786,7 @@ function con_fechas_rango() {
 
 function con_lista_solicitudes($sede, $fechaInicio, $fechaFin, $codigoUsuario, $privacidad) {
     $sql = "SELECT sol_id as id,
+sed_nombre as sede,
 DATE(sol_fecha) as fecha,
 CONCAT(gra_nombre, ' - ',REPLACE(sec_nombre,'Seccion ','')) as grado, 
 alu_dni as nroDocumento,
@@ -794,7 +795,6 @@ ent_nombre as entrevista,
 cat_nombre as categoria,
 subca_nombre as subcategoria,
 sol_motivo as motivo,
-sed_nombre as sede,
 sol_plan_estu as planteamiento_estu,
 sol_plan_entre as planteamiento_entre,
 sol_acuerdos as acuerdos,
@@ -803,6 +803,8 @@ sol_plan_padre as plan_padre,
 sol_plan_docen as plan_docen,
 sol_acuerdos_1 as acuerdos_1,
 sol_acuerdos_2 as acuerdos_2,
+CASE sol_privacidad WHEN 0 THEN 'NO' WHEN 1 THEN 'SI' END as privacidad,
+sol_duracion as duracion,
 CASE sol_estado WHEN 0 THEN 'Inactivo' WHEN 1 THEN 'Activo' END as estado
 FROM tb_solicitudes a
 INNER JOIN tb_matricula b ON a.mat_id=b.mat_id
@@ -825,7 +827,32 @@ WHERE sol_fecha BETWEEN '$fechaInicio 00:00:00' AND '$fechaFin 23:59:59' ";
     } else {
         $sql .= " AND sol_privacidad in ($privacidad)";
     }
-    $sql .= ";";
+    $sql .= " ORDER BY sol_fecha DESC;";
+    return $sql;
+}
+
+function con_lista_solicitudes_alertas($sede, $codigoUsuario, $fechaInicio, $fechaFin, $privacidad) {
+    $sql = "SELECT a.sol_id
+FROM tb_solicitudes a 
+WHERE 1=1 ";
+    if ($sede !== "0") {
+        $sql .= " AND a.sed_id IN ($sede) ";
+    }
+    if ($codigoUsuario !== "") {
+        $sql .= " AND a.usu_id IN ($codigoUsuario) ";
+    }
+    if ($privacidad !== "0") {
+        $sql .= " AND sol_privacidad in ($privacidad)";
+    } else {
+        $sql .= " AND sol_privacidad in ($privacidad)";
+    }
+    if ($fechaInicio != "") {
+        $sql .= " AND sol_fecha>='$fechaInicio 00:00:00' ";
+    }
+    if ($fechaFin != "") {
+        $sql .= " AND sol_fecha<='$fechaFin 23:59:59' ";
+    }
+    $sql .= " AND sol_estado=1;";
     return $sql;
 }
 
@@ -1027,6 +1054,7 @@ function con_registrar_solicitud_estudiante($cadena) {
         sol_acuerdos_2,
         apo_id,
         sol_privacidad,
+        sol_duracion,
         sol_estado)
         VALUES $cadena";
     return $sql;
@@ -1085,18 +1113,19 @@ function con_eliminar_sub_solicitud_alumno($id, $estado) {
 }
 
 function con_buscar_semaforo_docentes($sede, $fecha_ini, $fecha_fin, $semaforo) {
-    $sql = "SELECT * FROM ( SELECT sede,docente,grado,cantidad,cantidad_faltantes,
-		CASE WHEN cantidad_faltantes/cantidad<0.4 THEN '3' 
-		WHEN cantidad_faltantes/cantidad>=0.4 AND cantidad_faltantes/cantidad<0.8 THEN '2'
-		WHEN cantidad_faltantes/cantidad>=0.8 AND cantidad_faltantes/cantidad<1.0 THEN '1'
+    $sql = "SELECT * FROM ( SELECT sede,docente,grado,cantidad,cantidad_faltantes,cantidad_realizados,CONCAT((cantidad_realizados/cantidad)*100,' %') as porcentaje,
+		CASE WHEN cantidad_realizados/cantidad<0.4 THEN '3' 
+		WHEN cantidad_realizados/cantidad>=0.4 AND cantidad_realizados/cantidad<0.8 THEN '2'
+		WHEN cantidad_realizados/cantidad>=0.8 AND cantidad_realizados/cantidad<1.0 THEN '1'
 		END AS valor,
-		CASE WHEN cantidad_faltantes/cantidad<0.4 THEN 'Rojo' 
-		WHEN cantidad_faltantes/cantidad>=0.4 AND cantidad_faltantes/cantidad<0.8 THEN 'Ambar'
-		WHEN cantidad_faltantes/cantidad>=0.8 AND cantidad_faltantes/cantidad<1.0 THEN 'Verde'
+		CASE WHEN cantidad_realizados/cantidad<0.4 THEN 'Rojo' 
+		WHEN cantidad_realizados/cantidad>=0.4 AND cantidad_realizados/cantidad<0.8 THEN 'Ambar'
+		WHEN cantidad_realizados/cantidad>=0.8 AND cantidad_realizados/cantidad<1.0 THEN 'Verde'
 		END AS color
 	FROM (
 		SELECT sed_nombre as sede,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as docente,
-		CONCAT(gra_nombre,' - ',sec_nombre) as grado,mat_fech_regi as fecha ,COUNT(c.mat_id) as cantidad,COUNT(g.sol_id) as cantidad_faltantes
+		CONCAT(gra_nombre,' - ',sec_nombre) as grado,mat_fech_regi as fecha ,COUNT(c.mat_id) as cantidad,
+                COUNT(g.sol_id) as cantidad_realizados,COUNT(c.mat_id) -COUNT(g.sol_id) as cantidad_faltantes
 		FROM tb_usuario_dictado a
 		INNER JOIN tb_usuario b ON a.usu_id=b.usu_id
 		INNER JOIN tb_matricula c ON a.sec_id=c.sec_id AND a.sed_id=c.sed_id
@@ -1108,7 +1137,39 @@ function con_buscar_semaforo_docentes($sede, $fecha_ini, $fecha_fin, $semaforo) 
     if ($sede !== "0") {
         $sql .= " and c.sed_id=$sede ";
     }
-    $sql .= "GROUP BY a.usu_id,a.sed_id,a.sec_id) as p1 ) as p2 WHERE 1=1  ";
+    $sql .= " GROUP BY a.usu_id,a.sed_id,a.sec_id) as p1 ) as p2 WHERE 1=1  ";
+    if ($semaforo !== "0") {
+        $sql .= " and p2.valor=$semaforo ";
+    }
+    $sql .= ";";
+    return $sql;
+}
+
+function con_buscar_semaforo_docentes_alerta($sede, $fecha_ini, $fecha_fin, $semaforo) {
+    $sql = "SELECT * FROM ( SELECT *
+	FROM (
+		SELECT sed_nombre as sede,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as docente,
+		CONCAT(gra_nombre,' - ',sec_nombre) as grado,mat_fech_regi as fecha ,COUNT(c.mat_id) as cantidad,
+                COUNT(g.sol_id) as cantidad_realizados,COUNT(c.mat_id) -COUNT(g.sol_id) as cantidad_faltantes,
+                CONCAT(((COUNT(g.sol_id)/COUNT(c.mat_id))*100),' %') as porcentaje
+		FROM tb_usuario_dictado a
+		INNER JOIN tb_usuario b ON a.usu_id=b.usu_id
+		INNER JOIN tb_matricula c ON a.sec_id=c.sec_id AND a.sed_id=c.sed_id
+		INNER JOIN tb_seccion d ON c.sec_id=d.sec_id
+		INNER JOIN tb_grado e ON d.gra_id=e.gra_id
+		INNER JOIN tb_sede f ON c.sed_id=f.sed_id
+		LEFT JOIN tb_solicitudes g ON c.mat_id=g.mat_id AND sol_estado=1
+		WHERE dic_estado=1 and mat_estado=1  ";
+    if ($fecha_ini !== "") {
+        $sql .= " AND mat_fech_regi>='$fecha_ini 00:00:00' ";
+    }
+    if ($fecha_fin !== "") {
+        $sql .= " AND mat_fech_regi<='$fecha_fin 23:59:59' ";
+    }
+    if ($sede !== "0") {
+        $sql .= " and c.sed_id=$sede ";
+    }
+    $sql .= " ) as p1 ) as p2 WHERE 1=1  ";
     if ($semaforo !== "0") {
         $sql .= " and p2.valor=$semaforo ";
     }
@@ -1142,6 +1203,7 @@ function con_registrar_sub_solicitud_estudiante($cadena) {
         ssol_acuerdos_2,
         apo_id,
         ssol_privacidad,
+        ssol_duracion,
         ssol_estado)
         VALUES $cadena";
     return $sql;
@@ -1404,5 +1466,171 @@ INNER JOIN tb_alumno_apoderado b ON a.apo_id=b.apo_id
 INNER JOIN tb_tipo_apoderado c ON b.tip_id=c.tip_id
 WHERE ssol_id=$codigo
 ) AS p1 WHERE p1.correo!='';";
+    return $sql;
+}
+
+function con_busca_intento($usuario) {
+    $sql = "select * from tb_solicitudes_intentos where usu_id='$usuario';";
+    return $sql;
+}
+
+function con_insertar_intento($usuario, $int_hini, $int_hfin) {
+    $sql = "insert into tb_solicitudes_intentos(usu_id,int_hini,int_hfin,int_hreg,int_esta)"
+            . "  values('" . $usuario . "','" . $int_hini . "','" . $int_hfin . "',NOW(),1);";
+    return $sql;
+}
+
+function con_buscar_alumnos_no_entrevistados($sede, $usuario, $fecha_ini, $fecha_fin) {
+    $sql = "SELECT * FROM (
+		SELECT sed_nombre as sede,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as docente,
+		UPPER(CONCAT(gra_nombre,' - ',sec_nombre)) as grado,alu_dni as dni,UPPER(alu_nombres) as alumno,
+		IF(h.sol_id IS NULL,'No entrevistado','Entrevistado') as tipo,
+		IF(sol_fecha IS NULL,'No entrevistado',DATE_FORMAT(DATE(sol_fecha) , '%d/%m/%Y')) as fecha,b.sed_id
+FROM tb_usuario a
+		INNER JOIN tb_usuario_dictado b ON a.usu_id=b.usu_id
+		INNER JOIN tb_matricula c ON b.sec_id=c.sec_id AND b.sed_id=c.sed_id  
+		INNER JOIN tb_seccion d ON b.sec_id=d.sec_id AND c.sec_id=d.sec_id 
+		INNER JOIN tb_grado e ON d.gra_id=e.gra_id
+		INNER JOIN tb_alumno f ON c.alu_id=f.alu_id
+		INNER JOIN tb_sede g ON b.sed_id=g.sed_id AND c.sed_id=g.sed_id
+		LEFT JOIN tb_solicitudes h ON c.mat_id=h.mat_id AND c.sed_id=h.sed_id
+		WHERE 1=1 AND dic_estado=1 AND c.mat_estado=1 AND f.alu_estado=1 ";
+
+    if ($usuario !== "") {
+        $sql .= " AND b.usu_id=$usuario ";
+    }
+    $sql .= " AND sol_fecha is NULL OR sol_fecha BETWEEN '$fecha_ini 00:00:00' AND '$fecha_fin 23:59:59') AS p1
+        WHERE 1=1 ";
+    if ($sede !== "0") {
+        $sql .= " AND p1.sed_id=$sede ";
+    }
+    $sql .= " ORDER BY p1.fecha DESC, p1.sede, p1.tipo, p1.docente, p1.grado, p1.alumno";
+    return $sql;
+}
+
+function con_buscar_alumnos_no_entrevistados_alerta($sede, $usuario) {
+    $sql = "SELECT * FROM (
+		SELECT sed_nombre as sede,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as docente,
+		UPPER(CONCAT(gra_nombre,' - ',sec_nombre)) as grado,alu_dni as dni,UPPER(alu_nombres) as alumno,
+		IF(h.sol_id IS NULL,'No entrevistado','Entrevistado') as tipo,
+		IF(sol_fecha IS NULL,'No entrevistado',DATE_FORMAT(DATE(sol_fecha) , '%d/%m/%Y')) as fecha,b.sed_id
+FROM tb_usuario a
+		INNER JOIN tb_usuario_dictado b ON a.usu_id=b.usu_id
+		INNER JOIN tb_matricula c ON b.sec_id=c.sec_id AND b.sed_id=c.sed_id  
+		INNER JOIN tb_seccion d ON b.sec_id=d.sec_id AND c.sec_id=d.sec_id 
+		INNER JOIN tb_grado e ON d.gra_id=e.gra_id
+		INNER JOIN tb_alumno f ON c.alu_id=f.alu_id
+		INNER JOIN tb_sede g ON b.sed_id=g.sed_id AND c.sed_id=g.sed_id
+		LEFT JOIN tb_solicitudes h ON c.mat_id=h.mat_id AND c.sed_id=h.sed_id
+		WHERE 1=1 AND dic_estado=1 AND c.mat_estado=1 AND f.alu_estado=1 AND sol_fecha is NULL ";
+
+    if ($usuario !== "") {
+        $sql .= " AND b.usu_id=$usuario ";
+    }
+    $sql .= ") AS p1
+        WHERE 1=1 ";
+    if ($sede !== "0") {
+        $sql .= " AND p1.sed_id=$sede ";
+    }
+    $sql .= " AND p1.tipo='No entrevistado'; ";
+    return $sql;
+}
+
+function con_lista_solicitudes_y_subsolicitudes($sede, $codigoUsuario, $fechaInicio, $fechaFin, $privacidad) {
+    $sql = "SELECT * FROM 
+        (SELECT sol_id as id,
+'Entrevista' as tipo,
+sed_nombre as sede,
+DATE(sol_fecha) as fecha,
+CONCAT(gra_nombre, ' - ',REPLACE(sec_nombre,'Seccion ','')) as grado, 
+alu_dni as nroDocumento,
+UPPER(alu_nombres) as alumno,
+ent_nombre as entrevista,
+cat_nombre as categoria,
+subca_nombre as subcategoria,
+sol_motivo as motivo,
+sol_plan_estu as planteamiento_estu,
+sol_plan_entre as planteamiento_entre,
+sol_acuerdos as acuerdos,
+sol_informe as informe,
+sol_plan_padre as plan_padre,
+sol_plan_docen as plan_docen,
+sol_acuerdos_1 as acuerdos_1,
+sol_acuerdos_2 as acuerdos_2,
+CASE sol_privacidad WHEN 0 THEN 'NO' WHEN 1 THEN 'SI' END as privacidad,
+sol_duracion as duracion,
+concat(usu_paterno,' ',usu_materno,' ',usu_nombres) as usuario,
+CASE sol_estado WHEN 0 THEN 'Inactivo' WHEN 1 THEN 'Activo' END as estado
+FROM tb_solicitudes a
+INNER JOIN tb_matricula b ON a.mat_id=b.mat_id
+INNER JOIN tb_alumno c ON b.alu_id=c.alu_id
+INNER JOIN tb_seccion d ON b.sec_id=d.sec_id
+INNER JOIN tb_grado e ON d.gra_id=e.gra_id
+INNER JOIN tb_entrevista f ON a.ent_id=f.ent_id
+INNER JOIN tb_subcategoria g ON a.subca_id=g.subca_id
+INNER JOIN tb_categoria h ON g.cat_id=h.cat_id
+INNER JOIN tb_sede j ON a.sed_id=j.sed_id
+INNER JOIN tb_usuario k ON a.usu_id=k.usu_id
+WHERE sol_fecha BETWEEN '$fechaInicio 00:00:00' AND '$fechaFin 23:59:59' ";
+    if ($sede !== "0") {
+        $sql .= " AND b.sed_id IN ($sede) ";
+    }
+    if ($codigoUsuario !== "") {
+        $sql .= " AND a.usu_id IN ($codigoUsuario) ";
+    }
+    if ($privacidad !== "0") {
+        $sql .= " AND sol_privacidad in ($privacidad)";
+    } else {
+        $sql .= " AND sol_privacidad in ($privacidad)";
+    }
+    $sql .= " ORDER BY sol_fecha DESC) as p1 "
+            . " UNION ";
+    $sql .= " SELECT * FROM 
+        (SELECT ssol_id as id,
+'Sub Entrevista' as tipo,
+sed_nombre as sede,
+DATE(ssol_fecha) as fecha,
+CONCAT(gra_nombre, ' - ',REPLACE(sec_nombre,'Seccion ','')) as grado, 
+alu_dni as nroDocumento,
+UPPER(alu_nombres) as alumno,
+ent_nombre as entrevista,
+cat_nombre as categoria,
+subca_nombre as subcategoria,
+ssol_motivo as motivo,
+ssol_plan_estu as planteamiento_estu,
+ssol_plan_entre as planteamiento_entre,
+ssol_acuerdos as acuerdos,
+ssol_informe as informe,
+ssol_plan_padre as plan_padre,
+ssol_plan_docen as plan_docen,
+ssol_acuerdos_1 as acuerdos_1,
+ssol_acuerdos_2 as acuerdos_2,
+CASE ssol_privacidad WHEN 0 THEN 'NO' WHEN 1 THEN 'SI' END as privacidad,
+ssol_duracion as duracion,
+concat(usu_paterno,' ',usu_materno,' ',usu_nombres) as usuario,
+CASE ssol_estado WHEN 0 THEN 'Inactivo' WHEN 1 THEN 'Activo' END as estado
+FROM tb_sub_solicitudes a
+INNER JOIN tb_matricula b ON a.mat_id=b.mat_id
+INNER JOIN tb_alumno c ON b.alu_id=c.alu_id
+INNER JOIN tb_seccion d ON b.sec_id=d.sec_id
+INNER JOIN tb_grado e ON d.gra_id=e.gra_id
+INNER JOIN tb_entrevista f ON a.ent_id=f.ent_id
+INNER JOIN tb_subcategoria g ON a.subca_id=g.subca_id
+INNER JOIN tb_categoria h ON g.cat_id=h.cat_id
+INNER JOIN tb_sede j ON a.sed_id=j.sed_id
+INNER JOIN tb_usuario k ON a.usu_id=k.usu_id
+WHERE ssol_fecha BETWEEN '$fechaInicio 00:00:00' AND '$fechaFin 23:59:59' ";
+    if ($sede !== "0") {
+        $sql .= " AND b.sed_id IN ($sede) ";
+    }
+    if ($codigoUsuario !== "") {
+        $sql .= " AND a.usu_id IN ($codigoUsuario) ";
+    }
+    if ($privacidad !== "0") {
+        $sql .= " AND ssol_privacidad in ($privacidad)";
+    } else {
+        $sql .= " AND ssol_privacidad in ($privacidad)";
+    }
+    $sql .= " ORDER BY ssol_fecha DESC ) as p2 ORDER BY sede,fecha DESC,grado,alumno;";
     return $sql;
 }

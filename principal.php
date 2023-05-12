@@ -16,8 +16,33 @@ if (!isset($_SESSION["psi_user"])) {
 $userSession = $_SESSION["psi_user"];
 $useId = $userSession["id"];
 $userData = fnc_datos_usuario($conexion, $useId);
+$perfilCodi = $userData[0]["perfil"];
 $perfil = $userData[0]["perfil_nombre"];
-$sede = $userData[0]["sede"];
+$sede = $userData[0]["sedeId"];
+
+$sedeCodi = "";
+$usuarioCodi = "";
+$privacidad = "";
+if ($sede == "1" && ($perfilCodi == "1" || $perfilCodi == "5")) {
+    $sedeCodi = "0";
+    $usuarioCodi = "";
+    $privacidad = "0,1";
+} else {
+    $privacidad = "0";
+    if ($perfilCodi === "1") {
+        $sedeCodi = $sede;
+        $usuarioCodi = "";
+    } elseif ($perfilCodi === "2") {
+        $sedeCodi = $sede;
+        $usuarioCodi = $codigo_user;
+    } else {
+        $sedeCodi = $sede;
+        $usuarioCodi = "";
+    }
+}
+$lista_solicitudes = fnc_lista_solicitudes_alerta($conexion, $sedeCodi, $usuarioCodi, "", "", $privacidad);
+$semaforo = fnc_buscar_semaforo_docentes_alerta($conexion, $sedeCodi, "", "", "0");
+$alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion, $sedeCodi, $usuarioCodi);
 ?>
 <html lang="en">
     <head>
@@ -72,7 +97,8 @@ $sede = $userData[0]["sede"];
                         <a href="#" class="nav-link">Principal</a>
                     </li>
                     <li class="nav-item d-none d-sm-inline-block">
-                        <a href="#" class="nav-link">Contact</a>
+                        <a href="#" class="nav-link">Sistema de acompañamiento al estudiante - SIAE CBB </a>
+
                     </li>
                 </ul>
 
@@ -296,14 +322,14 @@ $sede = $userData[0]["sede"];
                                 <!-- small card -->
                                 <div class="small-box bg-info">
                                     <div class="inner">
-                                        <h3>20</h3>
-
-                                        <p>Solicitudes registradas</p>
+                                        <h3><?php echo count($lista_solicitudes); ?></h3>
+                                        <p>Entrevistas registradas</p>
+                                        <label><a href="#" style="color: white;">Ir al m&oacute;dulo</a></label>
                                     </div>
                                     <div class="icon">
                                         <i class="fas fa-list-alt"></i>
                                     </div>
-                                    <a href="#" class="small-box-footer">
+                                    <a href="#" onclick="mostrar_grafico_solicitudes_registradas()" class="small-box-footer">
                                         Ver m&aacute;s <i class="fas fa-arrow-circle-right"></i>
                                     </a>
                                 </div>
@@ -313,14 +339,14 @@ $sede = $userData[0]["sede"];
                                 <!-- small card -->
                                 <div class="small-box bg-success">
                                     <div class="inner">
-                                        <h3>13</h3>
-
+                                        <h3><?php echo $semaforo[0]["porcentaje"]; ?></h3>
                                         <p>Semaforo docentes</p>
+                                        <label><a href="#" style="color: white;">Ir al m&oacute;dulo</a></label>
                                     </div>
                                     <div class="icon">
                                         <i class="fas fa-chart-pie"></i>
                                     </div>
-                                    <a href="#" class="small-box-footer">
+                                    <a href="#" onclick="mostrar_grafico_semaforo_docente()" class="small-box-footer">
                                         Ver m&aacute;s <i class="fas fa-arrow-circle-right"></i>
                                     </a>
                                 </div>
@@ -330,22 +356,26 @@ $sede = $userData[0]["sede"];
                                 <!-- small card -->
                                 <div class="small-box bg-warning">
                                     <div class="inner">
-                                        <h3>45</h3>
-
-                                        <p>Mis alumnos no registrados</p>
+                                        <h3><?php echo count($alumnos_no_entrevistados); ?></h3>
+                                        <p>Mis alumnos no entrevistados</p>
+                                        <label><a href="#" style="color: black;">Ir al m&oacute;dulo</a></label>
                                     </div>
                                     <div class="icon">
                                         <i class="fas fa-table"></i>
                                     </div>
-                                    <a href="#" class="small-box-footer">
+                                    <a href="#" onclick="mostrar_grafico_alumnos_no_registrados()" class="small-box-footer">
                                         Ver m&aacute;s <i class="fas fa-arrow-circle-right"></i>
                                     </a>
                                 </div>
                             </div>
+                            <div class="col-lg-3 col-6" style="text-align: center;"><img  src="php/aco_img/logo_3.png" alt="" style="height: 170px"></div>
                             <!-- ./col -->
                             <!-- ./col -->
                         </div>
                         <!-- /.container-fluid -->
+                        <div class="col-lg-12 col-12" id="contenido_alertas">
+                        </div>
+
                     </div>
                 </div>
                 <!-- /.content -->

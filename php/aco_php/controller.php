@@ -2551,12 +2551,14 @@ function operacion_buscar_semaforo_docentes() {
                     . "<td>" . $value["grado"] . "</td>"
                     . "<td style='text-align:center'>" . $value["cantidad"] . "</td>"
                     . "<td style='text-align:center'>" . $value["cantidad_faltantes"] . "</td>"
-                    . "<td style='$color'> " . $value["color"] . "</td>"
+                    . "<td style='text-align:center'>" . $value["cantidad_realizados"] . "</td>"
+                    . "<td style='text-align:center'>" . $value["porcentaje"] . "</td>"
+                    . "<td style='text-align:center;$color'><i class='fas fa-circle nav-icon' style='font-size:23px;'></i></td>"
                     . "</tr>";
             $aux++;
         }
     } else {
-        $html = ' <tr class = "odd"><td valign = "top" colspan = "7" class = "dataTables_empty">No hay datos disponibles en la tabla</td></tr>';
+        $html = '';
     }
     echo $html;
 }
@@ -4644,5 +4646,238 @@ function formulario_carga_solicitudes_enviar() {
            <span><i class="nav-icon fa fa-info-circle" style="color: red"></i> Nota: La ' . $entre_sub . ' con c&oacute;digo ' . $lista_solicitud[0]["codigo"] . ' no tiene correo registrados del estudiante y/o apoderado(s).</span>';
         $html .= '</div>';
     }
+    echo $html;
+}
+
+function mostrar_busqueda_entrevistas() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_sede = strip_tags(trim($_POST["s_sede"]));
+    $s_fecha1 = strip_tags(trim($_POST["s_fecha1"]));
+    $s_fecha2 = strip_tags(trim($_POST["s_fecha2"]));
+    $perfil = p_perfil;
+    $sedeCodigo = $s_sede;
+
+    $sedeCodi = "";
+    $usuarioCodi = "";
+    $privacidad = "";
+    if ($sedeCodigo == "1" && ($perfil == "1" || $perfil == "5")) {
+        $sedeCodi = "0";
+        $usuarioCodi = "";
+        $privacidad = "0,1";
+    } else {
+        $privacidad = "0";
+        if ($perfil === "1") {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = "";
+        } elseif ($perfil === "2") {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = p_usuario;
+        } else {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = "";
+        }
+    }
+    $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, convertirFecha($s_fecha1), convertirFecha($s_fecha2), $usuarioCodi, $privacidad);
+    $html = "";
+    $num = 1;
+    if (count($lista_solicitudes) > 0) {
+        foreach ($lista_solicitudes as $lista) {
+            $solicitudCod = fnc_generate_random_string(6) . "-" . $lista["id"] . "/" . fnc_generate_random_string(6);
+            $html .= "<tr>
+                    <td>" . $num . "</td>
+                    <td>" . $lista["sede"] . "</td>
+                    <td>" . $lista["fecha"] . "</td>
+                    <td>" . $lista["grado"] . "</td>
+                    <td>" . $lista["nroDocumento"] . "</td>
+                    <td>" . $lista["alumno"] . "</td>
+                    <td>" . $lista["entrevista"] . "</td>";
+            if ($perfil == "1" || $perfil == "5") {
+                $html .= "<td>" . $lista["privacidad"] . "</td>";
+            }
+            $html .= "
+                    <td>" . $lista["estado"] . "</td>
+                    <td align='center'>"
+                    . "<i class='nav-icon fas fa-plus green' title='Nueva Subentrevista' data-toggle='modal' data-target='#modal-subentrevista' data-backdrop='static' data-entrevista='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
+                    . "<i class='nav-icon fas fa-file-pdf rojo' title='Descargar' data-toggle='modal' data-target='#modal-descargar' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
+                    . "<i class='nav-icon fas fa-info-circle celeste' title='Detalle' data-toggle='modal' data-target='#modal-detalle-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "' data-grupo_nombre='" . $lista["id"] . "'></i>&nbsp;&nbsp;&nbsp;"
+                    . "<i class='nav-icon fas fa-edit naranja' title='Editar' data-toggle='modal' data-target='#modal-editar-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
+                    . "<i class='nav-icon fas fa-trash rojo' title='Eliminar' data-toggle='modal' data-target='#modal-eliminar-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
+                    . "<i class='nav-icon fas fa-paper-plane azul' title='Enviar al correo' data-toggle='modal' data-target='#modal-enviar-solicitud' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;" .
+                    "</td>"
+                    . "</tr>";
+            $num++;
+        }
+    } else {
+        $html = "";
+    }
+    echo $html;
+}
+
+function operacion_buscar_no_entrevistados() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_sede = strip_tags(trim($_POST["s_sede"]));
+    $s_fecha1 = strip_tags(trim($_POST["s_fecha_inicio"]));
+    $s_fecha2 = strip_tags(trim($_POST["s_fecha_fin"]));
+    $perfil = p_perfil;
+    $sedeCodigo = $s_sede;
+
+    $sedeCodi = "";
+    $usuarioCodi = "";
+    $privacidad = "";
+    if ($sedeCodigo == "1" && ($perfil === "1" || $perfil === "5")) {
+        $sedeCodi = "0";
+        $usuarioCodi = "";
+        $privacidad = "0,1";
+    } else {
+        $privacidad = "0";
+        if ($perfil === "1") {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = "";
+        } elseif ($perfil === "2") {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = p_usuario;
+        } else {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = "";
+        }
+    }
+    $lista_no_entrevistados = fnc_buscar_alumnos_no_entrevistados($conexion, $sedeCodi, $usuarioCodi, convertirFecha($s_fecha1), convertirFecha($s_fecha2));
+    $html = "";
+    $num = 1;
+    $aux = 1;
+    if (count($lista_no_entrevistados) > 0) {
+        foreach ($lista_no_entrevistados as $value) {
+            $html .= "<tr >"
+                    . "<td>$aux</td>"
+                    . "<td>" . $value["tipo"] . "</td>"
+                    . "<td >" . $value["fecha"] . "</td>"
+                    . "<td>" . $value["sede"] . "</td>"
+                    . "<td>" . $value["docente"] . "</td>"
+                    . "<td>" . $value["grado"] . "</td>"
+                    . "<td>" . $value["dni"] . "</td>"
+                    . "<td>" . $value["alumno"] . "</td>"
+                    . "</tr>";
+            $aux++;
+        }
+    } else {
+        $html = "";
+    }
+    echo $html;
+}
+
+function operacion_entrevistas_alumnos() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_sede = strip_tags(trim($_POST["s_sede"]));
+    $s_fecha1 = strip_tags(trim($_POST["s_fecha_inicio"]));
+    $s_fecha2 = strip_tags(trim($_POST["s_fecha_fin"]));
+    $perfil = p_perfil;
+    $sedeCodigo = $s_sede;
+
+    $sedeCodi = "";
+    $usuarioCodi = "";
+    $privacidad = "";
+    if ($sedeCodigo == "1" && ($perfil === "1" || $perfil === "5")) {
+        $sedeCodi = "0";
+        $usuarioCodi = "";
+        $privacidad = "0,1";
+    } else {
+        $privacidad = "0";
+        if ($perfil === "1") {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = "";
+        } elseif ($perfil === "2") {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = p_usuario;
+        } else {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = "";
+        }
+    }
+    $lista_entrevistas = fnc_lista_solicitudes_y_subsolicitudes($conexion, $sedeCodi, $usuarioCodi, convertirFecha($s_fecha1), convertirFecha($s_fecha2), $privacidad);
+    $html = "";
+    $num = 1;
+    $aux = 1;
+    if (count($lista_entrevistas) > 0) {
+        foreach ($lista_entrevistas as $lista) {
+            $html .= "<tr>
+                                        <td>" . $num . "</td>
+                                        <td>" . $lista["tipo"] . "</td>
+                                        <td>" . $lista["sede"] . "</td>
+                                        <td width='57px'>" . $lista["fecha"] . "</td>
+                                        <td>" . $lista["grado"] . "</td>
+                                        <td>" . $lista["nroDocumento"] . "</td>
+                                        <td width='200px'>" . $lista["alumno"] . "</td>
+                                        <td>" . $lista["entrevista"] . "</td>";
+            if ($perfil == "1" || $perfil == "5") {
+                $html .= "<td>" . $lista["privacidad"] . "</td>";
+            }
+            $html .= "<td width='200px'>" . $lista["usuario"] . "</td>" .
+                    "<td>" . $lista["categoria"] . "</td>" .
+                    "<td>" . $lista["subcategoria"] . "</td>" .
+                    "<td>" . $lista["duracion"] . "</td>" .
+                    "<td>" . $lista["estado"] . "</td>" .
+                    "</tr>";
+            $num++;
+        }
+    } else {
+        $html = "";
+    }
+    echo $html;
+}
+
+function formulario_grafico_solicitudes_registradas() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+
+    $html = "<div class='card card-info'>
+              <div class='card-header'>
+                <h3 class='card-title'>Entrevistas registradas</h3>
+              </div>
+              <div class='card-body'>
+                <div class='input-group mb-12'>
+                  <div class='input-group-prepend'>
+                    <span class='input-group-text'>@</span>
+                  </div>
+                </div>
+            </div>";
+    echo $html;
+}
+
+function formulario_grafico_semaforo_docente() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+
+    $html = "<div class='card card-success'>
+              <div class='card-header'>
+                <h3 class='card-title'>Semaforo docentes</h3>
+              </div>
+              <div class='card-body'>
+                <div class='input-group mb-12'>
+                  <div class='input-group-prepend'>
+                    <span class='input-group-text'>@</span>
+                  </div>
+                </div>
+            </div>";
+    echo $html;
+}
+
+function formulario_grafico_alumnos_no_registrados() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+
+    $html = "<div class='card card-warning'>
+              <div class='card-header'>
+                <h3 class='card-title'>Mis alumnos no entrevistados</h3>
+              </div>
+              <div class='card-body'>
+                <div class='input-group mb-12'>
+                  <div class='input-group-prepend'>
+                    <span class='input-group-text'>@</span>
+                  </div>
+                </div>
+            </div>";
     echo $html;
 }

@@ -21,7 +21,8 @@
             <!-- /.login-logo -->
             <div class="card card-outline card-primary">
                 <div class="card-header text-center">
-                    <a href="javascript:void(0)" class="h5">Bienvenido al <b>Sistema de acompa&ntilde;amiento al estudiante </b><br/><b>SIAE CBB</b></a>
+                    <div class="text-center"><img src="php/aco_img/logo_3.png" alt="" style="width: 70%"/></div><br>
+                    <a href="javascript:void(0)" class="h5"><b>Sistema de acompa&ntilde;amiento al estudiante </b><b>SIAE CBB</b></a>
                 </div>
                 <div class="card-body">
                     <p class="login-box-msg">Ingresa tu usuario y contrase&ntilde;a para iniciar sesi&oacute;n</p>
