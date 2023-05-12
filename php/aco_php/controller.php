@@ -4870,7 +4870,7 @@ function formulario_grafico_alumnos_no_registrados() {
 
     $html = "<div class='card card-warning'>
               <div class='card-header'>
-                <h3 class='card-title'>Mis alumnos no entrevistados</h3>
+                <h3 class='card-title'>Mis alumnos no entrevistados</h3> 
               </div>
               <div class='card-body'>
                 <div class='input-group mb-12'>
