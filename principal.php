@@ -74,6 +74,8 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
 
         <link href="plugins/bootstrap/css/bootstrap-theme.min.css" rel="stylesheet" type="text/css"/>
 
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css" />
+
     </head>
     <!--
     `body` tag options:
@@ -254,13 +256,13 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
 
                     <!-- Sidebar Menu -->
                     <nav class="mt-2">
-                        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false" id="menuSistema">
                             <?php
                             $html_menu = "";
                             $lista_menu = fnc_menu_x_perfil($conexion, $userData[0]["perfil"], $useId);
                             foreach ($lista_menu as $lista) {
                                 $menu = $lista["id"];
-                                $html_menu .= "<li class='nav-item'>
+                                $html_menu .= "<li class='nav-item' id='menu-" . $menu . "'>
                                 <a href='#' class='nav-link'>
                                     <i class='" . $lista["icono"] . "'></i>
                                     <p>
@@ -271,7 +273,7 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                                 <ul class='nav nav-treeview'>";
                                 $lista_submenu = fnc_submenu_x_menu($conexion, $menu, $userData[0]["perfil"], $useId);
                                 foreach ($lista_submenu as $lista_s) {
-                                    $html_menu .= "<li class='nav-item'>
+                                    $html_menu .= "<li class='nav-item' id='submenu-" . $lista_s["id"] . "'>
                                         <a href='#' onclick='cargar_opcion(" . '"' . $lista_s["id"] . '"' . "," . '"' . $lista_s["ruta"] . '"' . "," . '"' . $lista_s["submenu"] . '"' . ")' class='nav-link'>
                                             <i class='" . $lista_s["icono"] . "'></i>
                                             <p>" . $lista_s["submenu"] . "</p>
@@ -324,7 +326,7 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                                     <div class="inner">
                                         <h3><?php echo count($lista_solicitudes); ?></h3>
                                         <p>Entrevistas registradas</p>
-                                        <label><a href="#" style="color: white;">Ir al m&oacute;dulo</a></label>
+                                        <label><a href="#" style="color: white;" onclick="mostrar_modulo_x_alerta(7);">Ir al m&oacute;dulo</a></label>
                                     </div>
                                     <div class="icon">
                                         <i class="fas fa-list-alt"></i>
@@ -341,7 +343,7 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                                     <div class="inner">
                                         <h3><?php echo $semaforo[0]["porcentaje"]; ?></h3>
                                         <p>Semaforo docentes</p>
-                                        <label><a href="#" style="color: white;">Ir al m&oacute;dulo</a></label>
+                                        <label><a href="#" style="color: white;" onclick="mostrar_modulo_x_alerta(8);">Ir al m&oacute;dulo</a></label>
                                     </div>
                                     <div class="icon">
                                         <i class="fas fa-chart-pie"></i>
@@ -358,7 +360,7 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                                     <div class="inner">
                                         <h3><?php echo count($alumnos_no_entrevistados); ?></h3>
                                         <p>Mis alumnos no entrevistados</p>
-                                        <label><a href="#" style="color: black;">Ir al m&oacute;dulo</a></label>
+                                        <label><a href="#" style="color: black;" onclick="mostrar_modulo_x_alerta(9);">Ir al m&oacute;dulo</a></label>
                                     </div>
                                     <div class="icon">
                                         <i class="fas fa-table"></i>
@@ -457,6 +459,8 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
         <script src="plugins/bootstrap-typeahead/bootstrap3-typeahead.min.js" type="text/javascript"></script>
         <script src="plugins/printArea/jquery.PrintArea.js" type="text/javascript"></script>
 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>
     </body>
 
 </html>

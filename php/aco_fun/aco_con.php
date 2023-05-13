@@ -790,7 +790,7 @@ sed_nombre as sede,
 DATE(sol_fecha) as fecha,
 CONCAT(gra_nombre, ' - ',REPLACE(sec_nombre,'Seccion ','')) as grado, 
 alu_dni as nroDocumento,
-alu_nombres as alumno,
+UPPER(alu_nombres) as alumno,
 ent_nombre as entrevista,
 cat_nombre as categoria,
 subca_nombre as subcategoria,
@@ -853,6 +853,51 @@ WHERE 1=1 ";
         $sql .= " AND sol_fecha<='$fechaFin 23:59:59' ";
     }
     $sql .= " AND sol_estado=1;";
+    return $sql;
+}
+
+function con_lista_solicitudes_grafico_linear($sede, $privacidad) {
+    $sql = "SELECT p1.mes,nombre as nombreMes,IF(cantidad is null,0,cantidad) as cantidad,
+if(cantidad_estudiantes is null,0,cantidad_estudiantes) as cantidad_estudiantes,
+if(cantidad_padres is null,0,cantidad_padres) as cantidad_padres FROM (
+SELECT 1 as mes ,'Enero' as nombre
+UNION
+SELECT 2 as mes ,'Febrero' as nombre
+UNION
+SELECT 3 as mes ,'Marzo' as nombre
+UNION
+SELECT 4 as mes ,'Abril' as nombre
+UNION
+SELECT 5 as mes ,'Mayo' as nombre
+UNION
+SELECT 6 as mes ,'Junio' as nombre
+UNION
+SELECT 7 as mes ,'Julio' as nombre
+UNION
+SELECT 8 as mes ,'Agosto' as nombre
+UNION
+SELECT 9 as mes ,'Setiembre' as nombre
+UNION
+SELECT 10 as mes ,'Octubre' as nombre
+UNION
+SELECT 11 as mes ,'Noviembre' as nombre
+UNION
+SELECT 12 as mes ,'Diciembre' as nombre) as p1
+LEFT JOIN (
+	SELECT MONTH(sol_fecha) as mes,COUNT(*) as cantidad, SUM(IF(a.ent_id=1,1,0)) as cantidad_estudiantes,	SUM(IF(a.ent_id=2,1,0)) as cantidad_padres
+FROM tb_solicitudes a 
+INNER JOIN tb_entrevista b ON a.ent_id=b.ent_id
+WHERE 1=1 AND YEAR(sol_fecha)=YEAR(NOW()) ";
+    if ($sede !== "0") {
+        $sql .= " AND a.sed_id IN ($sede) ";
+    }
+    if ($privacidad !== "0") {
+        $sql .= " AND sol_privacidad in ($privacidad)";
+    } else {
+        $sql .= " AND sol_privacidad in ($privacidad)";
+    }
+    $sql .= " GROUP BY MONTH(sol_fecha)) as p2 ON p1.mes=p2.mes "
+            . " ORDER BY p1.mes";
     return $sql;
 }
 
@@ -1174,6 +1219,32 @@ function con_buscar_semaforo_docentes_alerta($sede, $fecha_ini, $fecha_fin, $sem
         $sql .= " and p2.valor=$semaforo ";
     }
     $sql .= ";";
+    return $sql;
+}
+
+function con_buscar_semaforo_docentes_grafico_barras($sede, $fecha_ini, $fecha_fin) {
+    $sql = "SELECT sed_nombre as sede,
+		CONCAT(gra_nombre) as grado,COUNT(c.mat_id) as cantidad,
+		COUNT(g.sol_id) as cantidad_realizados,COUNT(c.mat_id) -COUNT(g.sol_id) as cantidad_faltantes
+		FROM tb_usuario_dictado a
+		INNER JOIN tb_usuario b ON a.usu_id=b.usu_id
+		INNER JOIN tb_matricula c ON a.sec_id=c.sec_id AND a.sed_id=c.sed_id
+		INNER JOIN tb_seccion d ON c.sec_id=d.sec_id
+		INNER JOIN tb_grado e ON d.gra_id=e.gra_id
+		INNER JOIN tb_sede f ON c.sed_id=f.sed_id
+		LEFT JOIN tb_solicitudes g ON c.mat_id=g.mat_id AND sol_estado=1
+		WHERE dic_estado=1 and mat_estado=1 AND YEAR(mat_fech_regi)=YEAR(NOW())
+		";
+    if ($fecha_ini !== "") {
+        $sql .= " AND mat_fech_regi>='$fecha_ini 00:00:00' ";
+    }
+    if ($fecha_fin !== "") {
+        $sql .= " AND mat_fech_regi<='$fecha_fin 23:59:59' ";
+    }
+    if ($sede !== "0") {
+        $sql .= " AND a.sed_id in ($sede) ";
+    }
+    $sql .= "GROUP BY d.gra_id ORDER BY d.gra_id ;";
     return $sql;
 }
 
@@ -1533,6 +1604,33 @@ FROM tb_usuario a
         $sql .= " AND p1.sed_id=$sede ";
     }
     $sql .= " AND p1.tipo='No entrevistado'; ";
+    return $sql;
+}
+
+function con_buscar_alumnos_no_entrevistados_graficos_barras($sede, $usuario) {
+    $sql = "SELECT sede,grado,COUNT(*) as cantidad,SUM(if(tipo = 'No entrevistado', 1, 0)) AS no_entre,
+SUM(if(tipo = 'Entrevistado', 1, 0)) AS si_entre
+FROM (
+		SELECT sed_nombre as sede,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as docente,
+		CONCAT(gra_nombre) as grado,alu_dni as dni,UPPER(alu_nombres) as alumno,
+		IF(h.sol_id IS NULL,'No entrevistado','Entrevistado') as tipo,b.sed_id,d.gra_id
+FROM tb_usuario a
+		INNER JOIN tb_usuario_dictado b ON a.usu_id=b.usu_id
+		INNER JOIN tb_matricula c ON b.sec_id=c.sec_id AND b.sed_id=c.sed_id  
+		INNER JOIN tb_seccion d ON b.sec_id=d.sec_id AND c.sec_id=d.sec_id 
+		INNER JOIN tb_grado e ON d.gra_id=e.gra_id
+		INNER JOIN tb_alumno f ON c.alu_id=f.alu_id
+		INNER JOIN tb_sede g ON b.sed_id=g.sed_id AND c.sed_id=g.sed_id
+		LEFT JOIN tb_solicitudes h ON c.mat_id=h.mat_id AND c.sed_id=h.sed_id
+		WHERE 1=1 AND dic_estado=1 AND c.mat_estado=1 AND f.alu_estado=1 ";
+
+    if ($usuario !== "") {
+        $sql .= " AND b.usu_id=$usuario ";
+    }
+    if ($sede !== "0") {
+        $sql .= " AND b.sed_id=$sede ";
+    }
+    $sql .= " ) as p1 GROUP BY grado ORDER BY gra_id ";
     return $sql;
 }
 

@@ -584,6 +584,16 @@ function fnc_lista_solicitudes_alerta($conexion, $sede, $codigoUsuario, $fechaIn
     return $arreglo;
 }
 
+function fnc_lista_solicitudes_grafico_linear($conexion, $sede, $privacidad) {
+    $arreglo = array();
+    $sql = con_lista_solicitudes_grafico_linear($sede, $privacidad);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
 function fnc_lista_tipo_entrevistas($conexion, $codi) {
     $arreglo = array();
     $sql = con_lista_tipo_entrevistas($codi);
@@ -769,6 +779,16 @@ function fnc_buscar_semaforo_docentes($conexion, $sede, $fecha_ini, $fecha_fin, 
 function fnc_buscar_semaforo_docentes_alerta($conexion, $sede, $fecha_ini, $fecha_fin, $semaforo) {
     $arreglo = array();
     $sql = con_buscar_semaforo_docentes_alerta($sede, $fecha_ini, $fecha_fin, $semaforo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_buscar_semaforo_docentes_grafico_barras($conexion, $sede, $fecha_ini, $fecha_fin) {
+    $arreglo = array();
+    $sql = con_buscar_semaforo_docentes_grafico_barras($sede, $fecha_ini, $fecha_fin);
     $stmt = $conexion->query($sql);
     foreach ($stmt as $data) {
         array_push($arreglo, $data);
@@ -1004,6 +1024,16 @@ function fnc_buscar_alumnos_no_entrevistados($conexion, $sede, $usuario, $fecha_
 function fnc_buscar_alumnos_no_entrevistados_alerta($conexion, $sede, $usuario) {
     $arreglo = array();
     $sql = con_buscar_alumnos_no_entrevistados_alerta($sede, $usuario);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_buscar_alumnos_no_entrevistados_graficos_barras($conexion, $sede, $usuario) {
+    $arreglo = array();
+    $sql = con_buscar_alumnos_no_entrevistados_graficos_barras($sede, $usuario);
     $stmt = $conexion->query($sql);
     foreach ($stmt as $data) {
         array_push($arreglo, $data);

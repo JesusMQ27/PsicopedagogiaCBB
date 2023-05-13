@@ -8,6 +8,9 @@ $nombre = $_POST["nombre_opcion"];
 $codigo = $_POST["codigo_menu"];
 $perfil = $_SESSION["psi_user"]["perfCod"];
 $sedeCodigo = $_SESSION["psi_user"]["sedCod"];
+if($sedeCodigo==="1"){
+    $sedeCodigo="";
+}
 $lista_usuarios = fnc_lista_usuarios($conexion, "", $sedeCodigo);
 ?>
 

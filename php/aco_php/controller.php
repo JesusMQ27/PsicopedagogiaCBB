@@ -4684,20 +4684,27 @@ function mostrar_busqueda_entrevistas() {
     if (count($lista_solicitudes) > 0) {
         foreach ($lista_solicitudes as $lista) {
             $solicitudCod = fnc_generate_random_string(6) . "-" . $lista["id"] . "/" . fnc_generate_random_string(6);
+            $str_motivo = "";
+            if (strlen($lista["motivo"]) > 30) {
+                $str_motivo = substr($lista["motivo"], 0, 30)."...";
+            } else {
+                $str_motivo = $lista["motivo"];
+            }
             $html .= "<tr>
                     <td>" . $num . "</td>
                     <td>" . $lista["sede"] . "</td>
                     <td>" . $lista["fecha"] . "</td>
                     <td>" . $lista["grado"] . "</td>
                     <td>" . $lista["nroDocumento"] . "</td>
-                    <td>" . $lista["alumno"] . "</td>
+                    <td style='width:250px'>" . $lista["alumno"] . "</td>
                     <td>" . $lista["entrevista"] . "</td>";
             if ($perfil == "1" || $perfil == "5") {
                 $html .= "<td>" . $lista["privacidad"] . "</td>";
             }
             $html .= "
+                    <td>" . $str_motivo . "</td>
                     <td>" . $lista["estado"] . "</td>
-                    <td align='center'>"
+                    <td align='center' style='width:100px'>"
                     . "<i class='nav-icon fas fa-plus green' title='Nueva Subentrevista' data-toggle='modal' data-target='#modal-subentrevista' data-backdrop='static' data-entrevista='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
                     . "<i class='nav-icon fas fa-file-pdf rojo' title='Descargar' data-toggle='modal' data-target='#modal-descargar' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
                     . "<i class='nav-icon fas fa-info-circle celeste' title='Detalle' data-toggle='modal' data-target='#modal-detalle-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "' data-grupo_nombre='" . $lista["id"] . "'></i>&nbsp;&nbsp;&nbsp;"
@@ -4831,53 +4838,72 @@ function operacion_entrevistas_alumnos() {
 function formulario_grafico_solicitudes_registradas() {
     $con = new DB(1111);
     $conexion = $con->connect();
+    $s_sede = strip_tags(trim($_POST["s_sede"]));
+    $s_privacidad = strip_tags(trim($_POST["s_privacidad"]));
+    $data = array();
+    $lista = fnc_lista_solicitudes_grafico_linear($conexion, $s_sede, $s_privacidad);
+    if (count($lista) > 0) {
+        foreach ($lista as $value) {
+            $data[] = array
+                (
+                'y' => $value["mes"] . "-" . $value["nombreMes"],
+                'a' => $value["cantidad"],
+                'b' => $value["cantidad_estudiantes"],
+                'c' => $value["cantidad_padres"]
+            );
+        }
+    } else {
+        $data = array();
+    }
 
-    $html = "<div class='card card-info'>
-              <div class='card-header'>
-                <h3 class='card-title'>Entrevistas registradas</h3>
-              </div>
-              <div class='card-body'>
-                <div class='input-group mb-12'>
-                  <div class='input-group-prepend'>
-                    <span class='input-group-text'>@</span>
-                  </div>
-                </div>
-            </div>";
-    echo $html;
+    //returns data as JSON format
+    echo json_encode($data);
 }
 
-function formulario_grafico_semaforo_docente() {
+function formulario_docentes_grafico_barras_sede() {
     $con = new DB(1111);
     $conexion = $con->connect();
+    $s_sede = strip_tags(trim($_POST["s_sede"]));
+    $data = array();
+    $lista = fnc_buscar_semaforo_docentes_grafico_barras($conexion, $s_sede, "", "");
+    if (count($lista) > 0) {
+        foreach ($lista as $value) {
+            $data[] = array
+                (
+                'y' => $value["grado"],
+                'a' => $value["cantidad"],
+                'b' => $value["cantidad_faltantes"],
+                'c' => $value["cantidad_realizados"]
+            );
+        }
+    } else {
+        $data = array();
+    }
 
-    $html = "<div class='card card-success'>
-              <div class='card-header'>
-                <h3 class='card-title'>Semaforo docentes</h3>
-              </div>
-              <div class='card-body'>
-                <div class='input-group mb-12'>
-                  <div class='input-group-prepend'>
-                    <span class='input-group-text'>@</span>
-                  </div>
-                </div>
-            </div>";
-    echo $html;
+    //returns data as JSON format
+    echo json_encode($data);
 }
 
-function formulario_grafico_alumnos_no_registrados() {
+function formulario_no_entrevistados_grafico_barras_sede() {
     $con = new DB(1111);
     $conexion = $con->connect();
+    $s_sede = strip_tags(trim($_POST["s_sede"]));
+    $data = array();
+    $lista = fnc_buscar_alumnos_no_entrevistados_graficos_barras($conexion, $s_sede, "");
+    if (count($lista) > 0) {
+        foreach ($lista as $value) {
+            $data[] = array
+                (
+                'y' => $value["grado"],
+                'a' => $value["cantidad"],
+                'b' => $value["no_entre"],
+                'c' => $value["si_entre"]
+            );
+        }
+    } else {
+        $data = array();
+    }
 
-    $html = "<div class='card card-warning'>
-              <div class='card-header'>
-                <h3 class='card-title'>Mis alumnos no entrevistados</h3>
-              </div>
-              <div class='card-body'>
-                <div class='input-group mb-12'>
-                  <div class='input-group-prepend'>
-                    <span class='input-group-text'>@</span>
-                  </div>
-                </div>
-            </div>";
-    echo $html;
+    //returns data as JSON format
+    echo json_encode($data);
 }

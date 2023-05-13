@@ -136,29 +136,36 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                                         <?php
                                     }
                                     ?>
+                                    <th>Motivo</th>
                                     <th>Estado</th>
                                     <th>Opci&oacute;n</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody style="font-size: 13px">
                                 <?php
                                 $html = "";
                                 $num = 1;
                                 foreach ($lista_solicitudes as $lista) {
                                     $solicitudCod = fnc_generate_random_string(6) . "-" . $lista["id"] . "/" . fnc_generate_random_string(6);
+                                    if (strlen($lista["motivo"]) > 30) {
+                                        $str_motivo = substr($lista["motivo"], 0, 30) . "...";
+                                    } else {
+                                        $str_motivo = $lista["motivo"];
+                                    }
                                     $html .= "<tr>
                                 <td>" . $num . "</td>
                                         <td>" . $lista["sede"] . "</td>
                                         <td>" . $lista["fecha"] . "</td>
                                         <td>" . $lista["grado"] . "</td>
                                         <td>" . $lista["nroDocumento"] . "</td>
-                                        <td>" . $lista["alumno"] . "</td>
+                                        <td style='width:250px'>" . $lista["alumno"] . "</td>
                                         <td>" . $lista["entrevista"] . "</td>";
                                     if ($perfil == "1" || $perfil == "5") {
                                         $html .= "<td>" . $lista["privacidad"] . "</td>";
                                     }
+                                    $html .= "<td style='width:100px'>" . $str_motivo . "</td>";
                                     $html .= "<td>" . $lista["estado"] . "</td>
-                                        <td align='center'>"
+                                        <td align='center' style='width:150px'>"
                                             . "<i class='nav-icon fas fa-plus green' title='Nueva Subentrevista' data-toggle='modal' data-target='#modal-subentrevista' data-backdrop='static' data-entrevista='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
                                             . "<i class='nav-icon fas fa-file-pdf rojo' title='Descargar' data-toggle='modal' data-target='#modal-descargar' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
                                             . "<i class='nav-icon fas fa-info-circle celeste' title='Detalle' data-toggle='modal' data-target='#modal-detalle-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "' data-grupo_nombre='" . $lista["id"] . "'></i>&nbsp;&nbsp;&nbsp;"

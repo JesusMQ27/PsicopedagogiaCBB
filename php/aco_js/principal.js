@@ -11,8 +11,8 @@ var canvas1_edi = {};
 var canvas2_edi = {};
 var signaturePad_edi = {};
 var signaturePad_entrevistador_edi = {};
-var timeLimit = 40;//tiempo en minutos
-var timeLimitSub = 40;//tiempo en minutos
+var timeLimit = 40; //tiempo en minutos
+var timeLimitSub = 40; //tiempo en minutos
 function cargar_opcion(codigo, ruta, nombre) {
     $.ajax({
         url: ruta,
@@ -34,6 +34,41 @@ function cargar_opcion(codigo, ruta, nombre) {
     });
 }
 
+function mostrar_modulo_x_alerta(modulo) {
+    var arreglo = [
+        {
+            codigo: 7,
+            menu: 2,
+            ruta: './php/aco_view/aco_procesos/pr_solregistradas.php',
+            nombre: 'Entrevistas Registradas'
+        },
+        {
+            codigo: 8,
+            menu: 3,
+            ruta: './php/aco_view/aco_consultas/co_semaforo.php',
+            nombre: 'Semáforo Docentes'
+        },
+        {
+            codigo: 9,
+            menu: 3,
+            ruta: './php/aco_view/aco_consultas/co_noentrevistados.php',
+            nombre: 'Mis Alumnos no Entrevistados'
+        }
+    ];
+    $("#menuSistema li").each(function (index, item) {
+        $(this).removeClass("menu-is-opening");
+        $(this).removeClass("menu-open");
+        $(this).find("ul").hide();
+    });
+    var objeto = arreglo.find(o => o.codigo === modulo);
+    if (objeto !== undefined) {
+        $("#menu-" + objeto.menu).addClass("menu-is-opening");
+        $("#menu-" + objeto.menu).addClass("menu-open");
+        $("#menu-" + objeto.menu).find("ul").show();
+        cargar_opcion(objeto.codigo, objeto.ruta, objeto.nombre);
+    }
+
+}
 function mostrar_registra_nuevo_usuario(modal) {
     $.ajax({
         url: "php/aco_php/controller.php",
@@ -95,7 +130,10 @@ function registrar_usuario() {
         mensaje += "Ingrese el correo<br>";
     } else {
         if (valida_correo(correo)) {
-
+            var array_correo = correo.val().split("@");
+            if ($.trim(array_correo[1]) !== "cbb.edu.pe") {
+                mensaje += "Ingrese correo electrónico institucional (@cbb.edu.pe)<br>";
+            }
         } else {
             mensaje += "Ingrese un correo electrónico válido<br>";
         }
@@ -236,7 +274,10 @@ function editar_usuario() {
         mensaje += "Ingrese el correo<br>";
     } else {
         if (valida_correo(correo)) {
-
+            var array_correo = correo.val().split("@");
+            if ($.trim(array_correo[1]) !== "cbb.edu.pe") {
+                mensaje += "Ingrese correo electrónico institucional (@cbb.edu.pe)<br>";
+            }
         } else {
             mensaje += "Ingrese un correo electrónico válido<br>";
         }
@@ -1914,7 +1955,6 @@ function mostrar_nueva_solicitud(modal) {
                                 return item.label;
                             }));
                         },
-
                     });
                 },
                 updater: function (item) {
@@ -2343,7 +2383,6 @@ function mostrar_tipo_solicitud(dato) {
                 resizeCanvas();
                 window.onresize = resizeCanvas2;
                 resizeCanvas2();
-
                 canvas1.addEventListener("click", function (event) {
                     if (!signaturePad.isEmpty()) {
                         canvas1.style.border = '1px solid black';
@@ -2354,21 +2393,18 @@ function mostrar_tipo_solicitud(dato) {
                         canvas2.style.border = '1px solid black';
                     }
                 });
-
                 $("#cbbSubcategoria").change(function () {
                     var value = $(this).val();
                     if (value > 0 && $(this).is(".is-invalid")) {
                         $(this).removeClass("is-invalid");
                     }
                 });
-
                 $("#cbbCategoria").change(function () {
                     var value = $(this).val();
                     if (value > 0 && $(this).is(".is-invalid")) {
                         $(this).removeClass("is-invalid");
                     }
                 });
-
                 $("#txtMotivo").keyup(function () {
                     var value = $(this).val().length;
                     if (value > 0 && $(this).is(".is-invalid")) {
@@ -2423,7 +2459,6 @@ function mostrar_tipo_solicitud(dato) {
                         $(this).removeClass("is-invalid");
                     }
                 }).keyup();
-
             }
         });
     }
@@ -2605,10 +2640,10 @@ function registrar_solicitud() {
             mensaje += "*Ingrese las acciones a realizar por el colegio<br>";
             $("#txtAcuerdosColegio").addClass("is-invalid");
         }
-        //if (signaturePad.isEmpty()) {
-        //mensaje += "Ingrese la firma del padre, madre o apoderado<br>";
-        //canvas.style.border = '1px solid #dc3545';
-        //}
+//if (signaturePad.isEmpty()) {
+//mensaje += "Ingrese la firma del padre, madre o apoderado<br>";
+//canvas.style.border = '1px solid #dc3545';
+//}
         if (signaturePad_entrevistador.isEmpty()) {
             mensaje += "*Ingrese la firma del entrevistador<br>";
             canvas_2.style.border = '1px solid #dc3545';
@@ -2930,7 +2965,6 @@ function mostrar_nueva_sub_solicitud(modal, entrevista) {
                                 return item.label;
                             }));
                         },
-
                     });
                 },
                 updater: function (item) {
@@ -3023,7 +3057,6 @@ function mostrar_tipo_solicitud_sub(dato) {
                 resizeCanvas();
                 window.onresize = resizeCanvas2;
                 resizeCanvas2();
-
                 canvas1_sub.addEventListener("click", function (event) {
                     if (!signaturePad_sub.isEmpty()) {
                         canvas1_sub.style.border = '1px solid black';
@@ -3100,7 +3133,6 @@ function mostrar_tipo_solicitud_sub(dato) {
                         $(this).removeClass("is-invalid");
                     }
                 }).keyup();
-
             }
         });
     }
@@ -3734,7 +3766,6 @@ function cargar_solicitudes_a_editar(solicitud) {
                                     return item.label;
                                 }));
                             },
-
                         });
                     },
                     updater: function (item) {
@@ -3744,7 +3775,6 @@ function cargar_solicitudes_a_editar(solicitud) {
                         mostrar_tipo_solicitud_edi("");
                     }
                 });
-
                 //var canvas1_edi_val = $("#canvas1_edi").is(':visible');
                 //var canvas2_edi_val = $("#canvas_2edi").is(':visible');
                 //if (canvas1_edi_val === true) {
@@ -5287,13 +5317,167 @@ function buscar_entrevistas_alumnos() {
     });
 }
 
-function mostrar_grafico_solicitudes_registradas(){
+function mostrar_grafico_solicitudes_registradas() {
+    $.ajax({
+        url: "php/aco_php/psi_grafico_entrevistas.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#contenido_alertas").html(datos);
+        }
+    });
+}
+
+function mostrar_grafico_semaforo_docente() {
+    $.ajax({
+        url: "php/aco_php/psi_grafico_semaforo.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#contenido_alertas").html(datos);
+        }
+    });
+}
+
+function mostrar_grafico_alumnos_no_registrados() {
+    $.ajax({
+        url: "php/aco_php/psi_grafico_no_resgistrados.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#contenido_alertas").html(datos);
+        }
+    });
+}
+
+function semaforo_docentes_grafico_barras_sede(sede) {
+    var str_sede = sede.value;
     $.ajax({
         url: "php/aco_php/controller.php",
-        dataType: "html",
+        dataType: "json",
+        type: "POST",
+        data: {
+            opcion: "formulario_docentes_grafico_barras_sede",
+            s_sede: str_sede
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#bar-chart").html("");
+            if (datos.length !== 0) {
+                window.barChart = Morris.Bar({
+                    element: 'bar-chart',
+                    data: datos,
+                    xkey: 'y',
+                    ykeys: ['a', 'b', 'c'],
+                    labels: ['Total', 'Faltantes', 'Realizados'],
+                    lineColors: ['#1e88e5', '#dc3545', '#28a745'],
+                    barColors: ['#34495E', '#26B99A', '#3dbeee'],
+                    lineWidth: '3px',
+                    resize: true,
+                    redraw: true
+                }
+                );
+                $(window).resize(function () {
+                    window.barChart.redraw();
+                });
+            } else {
+                $("#bar-chart").html('<div class="col-md-12"><span><i class="nav-icon fa fa-info-circle" style="color: red"></i> Respuesta: No se encontraron registros.</span>&nbsp;&nbsp;</div>');
+            }
+        }
+    });
+}
+
+function alumnos_no_entrevistados_grafico_barras_sede(sede) {
+    var str_sede = sede.value;
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "json",
+        type: "POST",
+        data: {
+            opcion: "formulario_no_entrevistados_grafico_barras_sede",
+            s_sede: str_sede
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#bar-chart").html("");
+            $("#donut-chart").html("");
+            if (datos.length !== 0) {
+                var arreglo = [];
+                for (const i in datos) {
+                    arreglo.push({'label': datos[i].y, 'value': datos[i].c});
+                }
+                window.barChart = Morris.Bar({
+                    element: 'bar-chart',
+                    data: datos,
+                    xkey: 'y',
+                    ykeys: ['a', 'b', 'c'],
+                    labels: ['Total', 'Faltantes', 'Realizados'],
+                    lineColors: ['#1e88e5', '#dc3545', '#3dbeee'],
+                    lineWidth: '3px',
+                    resize: true,
+                    redraw: true
+                }
+                );
+                $(window).resize(function () {
+                    window.barChart.redraw();
+                    window.donutChart.redraw();
+                });
+                window.donutChart = Morris.Donut({
+                    element: 'donut-chart',
+                    data: arreglo,
+                    resize: true,
+                    redraw: true
+                });
+            } else {
+                $("#bar-chart").html('<div class="col-md-12"><span><i class="nav-icon fa fa-info-circle" style="color: red"></i> Respuesta: No se encontraron registros.</span>&nbsp;&nbsp;</div>');
+                $("#donut-chart").html("");
+            }
+        }
+    });
+}
+
+function entrevistas_registradas_grafico_barras_sede(sede) {
+    var str_sede = sede.value;
+    var str_privacidad = $("#txtPrivacidad").val()
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "json",
         type: "POST",
         data: {
             opcion: "formulario_grafico_solicitudes_registradas",
+            s_sede: str_sede,
+            s_privacidad: str_privacidad
         },
         beforeSend: function (objeto) {
         },
@@ -5301,45 +5485,33 @@ function mostrar_grafico_solicitudes_registradas(){
             //$("#contentMenu").html(xhr.responseText);
         },
         success: function (datos) {
-            $("#contenido_alertas").html(datos);
-        }
-    });
-}
-
-function mostrar_grafico_semaforo_docente(){
-    $.ajax({
-        url: "php/aco_php/controller.php",
-        dataType: "html",
-        type: "POST",
-        data: {
-            opcion: "formulario_grafico_semaforo_docente",
-        },
-        beforeSend: function (objeto) {
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            //$("#contentMenu").html(xhr.responseText);
-        },
-        success: function (datos) {
-            $("#contenido_alertas").html(datos);
-        }
-    });
-}
-
-function mostrar_grafico_alumnos_no_registrados(){
-    $.ajax({
-        url: "php/aco_php/controller.php",
-        dataType: "html",
-        type: "POST",
-        data: {
-            opcion: "formulario_grafico_alumnos_no_registrados",
-        },
-        beforeSend: function (objeto) {
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            //$("#contentMenu").html(xhr.responseText);
-        },
-        success: function (datos) {
-            $("#contenido_alertas").html(datos);
+            $("#line-chart").html("");
+            if (datos.length !== 0) {
+                const monthNames = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                    "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"
+                ];
+                window.lineChart = Morris.Line({
+                    element: 'line-chart',
+                    data: datos,
+                    xkey: 'y',
+                    parseTime: false,
+                    ykeys: ['a', 'b', 'c'],
+                    xLabelFormat: function (x) {
+                        var index = parseInt(x.src.y);
+                        return monthNames[index];
+                    },
+                    xLabels: "month",
+                    labels: ['Total', 'Entrevista a Estudiantes', 'Entrevista a Padres de Familia'],
+                    lineColors: ['#1e88e5', '#dc3545', '#3dbeee'],
+                    hideHover: 'auto'
+                }
+                );
+                $(window).resize(function () {
+                    window.barChart.redraw();
+                });
+            } else {
+                $("#line-chart").html('<div class="col-md-12"><span><i class="nav-icon fa fa-info-circle" style="color: red"></i> Respuesta: No se encontraron registros.</span>&nbsp;&nbsp;</div>');
+            }
         }
     });
 }
@@ -5380,10 +5552,8 @@ function sumarFechas(hora1, hora, minuto, segundo) {
     var s_segundo2 = parseFloat($.trim(segundo));
     var result_hora1 = 0;
     var result_hora2 = 0;
-
     result_hora1 = s_hora * 3600 + s_minuto * 60 + s_segundo;
     result_hora2 = s_hora2 * 3600 + s_minuto2 * 60 + s_segundo2;
-
     var hours = Math.floor((result_hora1 + result_hora2) / 3600);
     var minutes = Math.floor(((result_hora1 + result_hora2) % 3600) / 60);
     var seconds = (result_hora1 + result_hora2) % 60;
@@ -5400,10 +5570,8 @@ function restarFechas(hora1, hora, minuto, segundo) {
     var s_segundo2 = parseFloat($.trim(segundo));
     var result_hora1 = 0;
     var result_hora2 = 0;
-
     result_hora1 = s_hora * 3600 + s_minuto * 60 + s_segundo;
     result_hora2 = s_hora2 * 3600 + s_minuto2 * 60 + s_segundo2;
-
     var hours = Math.floor((result_hora1 - result_hora2) / 3600);
     var minutes = Math.floor(((result_hora1 - result_hora2) % 3600) / 60);
     var seconds = (result_hora1 - result_hora2) % 60;
