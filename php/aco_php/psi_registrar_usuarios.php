@@ -39,23 +39,29 @@ try {
                 $u_clave = hash("sha256", md5($clave));
                 $cadenaInsertUsuario = '("' . $value["tipDocId"] . '","' . $value["dni"] . '","' . $value["paterno"] . '","' .
                         $value["materno"] . '","' . $value["nombres"] . '","' . $value["correo"] . '","' .
-                        $u_clave . '","' . $value["perfId"] . '",NOW(),"' . $u_token . '","1")';
+                        $u_clave . '","' . $value["codigo_perfil"] . '",NOW(),"' . $u_token . '","1")';
                 $str_usuarios .= $value["nombres"] . " " . $value["paterno"] . " " . $value["materno"] . "*" .
                         $value["dni"] . "*" .
                         $u_clave . "*" .
                         $value["correo"] . "/";
                 if ($value["actual_usu_id"] == 0) {
                     $usuCodigo = fnc_registrar_data_tmp_a_usuario($conexion, $cadenaInsertUsuario);
-                    if ($usuCodigo && $value["validar_dictado"] == 0) {
-                        $cadenaInsertDictado = "('" . $usuCodigo . "','" . $value["registrar_nivel_id"] . "','" . $value["registrar_plana_id"] . "','" .
-                                $value["fecha_ingreso"] . "','" . $grupo_creado . "','1')";
-                        fnc_registrar_usuario_dictado($conexion, $cadenaInsertDictado);
+                    if ($usuCodigo && trim($value["usu_seccion"]) == "") {
+                        $arreglo_secciones = explode("-", $value["codigo_seccion"]);
+                        for ($i = 0; $i < count($arreglo_secciones); $i++) {
+                            $cadenaInsertDictado = "('" . $usuCodigo . "','" . $value["registrar_nivel_id"] . "','" . $value["registrar_plana_id"] . "','" .
+                                    $value["fecha_ingreso"] . "','" . $grupo_creado . "','" . $value["codigo_sede"] . "','" . $arreglo_secciones[$i] . "','1')";
+                            fnc_registrar_usuario_dictado($conexion, $cadenaInsertDictado);
+                        }
                     }
                 } else {
-                    if ($value["validar_dictado"] == 0) {
-                        $cadenaInsertDictado = "('" . $value["actual_usu_id"] . "','" . $value["registrar_nivel_id"] . "','" . $value["registrar_plana_id"] . "','" .
-                                $value["fecha_ingreso"] . "','" . $grupo_creado . "','1')";
-                        fnc_registrar_usuario_dictado($conexion, $cadenaInsertDictado);
+                    if (trim($value["validar_dictado"]) == "") {
+                        $arreglo_secciones = explode("-", $value["codigo_seccion"]);
+                        for ($i = 0; $i < count($arreglo_secciones); $i++) {
+                            $cadenaInsertDictado = "('" . $value["actual_usu_id"] . "','" . $value["registrar_nivel_id"] . "','" . $value["registrar_plana_id"] . "','" .
+                                    $value["fecha_ingreso"] . "','" . $grupo_creado . "','" . $value["codigo_sede"] . "','" . $arreglo_secciones[$i] . "','1')";
+                            fnc_registrar_usuario_dictado($conexion, $cadenaInsertDictado);
+                        }
                     }
                 }
             }

@@ -45,7 +45,6 @@ if (count($lista_solicitud) > 0) {
     $tipos_entrevistas = fnc_lista_tipo_entrevistas($conexion, "");
     $lista_categorias = fnc_lista_categorias($conexion, $lista_solicitud[0]["categoria"]);
     $lista_subcategorias = fnc_lista_subcategorias($conexion, $lista_solicitud[0]["categoria"], $lista_solicitud[0]["subcategorgia"]);
-    /*    $html .= '<div class="card card-warning" id="divSubEntrevista_edi">'; */
     if ($lista_solicitud[0]["ent_id"] === "1") {
         $nombre_pdf = "entrevista_estudiante";
         $html .= '<div>

@@ -1,11 +1,33 @@
 <?php
 require_once '../../aco_conect/DB.php';
 require_once '../../aco_fun/aco_fun.php';
+session_start();
 $con = new DB(1111);
 $conexion = $con->connect();
 $nombre = $_POST["nombre_opcion"];
 $codigo = $_POST["codigo_menu"];
-$lista_grupos = fnc_lista_grupos_usuarios($conexion, "", "");
+$codigo_user = $_SESSION["psi_user"]["id"];
+$lista_grupos = fnc_lista_grupos($conexion, "", "");
+$userData = fnc_datos_usuario($conexion, $codigo_user);
+$sedesData = fnc_sedes_x_perfil($conexion, $userData[0]["sedeId"]);
+$perfil = $userData[0]["perfil"];
+$sedeCodi = "";
+$usuarioCodi = "";
+if ($userData[0]["sedeId"] == "1" && ($perfil == "1" || $perfil == "5")) {
+    $sedeCodi = "0";
+    $usuarioCodi = "";
+} else {
+    if ($perfil === "1") {
+        $sedeCodi = $userData[0]["sedeId"];
+        $usuarioCodi = "";
+    } elseif ($perfil === "2") {
+        $sedeCodi = $userData[0]["sedeId"];
+        $usuarioCodi = $codigo_user;
+    } else {
+        $sedeCodi = $userData[0]["sedeId"];
+        $usuarioCodi = "";
+    }
+}
 ?>
 
 <section class="content-header">
@@ -42,10 +64,10 @@ $lista_grupos = fnc_lista_grupos_usuarios($conexion, "", "");
                                     <input type="submit" name="uploadUsuarios" id="upload1" style="border-color: #1cc88a!important;color: white;" class="btn btn-success" value="Cargar Excel"/>
                                 </form>
                             </div>
-                            <div class="col-sm-6 col-12" style="height: 25px">
+                            <div class="col-sm-6 col-12" style="">
                                 <div class="alert" id="messageUsuarios" style="display: none;"></div>
                             </div>
-                        </div><br/>
+                        </div>
                         <div class="row">
                             <div class="form-group" style="margin-bottom: 0px;">
                                 <label> Descargar archivo de Usuarios: </label> <a href="php/aco_downloads/Listado_Usuarios_CBB.xlsx" download class="a_styles">Descargar</a>

@@ -20,18 +20,19 @@ if ($userData[0]["sedeId"] == "1" && ($perfilId === "1" || $perfilId === "5")) {
     $privacidad = "0,1";
 } else {
     $privacidad = "0";
-    if ($perfilId === "1") {
+    if ($perfilId === "1" || $perfilId === "5") {
         $sedeCodi = $userData[0]["sedeId"];
         $usuarioCodi = "";
+        $privacidad = "0,1";
     } elseif ($perfilId === "2") {
         $sedeCodi = $userData[0]["sedeId"];
         $usuarioCodi = $codigo_user;
     } else {
-        $sedeCodi = $sedeCodigo;
+        $sedeCodi = $userData[0]["sedeId"];
         $usuarioCodi = "";
     }
 }
-$lista = fnc_buscar_semaforo_docentes_grafico_barras($conexion, $sedeCodi, "", "");
+$lista = fnc_buscar_semaforo_docentes_grafico_barras($conexion, $sedeCodi, "", "", "", "", "");
 ?>
 <html>
     <head>
@@ -73,6 +74,35 @@ $lista = fnc_buscar_semaforo_docentes_grafico_barras($conexion, $sedeCodi, "", "
                 <div class="col-md-12">
                     <div id="bar-chart"></div>
                 </div>
+                <div id="div_Niveles">
+                    <?php
+                    $lista_niveles = fnc_lista_niveles($conexion, "", "1");
+                    $html = '<div class="row ">
+                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                        <div class="form-group" style="margin-bottom: 0px;">
+                            <label> Nivel: </label>
+                        </div>
+                        <select id="cbbNivel" data-show-content="true" class="form-control" style="width: 100%" onchange="semaforo_docentes_grafico_barras_niveles(this)">';
+                    if (count($lista_niveles) > 0) {
+                        $html .= '<option value="">-- Seleccione --</option>';
+                        $html .= '<option value="0">TODOS</option>';
+                        foreach ($lista_niveles as $nivel) {
+                            $html .= "<option value='" . $nivel["codigo"] . "' >" . $nivel["nombre"] . "</option>";
+                        }
+                    }
+                    $html .= '</select>
+                    </div>
+                </div><br>
+                <div class="col-md-12">
+                    <div id="bar-chart2"></div>
+                </div>';
+                    echo $html;
+                    ?>
+                </div>
+                <div id="div_Grados">
+                </div>
+                <div id="div_Secciones">
+                </div>
             </div>
         </div>
     </body>
@@ -90,7 +120,7 @@ $lista = fnc_buscar_semaforo_docentes_grafico_barras($conexion, $sedeCodi, "", "
             data: [
 <?php foreach ($lista as $value) {
     ?>
-                    {y: '<?php echo $value["grado"]; ?>', a: <?php echo $value["cantidad"]; ?>, b: <?php echo $value["cantidad_faltantes"]; ?>, c: <?php echo $value["cantidad_realizados"]; ?>},
+                    {y: '<?php echo $value["nombre"]; ?>', a: <?php echo $value["cantidad"]; ?>, b: <?php echo $value["cantidad_faltantes"]; ?>, c: <?php echo $value["cantidad_realizados"]; ?>},
 <?php } ?>
             ],
             xkey: 'y',

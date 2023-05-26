@@ -12,9 +12,13 @@ $sede = $userData[0]["sedeId"];
 
 $filtro = $_POST['query'];
 $seccion_codi = '';
-$lista_seccion = fnc_secciones_por_usuario($conexion, $useId);
-if (count($lista_seccion) > 0) {
-    $seccion_codi = trim($lista_seccion[0]["seccion"]) . '';
+if ($perfil === "2") {
+    $lista_seccion = fnc_secciones_por_usuario($conexion, $useId);
+    if (count($lista_seccion) > 0) {
+        $seccion_codi = trim($lista_seccion[0]["seccion"]) . '';
+    } else {
+        $seccion_codi = '';
+    }
 } else {
     $seccion_codi = '';
 }

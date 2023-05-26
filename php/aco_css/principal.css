@@ -189,3 +189,25 @@ and open the template in the editor.
     50% { opacity: 0.0; }
     100% { opacity: 1.0; }
 }
+
+.alert-success-color{
+    display: block;
+    background-color: #28a745;
+    color: white;
+}
+
+.alert-danger-color{
+    display: block;
+    background-color: rgb(220, 53, 69);
+    color: white;
+}
+
+.alert-info-color{
+    display: block;
+    background-color: #17a2b8;
+    color: white;
+}
+
+.tr-cursor{
+    cursor: pointer;
+}

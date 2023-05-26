@@ -72,7 +72,7 @@
                     <!-- /.social-auth-links -->
 
                     <p class="mb-1">
-                        <a href="recordar.php">Recordar contrase&ntilde;a</a>
+                        <a href="recordar.php">Olvid&eacute; mi contrase&ntilde;a</a>
                     </p>
                 </div>
                 <!-- /.card-body -->

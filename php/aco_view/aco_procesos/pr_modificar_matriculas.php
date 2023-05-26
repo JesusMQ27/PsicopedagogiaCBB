@@ -6,9 +6,28 @@ $con = new DB(1111);
 $conexion = $con->connect();
 $nombre = $_POST["nombre_opcion"];
 $codigo = $_POST["codigo_menu"];
-$perfil = $_SESSION["psi_user"]["perfCod"];
-$sedeCodigo = $_SESSION["psi_user"]["sedCod"];
-$sedesData = fnc_sedes_x_perfil($conexion, $sedeCodigo);
+$codigo_user = $_SESSION["psi_user"]["id"];
+$userData = fnc_datos_usuario($conexion, $codigo_user);
+$sedesData = fnc_sedes_x_perfil($conexion, $userData[0]["sedeId"]);
+$perfil = $userData[0]["perfil"];
+$sedeCodi = "";
+$usuarioCodi = "";
+if ($userData[0]["sedeId"] == "1" && ($perfil == "1" || $perfil == "5")) {
+    $sedeCodi = "0";
+    $usuarioCodi = "";
+} else {
+    if ($perfil === "1") {
+        $sedeCodi = $userData[0]["sedeId"];
+        $usuarioCodi = "";
+    } elseif ($perfil === "2") {
+        $sedeCodi = $userData[0]["sedeId"];
+        $usuarioCodi = $codigo_user;
+    } else {
+        $sedeCodi = $userData[0]["sedeId"];
+        $usuarioCodi = "";
+    }
+}
+
 $lista_anios = fnc_lista_anios($conexion);
 ?>
 

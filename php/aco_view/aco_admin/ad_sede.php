@@ -6,14 +6,32 @@ $conexion = $con->connect();
 session_start();
 $nombre = $_POST["nombre_opcion"];
 $codigo = $_POST["codigo_menu"];
-$perfil = $_SESSION["psi_user"]["perfCod"];
-$sedeCodigo = $_SESSION["psi_user"]["sedCod"];
-$lista_sedes = array();
-if ($sedeCodigo == "1") {
-    $lista_sedes = fnc_lista_sedes($conexion, "", "");
+$codigo_user = $_SESSION["psi_user"]["id"];
+$lista_grupos = fnc_lista_grupos($conexion, "", "");
+$userData = fnc_datos_usuario($conexion, $codigo_user);
+$sedesData = fnc_sedes_x_perfil($conexion, $userData[0]["sedeId"]);
+$perfil = $userData[0]["perfil"];
+$sedeCodi = "";
+$usuarioCodi = "";
+$acceso = "";
+if ($userData[0]["sedeId"] == "1" && ($perfil == "1" || $perfil == "5")) {
+    $sedeCodi = "0";
+    $usuarioCodi = "";
+    $acceso = "1";
 } else {
-    $lista_sedes = fnc_lista_sedes($conexion, $sedeCodigo, "");
+    $acceso = "0";
+    if ($perfil === "1") {
+        $sedeCodi = $userData[0]["sedeId"];
+        $usuarioCodi = "";
+    } elseif ($perfil === "2") {
+        $sedeCodi = $userData[0]["sedeId"];
+        $usuarioCodi = $codigo_user;
+    } else {
+        $sedeCodi = $userData[0]["sedeId"];
+        $usuarioCodi = "";
+    }
 }
+$lista_sedes = fnc_lista_sedes($conexion, $sedeCodi, "");
 ?>
 
 <section class="content-header">
@@ -40,7 +58,7 @@ if ($sedeCodigo == "1") {
                 <div class="row">
                     <div class="col-2">
                         <input type="hidden" id="hdnCodiSe" value="<?php echo $codigo; ?>"/>
-                        <?php if ($perfil === "1" && $sedeCodigo === "1") { ?>
+                        <?php if ($acceso === "1") { ?>
                             <button type="submit" class="btn btn-primary btn-block" data-toggle="modal" data-target="#modal-nueva-sede" data-backdrop="static">Nueva Sede</button>
                         <?php } ?>
                     </div>
@@ -54,7 +72,7 @@ if ($sedeCodigo == "1") {
                             <th>Descricpi&oacute;n</th>
                             <th>Color</th>
                             <th>Estado</th>
-                            <?php if ($perfil === "1" && $sedeCodigo === "1") { ?>
+                            <?php if ($acceso === "1") { ?>
                                 <th>Opci&oacute;n</th>
                             <?php } ?>
                         </tr>
@@ -72,7 +90,7 @@ if ($sedeCodigo == "1") {
                                         <td>" . $lista["descripcion"] . "</td>
                                         <td align='center'><i class='fas fa-circle nav-icon' style='font-size:23px;color:" . $lista["color"] . "' ></i></td>
                                         <td>" . $lista["estado"] . "</td>";
-                            if ($perfil === "1" && $sedeCodigo == "1") {
+                            if ($acceso == "1") {
                                 $html .= "<td align='center'>
                                                 <i class='nav-icon fas fa-edit naranja' title='Editar' data-toggle='modal' data-target='#modal-editar-sede' data-backdrop='static' data-sede='" . $sedeCod . "'></i>&nbsp;&nbsp;"
                                         . "<i class='nav-icon fas fa-trash rojo' title='Eliminar' data-toggle='modal' data-target='#modal-eliminar-sede' data-backdrop='static' data-sede='" . $sedeCod . "'></i>&nbsp;&nbsp;";

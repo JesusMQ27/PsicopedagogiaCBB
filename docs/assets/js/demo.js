@@ -75,7 +75,7 @@
       $('body').removeClass('dark-mode')
     }
   })
-  var $dark_mode_container = $('<div />', { class: 'mb-4' }).append($dark_mode_checkbox).append('<span>Dark Mode</span>')
+  var $dark_mode_container = $('<div />', { class: 'mb-4' }).append($dark_mode_checkbox).append('<span>Dark</span>')
   $container.append($dark_mode_container)
 
   $container.append('<h6>Header Options</h6>')

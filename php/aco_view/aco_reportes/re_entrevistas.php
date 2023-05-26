@@ -7,32 +7,43 @@ $conexion = $con->connect();
 $nombre = $_POST["nombre_opcion"];
 $codigo = $_POST["codigo_menu"];
 $codigo_user = $_SESSION["psi_user"]["id"];
-$perfil = $_SESSION["psi_user"]["perfCod"];
-$sedeCodigo = $_SESSION["psi_user"]["sedCod"];
-
-$sedesData = fnc_sedes_x_perfil($conexion, $sedeCodigo);
+$userData = fnc_datos_usuario($conexion, $codigo_user);
+$sedesData = fnc_sedes_x_perfil($conexion, $userData[0]["sedeId"]);
+$perfil = $userData[0]["perfil"];
 $fechas = fnc_fechas_rango($conexion);
 $sedeCodi = "";
 $usuarioCodi = "";
 $privacidad = "";
-if ($sedeCodigo == "1" && ($perfil == "1" || $perfil == "5")) {
+$grados = "";
+if ($userData[0]["sedeId"] == "1" && ($perfil == "1" || $perfil == "5")) {
     $sedeCodi = "0";
     $usuarioCodi = "";
     $privacidad = "0,1";
+    $grados = "";
 } else {
     $privacidad = "0";
-    if ($perfil === "1") {
-        $sedeCodi = $sedeCodigo;
+    if ($perfil === "1" || $perfil === "5") {
+        $sedeCodi = $userData[0]["sedeId"];
         $usuarioCodi = "";
+        $grados = "";
+        $privacidad = "0,1";
     } elseif ($perfil === "2") {
-        $sedeCodi = $sedeCodigo;
+        $sedeCodi = $userData[0]["sedeId"];
         $usuarioCodi = $codigo_user;
+        $lista_grados = fnc_secciones_por_usuario($conexion, $codigo_user);
+        if (count($lista_grados) > 0) {
+            $grados = $lista_grados[0]["seccion"];
+        } else {
+            $grados = "";
+        }
     } else {
-        $sedeCodi = $sedeCodigo;
+        $sedeCodi = $userData[0]["sedeId"];
         $usuarioCodi = "";
+        $grados = "";
     }
 }
-$lista_solicitudes = fnc_lista_solicitudes_y_subsolicitudes($conexion, $sedeCodi, $usuarioCodi, $fechas[0]["date_ayer"], $fechas[0]["date_hoy"], $privacidad);
+
+$lista_solicitudes = fnc_lista_solicitudes_y_subsolicitudes($conexion, $sedeCodi, $usuarioCodi, $fechas[0]["date_ayer"], $fechas[0]["date_hoy"], $privacidad, $grados);
 ?>
 
 <section class="content-header">

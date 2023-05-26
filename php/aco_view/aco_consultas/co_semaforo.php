@@ -27,10 +27,14 @@ if ($userData[0]["sedeId"] == "1" && ($perfilId === "1" || $perfilId === "5")) {
         $sedeCodi = $userData[0]["sedeId"];
         $usuarioCodi = $codigo_user;
     } else {
-        $sedeCodi = $sedeCodigo;
+        $sedeCodi = $userData[0]["sedeId"];
         $usuarioCodi = "";
     }
 }
+
+$lista_semaforo = fnc_lista_semaforo($conexion, '', '1');
+$lista_bimestre = fnc_lista_bimestre($conexion, '', '1');
+$lista_niveles = fnc_lista_niveles($conexion, '', '1');
 ?>
 
 <section class="content-header">
@@ -107,16 +111,74 @@ if ($userData[0]["sedeId"] == "1" && ($perfilId === "1" || $perfilId === "5")) {
                         </div>
                         <select id="cbbSemaforo" data-show-content="true" class="form-control" style="width: 100%">
                             <option value="0">-- Todos --</option>
-                            <option value='1' >Verde</option>
-                            <option value='2' >Ambar</option>
-                            <option value='3' >Rojo</option>
+                            <?php
+                            foreach ($lista_semaforo as $semaforo) {
+                                echo "<option value='" . $semaforo["id"] . "' >" . $semaforo["nombre"] . "</option>";
+                            }
+                            ?>
                         </select>
                     </div>
-                    <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+                    <div class="col-lg-4 col-md-4 col-sm-6 col-12">
                         <button class="btn btn-success" id="btnNuevoSolicitud" style="bottom: 0px;margin-top: 30px" 
                                 onclick="buscar_semaforo_docente()">
                             <i class="fa fa-search"></i>
-                            Buscar</button>
+                            Buscar</button>&nbsp;&nbsp;
+                        <button class="btn btn-info" id="btnNuevoLimpiar" style="bottom: 0px;margin-top: 30px" 
+                                onclick="limpiar_campos_semaforo()">
+                            <i class="fa fa-search"></i>
+                            Limpiar</button> 
+                    </div>
+                </div><br>
+                <div class="row">
+                    <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+                        <div class="form-group" style="margin-bottom: 0px;">
+                            <label> Bimestre: </label>
+                        </div>
+                        <select id="cbbBimestre" data-show-content="true" class="form-control" style="width: 100%">
+                            <option value="0">-- Todos --</option>
+                            <?php
+                            foreach ($lista_bimestre as $bimestre) {
+                                echo "<option value='" . $bimestre["id"] . "' >" . $bimestre["nombre"] . "</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+                        <div class="form-group" style="margin-bottom: 0px;">
+                            <label> Nivel: </label>
+                        </div>
+                        <select id="cbbNivel" data-show-content="true" class="form-control" style="width: 100%" onchange="cargar_selector_grado(this)">
+                            <option value="0">-- Todos --</option>
+                            <?php
+                            foreach ($lista_niveles as $nivel) {
+                                echo "<option value='" . $nivel["codigo"] . "' >" . $nivel["nombre"] . "</option>";
+                            }
+                            ?>
+
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+                        <div class="form-group" style="margin-bottom: 0px;">
+                            <label> Grado: </label>
+                        </div>
+                        <select id="cbbGrado" data-show-content="true" class="form-control" style="width: 100%" onchange="cargar_selector_seccion(this)">
+                            <option value="0">-- Todos --</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-sm-6 col-12">
+                        <div class="form-group" style="margin-bottom: 0px;">
+                            <label> Secci&oacute;n: </label>
+                        </div>
+                        <select id="cbbSeccion" data-show-content="true" class="form-control" style="width: 100%">
+                            <option value="0">-- Todos --</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-4 col-md-4 col-sm-6 col-12">
+                        <div class="form-group" style="margin-bottom: 0px;" id="docenteData">
+                            <label id="dataDocente" >Docente:</label>
+                            <input type="hidden" id="docen" value=""/>
+                        </div>
+                        <input type="text" id="searchDocente" class="typeahead form-control" style="size:12px;text-transform: uppercase;" value="" autocomplete="off">
                     </div>
                 </div><br>
                 <div class="row">
@@ -137,7 +199,7 @@ if ($userData[0]["sedeId"] == "1" && ($perfilId === "1" || $perfilId === "5")) {
                             </thead>
                             <tbody>
                                 <?php
-                                $lista = fnc_buscar_semaforo_docentes($conexion, $sedeCodi, $fechas[0]["date_ayer"], $fechas[0]["date_hoy"], "0");
+                                $lista = fnc_buscar_semaforo_docentes($conexion, $sedeCodi, $fechas[0]["date_ayer"], $fechas[0]["date_hoy"], "0", "0", "0", "0", "0", "0");
                                 $html = "";
                                 $aux = 1;
                                 if (count($lista) > 0) {
@@ -205,7 +267,7 @@ if ($userData[0]["sedeId"] == "1" && ($perfilId === "1" || $perfilId === "5")) {
                 str_can = lastDay - day_1;
                 str_msj = "day";
             } else {
-                str_can = 3;
+                str_can = 12;
                 str_msj = "month";
             }
 
@@ -258,6 +320,38 @@ if ($userData[0]["sedeId"] == "1" && ($perfilId === "1" || $perfilId === "5")) {
                     //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
                     //"buttons": ["new", "colvis"]
         }).buttons().container().appendTo('#tableSemaforo_wrapper .col-md-6:eq(0)');
+
+        var array = [];
+        $('input#searchDocente').typeahead({
+            hint: true,
+            highlight: true,
+            minLength: 4,
+            source: function (query, result) {
+                $.ajax({
+                    url: 'php/aco_php/buscar_docente.php',
+                    method: 'POST',
+                    data: {
+                        query: query,
+                        s_sede: $("#cbbSedes").select().val(),
+                        s_seccion: $("#cbbSeccion").select().val()
+                    },
+                    dataType: "json",
+                    success: function (data) {
+                        //result(getOptionsFromJson(data));
+                        array = [];
+                        result($.map(data, function (item) {
+                            array.push({'value': item.value, 'label': item.label});
+                            return item.label;
+                        }));
+                    },
+                });
+            },
+            updater: function (item) {
+                const found = array.find(el => el.label === item);
+                $("#docen").val(found.value);
+                $("#dataDocente").html('Docente: ' + item + '');
+            }
+        });
     });
 
 </script>

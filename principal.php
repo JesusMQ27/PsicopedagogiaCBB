@@ -14,8 +14,8 @@ if (!isset($_SESSION["psi_user"])) {
 }
 
 $userSession = $_SESSION["psi_user"];
-$useId = $userSession["id"];
-$userData = fnc_datos_usuario($conexion, $useId);
+$codigo_user = $userSession["id"];
+$userData = fnc_datos_usuario($conexion, $codigo_user);
 $perfilCodi = $userData[0]["perfil"];
 $perfil = $userData[0]["perfil_nombre"];
 $sede = $userData[0]["sedeId"];
@@ -29,12 +29,13 @@ if ($sede == "1" && ($perfilCodi == "1" || $perfilCodi == "5")) {
     $privacidad = "0,1";
 } else {
     $privacidad = "0";
-    if ($perfilCodi === "1") {
+    if ($perfilCodi === "1" || $perfilCodi === "5") {
         $sedeCodi = $sede;
         $usuarioCodi = "";
+        $privacidad = "0,1";
     } elseif ($perfilCodi === "2") {
         $sedeCodi = $sede;
-        $usuarioCodi = $codigo_user;
+        $usuarioCodi = "";
     } else {
         $sedeCodi = $sede;
         $usuarioCodi = "";
@@ -51,11 +52,11 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
         <title>Sistema de acompa&ntilde;amiento al estudiante - SIAE</title>
 
         <!-- Google Font: Source Sans Pro -->
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+        <link rel="stylesheet" href="plugins/fontawesome-free/fonts.googleapis.css">
         <!-- Font Awesome Icons -->
         <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
         <!-- IonIcons -->
-        <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+        <link rel="stylesheet" href="plugins/ionicons/ionicons.min.css">
         <!-- DataTables -->
         <link rel="stylesheet" href="plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
         <link rel="stylesheet" href="plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
@@ -68,13 +69,13 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
         <!-- Toastr -->
         <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
+        <link rel="stylesheet" href="plugins/bootstrap-select/bootstrap-select.min.css">
 
         <link type="text/css" rel="stylesheet" href="plugins/daterangepicker/daterangepicker.css" />
 
         <link href="plugins/bootstrap/css/bootstrap-theme.min.css" rel="stylesheet" type="text/css"/>
 
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css" />
+        <link rel="stylesheet" href="plugins/morris/morris.css" />
 
     </head>
     <!--
@@ -212,7 +213,7 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
+                        <a class="nav-link" data-widget="control-sidebar" data-controlsidebar-slide="true" href="#" role="button">
                             <i class="fas fa-th-large"></i>
                         </a>
                     </li>
@@ -259,7 +260,7 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false" id="menuSistema">
                             <?php
                             $html_menu = "";
-                            $lista_menu = fnc_menu_x_perfil($conexion, $userData[0]["perfil"], $useId);
+                            $lista_menu = fnc_menu_x_perfil($conexion, $userData[0]["perfil"], $codigo_user);
                             foreach ($lista_menu as $lista) {
                                 $menu = $lista["id"];
                                 $html_menu .= "<li class='nav-item' id='menu-" . $menu . "'>
@@ -271,7 +272,7 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                                     </p>
                                 </a>
                                 <ul class='nav nav-treeview'>";
-                                $lista_submenu = fnc_submenu_x_menu($conexion, $menu, $userData[0]["perfil"], $useId);
+                                $lista_submenu = fnc_submenu_x_menu($conexion, $menu, $userData[0]["perfil"], $codigo_user);
                                 foreach ($lista_submenu as $lista_s) {
                                     $html_menu .= "<li class='nav-item' id='submenu-" . $lista_s["id"] . "'>
                                         <a href='#' onclick='cargar_opcion(" . '"' . $lista_s["id"] . '"' . "," . '"' . $lista_s["ruta"] . '"' . "," . '"' . $lista_s["submenu"] . '"' . ")' class='nav-link'>
@@ -325,7 +326,7 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                                 <div class="small-box bg-info">
                                     <div class="inner">
                                         <h3><?php echo count($lista_solicitudes); ?></h3>
-                                        <p>Entrevistas registradas</p>
+                                        <p>Entrevistas registradas por sede</p>
                                         <label><a href="#" style="color: white;" onclick="mostrar_modulo_x_alerta(7);">Ir al m&oacute;dulo</a></label>
                                     </div>
                                     <div class="icon">
@@ -342,7 +343,7 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                                 <div class="small-box bg-success">
                                     <div class="inner">
                                         <h3><?php echo $semaforo[0]["porcentaje"]; ?></h3>
-                                        <p>Semaforo docentes</p>
+                                        <p>Semaforo docentes por sede</p>
                                         <label><a href="#" style="color: white;" onclick="mostrar_modulo_x_alerta(8);">Ir al m&oacute;dulo</a></label>
                                     </div>
                                     <div class="icon">
@@ -359,7 +360,7 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                                 <div class="small-box bg-warning">
                                     <div class="inner">
                                         <h3><?php echo count($alumnos_no_entrevistados); ?></h3>
-                                        <p>Mis alumnos no entrevistados</p>
+                                        <p>Mis alumnos no entrevistados por sede</p>
                                         <label><a href="#" style="color: black;" onclick="mostrar_modulo_x_alerta(9);">Ir al m&oacute;dulo</a></label>
                                     </div>
                                     <div class="icon">
@@ -420,8 +421,6 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
 
         <!-- OPTIONAL SCRIPTS -->
         <script src="plugins/chart.js/Chart.min.js"></script>
-        <!-- AdminLTE for demo purposes -->
-        <script src="dist/js/demo.js"></script>
         <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
         <script src="dist/js/pages/dashboard3.js"></script>
         <!-- DataTables  & Plugins -->
@@ -459,8 +458,13 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
         <script src="plugins/bootstrap-typeahead/bootstrap3-typeahead.min.js" type="text/javascript"></script>
         <script src="plugins/printArea/jquery.PrintArea.js" type="text/javascript"></script>
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>
+        <script src="plugins/raphael/raphael-min.js"></script>
+        <script src="plugins/morris/morris.min.js"></script>
+
+        <!-- AdminLTE App -->
+        <script src="dist/js/adminlte.js"></script>
+        <!-- AdminLTE for demo purposes -->
+        <script src="dist/js/demo.js"></script>
     </body>
 
 </html>

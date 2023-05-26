@@ -11,6 +11,8 @@ var canvas1_edi = {};
 var canvas2_edi = {};
 var signaturePad_edi = {};
 var signaturePad_entrevistador_edi = {};
+var intervaloRegresivo;
+var intervaloRegresivo_s;
 var timeLimit = 40; //tiempo en minutos
 var timeLimitSub = 40; //tiempo en minutos
 function cargar_opcion(codigo, ruta, nombre) {
@@ -2014,6 +2016,12 @@ function mostrar_editar_apoderado(modal, alumno, apoderado) {
             modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
             //$('.select2').select2();
             modal.find('.modal-body').html(datos);
+            $("#txtNombresApoderado").keyup(function () {
+                var value = $(this).val().length;
+                if (value > 0 && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            }).keyup();
             $("#txtDniApoderado").keyup(function () {
                 var value = $(this).val().length;
                 if (value > 0 && $(this).is(".is-invalid")) {
@@ -2103,22 +2111,27 @@ function editar_apoderado() {
     });
     var txtAlumnCodigo = $("#txtAlumnCodigo");
     var txtApoderadoCod = $("#txtApoderadoCod");
+    var txtNombresApoderado = $("#txtNombresApoderado");
     var txtDniApoderado = $("#txtDniApoderado");
     var txtCorreoApoderado = $("#txtCorreoApoderado");
     var txtTelfApoderado = $("#txtTelfApoderado");
     var mensaje = "";
+    if ($.trim(txtNombresApoderado.val()) == "") {
+        mensaje += "*Ingrese los apellidos y nombres<br>";
+        $("#txtNombresApoderado").addClass("is-invalid");
+    }
     if ($.trim(txtDniApoderado.val()) == "") {
-        mensaje += "Ingrese en DNI<br>";
+        mensaje += "*Ingrese en DNI<br>";
         $("#txtDniApoderado").addClass("is-invalid");
     }
     if ($.trim(txtCorreoApoderado.val()) == "") {
-        mensaje += "Ingrese el correo electrónico<br>";
+        mensaje += "*Ingrese el correo electrónico<br>";
         $("#txtCorreoApoderado").addClass("is-invalid");
     }
-    if ($.trim(txtTelfApoderado.val()) == "") {
-        mensaje += "Ingrese el teléfono<br>";
-        $("#txtTelfApoderado").addClass("is-invalid");
-    }
+    /*if ($.trim(txtTelfApoderado.val()) == "") {
+     mensaje += "*Ingrese el teléfono<br>";
+     $("#txtTelfApoderado").addClass("is-invalid");
+     }*/
     if (mensaje !== "") {
         Toast.fire({
             position: 'top-end',
@@ -2136,6 +2149,7 @@ function editar_apoderado() {
                 opcion: "operacion_editar_apoderado",
                 a_txtAlumnCodigo: $.trim(txtAlumnCodigo.val()),
                 a_txtApoderadoCod: $.trim(txtApoderadoCod.val()),
+                a_txtNombresApoderado: $.trim(txtNombresApoderado.val()),
                 a_txtDniApoderado: $.trim(txtDniApoderado.val()),
                 a_txtCorreoApoderado: $.trim(txtCorreoApoderado.val()),
                 a_txtTelfApoderado: $.trim(txtTelfApoderado.val())
@@ -2217,10 +2231,10 @@ function registrar_nuevo_apoderado() {
             mensaje += "*Ingrese un correo electrónico válido<br>";
         }
     }
-    if ($.trim(txtTelfApoderadoN.val()) == "") {
-        mensaje += "*Ingrese el teléfono<br>";
-        $("#txtTelfApoderadoN").addClass("is-invalid");
-    }
+    /*if ($.trim(txtTelfApoderadoN.val()) == "") {
+     mensaje += "*Ingrese el teléfono<br>";
+     $("#txtTelfApoderadoN").addClass("is-invalid");
+     }*/
     if ($.trim(txtDireccionN.val()) == "") {
         mensaje += "*Ingrese la dirección<br>";
         $("#txtDireccionN").addClass("is-invalid");
@@ -2405,6 +2419,12 @@ function mostrar_tipo_solicitud(dato) {
                         $(this).removeClass("is-invalid");
                     }
                 });
+                $("#cbbSexo").change(function () {
+                    var value = $(this).val();
+                    if (value !== 0 && $(this).is(".is-invalid")) {
+                        $(this).removeClass("is-invalid");
+                    }
+                });
                 $("#txtMotivo").keyup(function () {
                     var value = $(this).val().length;
                     if (value > 0 && $(this).is(".is-invalid")) {
@@ -2525,6 +2545,7 @@ function registrar_solicitud() {
     var sede = $("#txt_sede").val();
     var categoria = $("#cbbCategoria").select().val();
     var subcategoria = $("#cbbSubcategoria").select().val();
+    var sexo_estu = $("#cbbSexo").select().val();
     var txtMotivo = "";
     var planEstudiante = "";
     var planEntrevistador = "";
@@ -2565,7 +2586,10 @@ function registrar_solicitud() {
         mensaje += "*Seleccione la subcategoria<br>";
         $("#cbbSubcategoria").addClass("is-invalid");
     }
-
+    if ($.trim(sexo_estu) === "0") {
+        mensaje += "*Seleccione el sexo<br>";
+        $("#cbbSexo").addClass("is-invalid");
+    }
     if (solicitud_tipo === "1") {
         txtMotivo = $("#txtMotivo").val();
         planEstudiante = $("#txtPlanEstudiante").val();
@@ -2675,6 +2699,7 @@ function registrar_solicitud() {
                 s_sede: sede,
                 s_categoria: categoria,
                 s_subcategoria: subcategoria,
+                s_sexo: sexo_estu,
                 s_motivo: txtMotivo,
                 s_planEstudiante: planEstudiante,
                 s_planEntrevistador: planEntrevistador,
@@ -2878,6 +2903,14 @@ function buscar_semaforo_docente() {
     var fecha_inicio = $("#fecha1").val();
     var fecha_fin = $("#fecha2").val();
     var semaforo = $("#cbbSemaforo").select().val();
+    var bimestre = $("#cbbBimestre").select().val();
+    var nivel = $("#cbbNivel").select().val();
+    var grado = $("#cbbGrado").select().val();
+    var seccion = $("#cbbSeccion").select().val();
+    var docente = $("#docen").val();
+    if ($.trim(docente) == "") {
+        docente = "0";
+    }
     $.ajax({
         url: "php/aco_php/controller.php",
         dataType: "html",
@@ -2887,7 +2920,12 @@ function buscar_semaforo_docente() {
             s_sede: sede,
             s_fecha_inicio: fecha_inicio,
             s_fecha_fin: fecha_fin,
-            s_semaforo: semaforo
+            s_semaforo: semaforo,
+            s_bimestre: bimestre,
+            s_nivel: nivel,
+            s_grado: grado,
+            s_seccion: seccion,
+            s_docente: docente
         },
         beforeSend: function (objeto) {
             $("#modal-nueva-solicitud-detalle").find('.modal-footer div label').html("");
@@ -3079,6 +3117,12 @@ function mostrar_tipo_solicitud_sub(dato) {
                         $(this).removeClass("is-invalid");
                     }
                 });
+                $("#cbbSexo_sub").change(function () {
+                    var value = $(this).val();
+                    if (value !== "0" && $(this).is(".is-invalid")) {
+                        $(this).removeClass("is-invalid");
+                    }
+                });
                 $("#txtMotivo_sub").keyup(function () {
                     var value = $(this).val().length;
                     if (value > 0 && $(this).is(".is-invalid")) {
@@ -3161,6 +3205,7 @@ function registrar_sub_solicitud() {
     var sede = $("#txt_sede_sub").val();
     var categoria = $("#cbbCategoria_sub").select().val();
     var subcategoria = $("#cbbSubcategoria_sub").select().val();
+    var sexo = $("#cbbSexo_sub").select().val();
     var txtMotivo = "";
     var planEstudiante = "";
     var planEntrevistador = "";
@@ -3200,6 +3245,10 @@ function registrar_sub_solicitud() {
     if (subcategoria === "") {
         mensaje += "*Seleccione la subcategoria<br>";
         $("#cbbSubcategoria_sub").addClass("is-invalid");
+    }
+    if (sexo === "0") {
+        mensaje += "*Seleccione el sexo<br>";
+        $("#cbbSexo_sub").addClass("is-invalid");
     }
 
     if (solicitud_tipo === "1") {
@@ -3312,6 +3361,7 @@ function registrar_sub_solicitud() {
                 s_sede: sede,
                 s_categoria: categoria,
                 s_subcategoria: subcategoria,
+                s_sexo: sexo,
                 s_motivo: txtMotivo,
                 s_planEstudiante: planEstudiante,
                 s_planEntrevistador: planEntrevistador,
@@ -3418,6 +3468,12 @@ function mostrar_editar_apoderado_sub(modal, alumno, apoderado) {
             modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
             //$('.select2').select2();
             modal.find('.modal-body').html(datos);
+            $("#txtNombresApoderado_sub").keyup(function () {
+                var value = $(this).val().length;
+                if (value > 0 && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            }).keyup();
             $("#txtDniApoderado_sub").keyup(function () {
                 var value = $(this).val().length;
                 if (value > 0 && $(this).is(".is-invalid")) {
@@ -3450,10 +3506,15 @@ function editar_apoderado_sub() {
     });
     var txtAlumnCodigo = $("#txtAlumnCodigo_sub");
     var txtApoderadoCod = $("#txtApoderadoCod_sub");
+    var txtNombresApoderado = $("#txtNombresApoderado_sub");
     var txtDniApoderado = $("#txtDniApoderado_sub");
     var txtCorreoApoderado = $("#txtCorreoApoderado_sub");
     var txtTelfApoderado = $("#txtTelfApoderado_sub");
     var mensaje = "";
+    if ($.trim(txtNombresApoderado.val()) == "") {
+        mensaje += "Ingrese Apellidos y nombres<br>";
+        $("#txtNombresApoderado_sub").addClass("is-invalid");
+    }
     if ($.trim(txtDniApoderado.val()) == "") {
         mensaje += "Ingrese en DNI<br>";
         $("#txtDniApoderado_sub").addClass("is-invalid");
@@ -3462,10 +3523,10 @@ function editar_apoderado_sub() {
         mensaje += "Ingrese el correo electrónico<br>";
         $("#txtCorreoApoderado_sub").addClass("is-invalid");
     }
-    if ($.trim(txtTelfApoderado.val()) == "") {
-        mensaje += "Ingrese el teléfono<br>";
-        $("#txtTelfApoderado_sub").addClass("is-invalid");
-    }
+    /*if ($.trim(txtTelfApoderado.val()) == "") {
+     mensaje += "Ingrese el teléfono<br>";
+     $("#txtTelfApoderado_sub").addClass("is-invalid");
+     }*/
     if (mensaje !== "") {
         Toast.fire({
             position: 'top-end',
@@ -3482,6 +3543,7 @@ function editar_apoderado_sub() {
             data: {
                 opcion: "operacion_editar_apoderado_sub",
                 a_txtAlumnCodigo_sub: $.trim(txtAlumnCodigo.val()),
+                a_txtNombresApoderado_sub: $.trim(txtNombresApoderado.val()),
                 a_txtApoderadoCod_sub: $.trim(txtApoderadoCod.val()),
                 a_txtDniApoderado_sub: $.trim(txtDniApoderado.val()),
                 a_txtCorreoApoderado_sub: $.trim(txtCorreoApoderado.val()),
@@ -3621,10 +3683,10 @@ function registrar_nuevo_apoderado_sub() {
             mensaje += "*Ingrese un correo electrónico válido<br>";
         }
     }
-    if ($.trim(txtTelfApoderadoN.val()) == "") {
-        mensaje += "*Ingrese el teléfono<br>";
-        $("#txtTelfApoderadoN_sub").addClass("is-invalid");
-    }
+    /*if ($.trim(txtTelfApoderadoN.val()) == "") {
+     mensaje += "*Ingrese el teléfono<br>";
+     $("#txtTelfApoderadoN_sub").addClass("is-invalid");
+     }*/
     if ($.trim(txtDireccionN.val()) == "") {
         mensaje += "*Ingrese la dirección<br>";
         $("#txtDireccionN_sub").addClass("is-invalid");
@@ -3829,6 +3891,12 @@ function cargar_solicitudes_a_editar(solicitud) {
                 $("#cbbCategoria_edi").change(function () {
                     var value = $(this).val();
                     if (value > 0 && $(this).is(".is-invalid")) {
+                        $(this).removeClass("is-invalid");
+                    }
+                });
+                $("#cbbSexo_edi").change(function () {
+                    var value = $(this).val();
+                    if (value != 0 && $(this).is(".is-invalid")) {
                         $(this).removeClass("is-invalid");
                     }
                 });
@@ -4292,7 +4360,7 @@ function editar_solicitud() {
         showConfirmButton: false,
         timer: 4000
     });
-    var cbbTipoSolicitudCodis = $("#cbbTipoSolicitudCodis").select().val();
+    var cbbTipoSolicitudCodis = $("#cbbTipoSolicitudCodisEdi").select().val();
     if (cbbTipoSolicitudCodis === "") {
         Toast.fire({
             position: 'top-end',
@@ -4300,7 +4368,7 @@ function editar_solicitud() {
             title: 'Seleccione la Entrevista / Subentrevista',
             showConfirmButton: false
         });
-        $("#cbbTipoSolicitudCodis").addClass("is-invalid");
+        $("#cbbTipoSolicitudCodisEdi").addClass("is-invalid");
     } else {
         $("#btnEditarSolicitud").attr("disabled", true);
         var codi_solicitud = $("#cod_solicitud_edi").val();
@@ -4310,6 +4378,7 @@ function editar_solicitud() {
         var sede = $("#txt_sede_edi").val();
         var categoria = $("#cbbCategoria_edi").select().val();
         var subcategoria = $("#cbbSubcategoria_edi").select().val();
+        var sexo_alu = $("#cbbSexo_edi").select().val();
         var txtMotivo = "";
         var planEstudiante = "";
         var planEntrevistador = "";
@@ -4340,7 +4409,10 @@ function editar_solicitud() {
             mensaje += "*Seleccione la subcategoria<br>";
             $("#cbbSubcategoria_edi").addClass("is-invalid");
         }
-
+        if (sexo_alu === "0") {
+            mensaje += "*Seleccione el sexo<br>";
+            $("#cbbSexo_edi").addClass("is-invalid");
+        }
         if (solicitud_tipo === "1") {
             txtMotivo = $("#txtMotivo_edi").val();
             planEstudiante = $("#txtPlanEstudiante_edi").val();
@@ -4471,6 +4543,7 @@ function editar_solicitud() {
                     s_sede: sede,
                     s_categoria: categoria,
                     s_subcategoria: subcategoria,
+                    s_sexo_alu: sexo_alu,
                     s_motivo: txtMotivo,
                     s_planEstudiante: planEstudiante,
                     s_planEntrevistador: planEntrevistador,
@@ -5407,11 +5480,256 @@ function semaforo_docentes_grafico_barras_sede(sede) {
                 $(window).resize(function () {
                     window.barChart.redraw();
                 });
+                $("#div_Niveles").html("");
+                $("#div_Grados").html("");
+                $("#div_Secciones").html("");
+                cargar_formulario_sede_nivel_semaforo("#div_Niveles");
             } else {
                 $("#bar-chart").html('<div class="col-md-12"><span><i class="nav-icon fa fa-info-circle" style="color: red"></i> Respuesta: No se encontraron registros.</span>&nbsp;&nbsp;</div>');
+                $("#div_Niveles").html("");
+                $("#div_Grados").html("");
+                $("#div_Secciones").html("");
             }
         }
     });
+}
+
+function cargar_formulario_sede_nivel_semaforo(div) {
+    var str_sede = $("#cbbSedes").select().val();
+    $(div).html("");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_sede_nivel_semaforo",
+            s_sede: str_sede
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $(div).html(datos);
+        }
+    });
+}
+
+function semaforo_docentes_grafico_barras_niveles(nivel) {
+    var str_sede = $("#cbbSedes").select().val();
+    var str_nivel = $("#cbbNivel").select().val();
+    if ($.trim(str_nivel) == "") {
+        $("#bar-chart2").html("");
+        $("#div_Grados").html("");
+        $("#div_Secciones").html("");
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "json",
+            type: "POST",
+            data: {
+                opcion: "formulario_docentes_grafico_barras_nivel",
+                s_sede: str_sede,
+                s_nivel: str_nivel
+            },
+            beforeSend: function (objeto) {
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                $("#bar-chart2").html("");
+                if (datos.length !== 0) {
+                    window.barChart = Morris.Bar({
+                        element: 'bar-chart2',
+                        data: datos,
+                        xkey: 'y',
+                        ykeys: ['a', 'b', 'c'],
+                        labels: ['Total', 'Faltantes', 'Realizados'],
+                        lineColors: ['#1e88e5', '#dc3545', '#28a745'],
+                        barColors: ['#34495E', '#26B99A', '#3dbeee'],
+                        lineWidth: '3px',
+                        resize: true,
+                        redraw: true
+                    }
+                    );
+                    $(window).resize(function () {
+                        window.barChart.redraw();
+                    });
+                    //$("#div_Niveles").html("");
+                    //$("#div_Grados").html("");
+                    $("#div_Secciones").html("");
+                    cargar_formulario_nivel_grado_semaforo("#div_Grados");
+                } else {
+                    $("#bar-chart2").html('<div class="col-md-12"><span><i class="nav-icon fa fa-info-circle" style="color: red"></i> Respuesta: No se encontraron registros.</span>&nbsp;&nbsp;</div>');
+                    $("#div_Niveles").html("");
+                    $("#div_Grados").html("");
+                    $("#div_Secciones").html("");
+                }
+            }
+        });
+    }
+}
+
+function cargar_formulario_nivel_grado_semaforo(div) {
+    var str_sede = $("#cbbSedes").select().val();
+    var str_nivel = $("#cbbNivel").select().val();
+    $(div).html("");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_nivel_grado_semaforo",
+            s_sede: str_sede,
+            s_nivel: str_nivel
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $(div).html(datos);
+        }
+    });
+}
+
+function semaforo_docentes_grafico_barras_grados(grado) {
+    var str_sede = $("#cbbSedes").select().val();
+    var str_nivel = $("#cbbNivel").select().val();
+    var str_grado = $("#cbbGrado").select().val();
+    if ($.trim(str_nivel) == "") {
+        $("#bar-chart2").html("");
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "json",
+            type: "POST",
+            data: {
+                opcion: "formulario_docentes_grafico_barras_grado",
+                s_sede: str_sede,
+                s_nivel: str_nivel,
+                s_grado: str_grado
+            },
+            beforeSend: function (objeto) {
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                $("#bar-chart3").html("");
+                if (datos.length !== 0) {
+                    window.barChart = Morris.Bar({
+                        element: 'bar-chart3',
+                        data: datos,
+                        xkey: 'y',
+                        ykeys: ['a', 'b', 'c'],
+                        labels: ['Total', 'Faltantes', 'Realizados'],
+                        lineColors: ['#1e88e5', '#dc3545', '#28a745'],
+                        barColors: ['#34495E', '#26B99A', '#3dbeee'],
+                        lineWidth: '3px',
+                        resize: true,
+                        redraw: true
+                    }
+                    );
+                    $(window).resize(function () {
+                        window.barChart.redraw();
+                    });
+                    //$("#div_Niveles").html("");
+                    //$("#div_Grados").html("");
+                    $("#div_Secciones").html("");
+                    cargar_formulario_grado_seccion_semaforo("#div_Secciones");
+                } else {
+                    $("#bar-chart2").html('<div class="col-md-12"><span><i class="nav-icon fa fa-info-circle" style="color: red"></i> Respuesta: No se encontraron registros.</span>&nbsp;&nbsp;</div>');
+                    $("#div_Niveles").html("");
+                    $("#div_Grados").html("");
+                    $("#div_Secciones").html("");
+                }
+            }
+        });
+    }
+}
+
+function cargar_formulario_grado_seccion_semaforo(div) {
+    var str_sede = $("#cbbSedes").select().val();
+    var str_nivel = $("#cbbNivel").select().val();
+    var str_grado = $("#cbbGrado").select().val();
+    $(div).html("");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_grado_seccion_semaforo",
+            s_sede: str_sede,
+            s_nivel: str_nivel,
+            s_grado: str_grado
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $(div).html(datos);
+        }
+    });
+}
+
+function semaforo_docentes_grafico_barras_secciones(seccion) {
+    var str_sede = $("#cbbSedes").select().val();
+    var str_nivel = $("#cbbNivel").select().val();
+    var str_grado = $("#cbbGrado").select().val();
+    var str_seccion = $("#cbbSeccion").select().val();
+    if ($.trim(str_seccion) == "") {
+        $("#bar-chart4").html("");
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "json",
+            type: "POST",
+            data: {
+                opcion: "formulario_docentes_grafico_barras_secciones",
+                s_sede: str_sede,
+                s_nivel: str_nivel,
+                s_grado: str_grado,
+                s_seccion: str_seccion
+            },
+            beforeSend: function (objeto) {
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                $("#bar-chart4").html("");
+                if (datos.length !== 0) {
+                    window.barChart = Morris.Bar({
+                        element: 'bar-chart4',
+                        data: datos,
+                        xkey: 'y',
+                        ykeys: ['a', 'b', 'c'],
+                        labels: ['Total', 'Faltantes', 'Realizados'],
+                        lineColors: ['#1e88e5', '#dc3545', '#28a745'],
+                        barColors: ['#34495E', '#26B99A', '#3dbeee'],
+                        lineWidth: '3px',
+                        resize: true,
+                        redraw: true
+                    }
+                    );
+                    $(window).resize(function () {
+                        window.barChart.redraw();
+                    });
+                    //$("#div_Niveles").html("");
+                    //$("#div_Grados").html("");
+                    //$("#div_Secciones").html("");
+                } else {
+                    $("#bar-chart4").html('<div class="col-md-12"><span><i class="nav-icon fa fa-info-circle" style="color: red"></i> Respuesta: No se encontraron registros.</span>&nbsp;&nbsp;</div>');
+                }
+            }
+        });
+    }
 }
 
 function alumnos_no_entrevistados_grafico_barras_sede(sede) {
@@ -5467,7 +5785,7 @@ function alumnos_no_entrevistados_grafico_barras_sede(sede) {
     });
 }
 
-function entrevistas_registradas_grafico_barras_sede(sede) {
+function entrevistas_registradas_grafico_lineal_sede(sede) {
     var str_sede = sede.value;
     var str_privacidad = $("#txtPrivacidad").val()
     $.ajax({
@@ -5509,11 +5827,1907 @@ function entrevistas_registradas_grafico_barras_sede(sede) {
                 $(window).resize(function () {
                     window.barChart.redraw();
                 });
+                $('#cbbNiveles option[value=0]').attr('selected', 'selected');
+                $("#line-chart2").html("");
             } else {
                 $("#line-chart").html('<div class="col-md-12"><span><i class="nav-icon fa fa-info-circle" style="color: red"></i> Respuesta: No se encontraron registros.</span>&nbsp;&nbsp;</div>');
             }
+            $("#divGrados").html("");
+            $("#divSecciones").html("");
+            $('#cbbNiveles option[value=0]').attr('selected', 'selected');
         }
     });
+}
+
+function entrevistas_registradas_grafico_lineal_niveles(nivel) {
+    var str_sede = $("#cbbSedes").select().val();
+    var str_privacidad = $("#txtPrivacidad").val();
+    var str_nivel = $("#cbbNiveles").select().val();
+    if (str_nivel !== "0") {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "json",
+            type: "POST",
+            data: {
+                opcion: "formulario_grafico_solicitudes_registradas_niveles",
+                s_sede: str_sede,
+                s_privacidad: str_privacidad,
+                s_nivel: str_nivel
+            },
+            beforeSend: function (objeto) {
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                $("#line-chart2").html("");
+                if (datos.length !== 0) {
+                    const monthNames = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                        "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"
+                    ];
+                    window.lineChart = Morris.Line({
+                        element: 'line-chart2',
+                        data: datos,
+                        xkey: 'y',
+                        parseTime: false,
+                        ykeys: ['a', 'b', 'c'],
+                        xLabelFormat: function (x) {
+                            var index = parseInt(x.src.y);
+                            return monthNames[index];
+                        },
+                        xLabels: "month",
+                        labels: ['Total', 'Entrevista a Estudiantes', 'Entrevista a Padres de Familia'],
+                        lineColors: ['#1e88e5', '#dc3545', '#3dbeee'],
+                        hideHover: 'auto'
+                    }
+                    );
+                    $(window).resize(function () {
+                        window.barChart.redraw();
+                    });
+                    $("#divGrados").html("");
+                    $("#divSecciones").html("");
+                    cargar_formulario_grado_nivel("#divGrados");
+                } else {
+                    $("#line-chart2").html('<div class="col-md-12"><span><i class="nav-icon fa fa-info-circle" style="color: red"></i> Respuesta: No se encontraron registros.</span>&nbsp;&nbsp;</div>');
+                }
+            }
+        });
+    } else {
+        $("#line-chart2").html("");
+        $("#divGrados").html("");
+        $("#divSecciones").html("");
+    }
+}
+
+function cargar_formulario_grado_nivel(div) {
+    var str_nivel = $("#cbbNiveles").select().val();
+    $(div).html("");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_grado_nivel",
+            s_nivel: str_nivel
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $(div).html(datos);
+        }
+    });
+}
+
+function entrevistas_registradas_grafico_lineal_grados(grado) {
+    var str_sede = $("#cbbSedes").select().val();
+    var str_privacidad = $("#txtPrivacidad").val();
+    var str_nivel = $("#cbbNiveles").select().val();
+    var str_grado = $("#cbbGrados").select().val();
+    if (str_grado !== "0") {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "json",
+            type: "POST",
+            data: {
+                opcion: "formulario_grafico_solicitudes_registradas_grados",
+                s_sede: str_sede,
+                s_privacidad: str_privacidad,
+                s_nivel: str_nivel,
+                s_grado: str_grado
+            },
+            beforeSend: function (objeto) {
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                $("#line-chart3").html("");
+                if (datos.length !== 0) {
+                    const monthNames = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                        "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"
+                    ];
+                    window.lineChart = Morris.Line({
+                        element: 'line-chart3',
+                        data: datos,
+                        xkey: 'y',
+                        parseTime: false,
+                        ykeys: ['a', 'b', 'c'],
+                        xLabelFormat: function (x) {
+                            var index = parseInt(x.src.y);
+                            return monthNames[index];
+                        },
+                        xLabels: "month",
+                        labels: ['Total', 'Entrevista a Estudiantes', 'Entrevista a Padres de Familia'],
+                        lineColors: ['#1e88e5', '#dc3545', '#3dbeee'],
+                        hideHover: 'auto'
+                    }
+                    );
+                    $(window).resize(function () {
+                        window.barChart.redraw();
+                    });
+                    cargar_formulario_seccion_grado("#divSecciones");
+                } else {
+                    $("#line-chart3").html('<div class="col-md-12"><span><i class="nav-icon fa fa-info-circle" style="color: red"></i> Respuesta: No se encontraron registros.</span>&nbsp;&nbsp;</div>');
+                }
+            }
+        });
+    } else {
+        $("#line-chart3").html("");
+        $("#divSecciones").html("");
+    }
+}
+
+function cargar_formulario_seccion_grado(div) {
+    var str_nivel = $("#cbbNiveles").select().val();
+    var str_grado = $("#cbbGrados").select().val();
+    $(div).html("");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_seccion_grado",
+            s_nivel: str_nivel,
+            s_grado: str_grado
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $(div).html(datos);
+        }
+    });
+}
+
+function entrevistas_registradas_grafico_lineal_secciones(seccion) {
+    var str_sede = $("#cbbSedes").select().val();
+    var str_privacidad = $("#txtPrivacidad").val();
+    var str_nivel = $("#cbbNiveles").select().val();
+    var str_grado = $("#cbbGrados").select().val();
+    var str_seccion = $("#cbbSecciones").select().val();
+    if (str_seccion !== "0") {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "json",
+            type: "POST",
+            data: {
+                opcion: "formulario_grafico_solicitudes_registradas_secciones",
+                s_sede: str_sede,
+                s_privacidad: str_privacidad,
+                s_nivel: str_nivel,
+                s_grado: str_grado,
+                s_seccion: str_seccion
+            },
+            beforeSend: function (objeto) {
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                $("#line-chart4").html("");
+                if (datos.length !== 0) {
+                    const monthNames = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                        "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"
+                    ];
+                    window.lineChart = Morris.Line({
+                        element: 'line-chart4',
+                        data: datos,
+                        xkey: 'y',
+                        parseTime: false,
+                        ykeys: ['a', 'b', 'c'],
+                        xLabelFormat: function (x) {
+                            var index = parseInt(x.src.y);
+                            return monthNames[index];
+                        },
+                        xLabels: "month",
+                        labels: ['Total', 'Entrevista a Estudiantes', 'Entrevista a Padres de Familia'],
+                        lineColors: ['#1e88e5', '#dc3545', '#3dbeee'],
+                        hideHover: 'auto'
+                    }
+                    );
+                    $(window).resize(function () {
+                        window.barChart.redraw();
+                    });
+                } else {
+                    //$("#line-chart4").html("");
+                    $("#line-chart4").html('<div class="col-md-12"><span><i class="nav-icon fa fa-info-circle" style="color: red"></i> Respuesta: No se encontraron registros.</span>&nbsp;&nbsp;</div>');
+                }
+            }
+        });
+    } else {
+        $("#line-chart4").html("");
+    }
+}
+
+function mostrar_historial_alumno(dato) {
+    var mensaje = "";
+    var codSMenu = $("#hdnCodiSR");
+    var matricu = dato;
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_historial_alumno",
+            sol_matricula: matricu
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#divHistorial").html(datos);
+            $('.checkAll').click(function () {
+                if (this.checked) {
+                    $(".checkboxes").prop("checked", true);
+                } else {
+                    $(".checkboxes").prop("checked", false);
+                }
+            });
+
+            $(".checkboxes").click(function () {
+                var numberOfCheckboxes = $(".checkboxes").length;
+                var numberOfCheckboxesChecked = $('.checkboxes:checked').length;
+                if (numberOfCheckboxes == numberOfCheckboxesChecked) {
+                    $(".checkAll").prop("checked", true);
+                } else {
+                    $(".checkAll").prop("checked", false);
+                }
+            });
+
+            $('.checkAllCampos').click(function () {
+                if (this.checked) {
+                    $(".checkboxesCampos").prop("checked", true);
+                } else {
+                    $(".checkboxesCampos").prop("checked", false);
+                }
+            });
+
+            $(".checkboxesCampos").click(function () {
+                var numberOfCheckboxes = $(".checkboxesCampos").length;
+                var numberOfCheckboxesChecked = $('.checkboxesCampos:checked').length;
+                if (numberOfCheckboxes == numberOfCheckboxesChecked) {
+                    $(".checkAllCampos").prop("checked", true);
+                } else {
+                    $(".checkAllCampos").prop("checked", false);
+                }
+            });
+        }
+    });
+}
+
+function mostrar_entrevis_subentrevis(codigo) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_historial_detalle",
+            sol_cod: codigo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#divHistorialDetalle").html(datos);
+        }
+    });
+}
+
+
+function mostrar_registra_nuevos_bimestres(modal) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_registro_nuevos_bimestres"
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+            var anio = $("#cbbAnios").select().val();
+            validar_rango_fechas_x_anio(anio);
+            $("#fecha11").click(function () {
+                var value = $(this).val().length;
+                if (value !== "" && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+            $("#fecha12").click(function () {
+                var value = $(this).val().length;
+                if (value !== "" && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+            $("#fecha21").click(function () {
+                var value = $(this).val().length;
+                if (value !== "" && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+            $("#fecha22").click(function () {
+                var value = $(this).val().length;
+                if (value !== "" && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+            $("#fecha31").click(function () {
+                var value = $(this).val().length;
+                if (value !== "" && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+            $("#fecha32").click(function () {
+                var value = $(this).val().length;
+                if (value !== "" && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+            $("#fecha41").click(function () {
+                var value = $(this).val().length;
+                if (value !== "" && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+            $("#fecha42").click(function () {
+                var value = $(this).val().length;
+                if (value !== "" && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+        }
+    });
+}
+
+function cambiar_anio_bimestre(dato) {
+    validar_rango_fechas_x_anio(dato.value);
+}
+
+function validar_rango_fechas_x_anio(anio) {
+    $("#fecha11").daterangepicker({
+        autoApply: true,
+        showButtonPanel: false,
+        singleDatePicker: true,
+        showDropdowns: true,
+        linkedCalendar: false,
+        autoUpdateInput: false,
+        showCustomRangeLabel: false,
+        locale: {
+            format: "DD/MM/YYYY"
+        },
+        minDate: '01/01/' + anio,
+        maxDate: '31/12/' + anio
+    }).on('apply.daterangepicker', function (ev, start) {
+        $("#fecha11").val(start.endDate.format('DD/MM/YYYY'));
+        var fechaConcar1 = $("#fecha11").val();
+        var array_fecha1 = fechaConcar1.split("/");
+        var day_1 = parseInt(array_fecha1[0]);
+        var month_1 = parseInt(array_fecha1[1]);
+        var year_1 = parseInt(array_fecha1[2]);
+        var str_msj = "";
+        var str_can = "";
+        if (month_1 == 12) {
+            var lastDate = new Date(year_1, month_1 + 1, 0);
+            var lastDay = lastDate.getDate();
+            str_can = lastDay - day_1;
+            str_msj = "day";
+        } else {
+            str_can = 12;
+            str_msj = "month";
+        }
+
+        $("#fecha12").daterangepicker({
+            autoApply: true,
+            singleDatePicker: true,
+            showDropdowns: true,
+            linkedCalendar: false,
+            autoUpdateInput: false,
+            showCustomRangeLabel: false,
+            starDate: start.endDate.format("DD/MM/YYYY"),
+            minDate: moment(start.endDate.format("MM/DD/YYYY")).add(1, "day"),
+            /*maxDate: moment(start.endDate.format("MM/DD/YYYY")).add(str_can, str_msj),*/
+            maxDate: '31/12/' + anio,
+            locale: {
+                format: "DD/MM/YYYY"
+            }
+        }, function (start, end, label) {
+        }).on('apply.daterangepicker', function (ev, start) {
+            $("#fecha12").val(start.endDate.format("DD/MM/YYYY"));
+            var fechaConcar1 = $("#fecha12").val();
+            var array_fecha1 = fechaConcar1.split("/");
+            var day_1 = parseInt(array_fecha1[0]);
+            var month_1 = parseInt(array_fecha1[1]);
+            var year_1 = parseInt(array_fecha1[2]);
+            var str_msj = "";
+            var str_can = "";
+            if (month_1 == 12) {
+                var lastDate = new Date(year_1, month_1 + 1, 0);
+                var lastDay = lastDate.getDate();
+                str_can = lastDay - day_1;
+                str_msj = "day";
+            } else {
+                str_can = 12;
+                str_msj = "month";
+            }
+            $("#fecha21").daterangepicker({
+                autoApply: true,
+                singleDatePicker: true,
+                showDropdowns: true,
+                linkedCalendar: false,
+                autoUpdateInput: false,
+                showCustomRangeLabel: false,
+                starDate: start.endDate.format("DD/MM/YYYY"),
+                minDate: moment(start.endDate.format("MM/DD/YYYY")).add(1, "day"),
+                /*maxDate: moment(start.endDate.format("MM/DD/YYYY")).add(str_can, str_msj),*/
+                maxDate: '31/12/' + anio,
+                locale: {
+                    format: "DD/MM/YYYY"
+                }
+            }, function (start, end, label) {
+            }).on('apply.daterangepicker', function (ev, start) {
+                $("#fecha21").val(start.endDate.format("DD/MM/YYYY"));
+                var fechaConcar1 = $("#fecha21").val();
+                var array_fecha1 = fechaConcar1.split("/");
+                var day_1 = parseInt(array_fecha1[0]);
+                var month_1 = parseInt(array_fecha1[1]);
+                var year_1 = parseInt(array_fecha1[2]);
+                var str_msj = "";
+                var str_can = "";
+                if (month_1 == 12) {
+                    var lastDate = new Date(year_1, month_1 + 1, 0);
+                    var lastDay = lastDate.getDate();
+                    str_can = lastDay - day_1;
+                    str_msj = "day";
+                } else {
+                    str_can = 12;
+                    str_msj = "month";
+                }
+                $("#fecha22").daterangepicker({
+                    autoApply: true,
+                    singleDatePicker: true,
+                    showDropdowns: true,
+                    linkedCalendar: false,
+                    autoUpdateInput: false,
+                    showCustomRangeLabel: false,
+                    starDate: start.endDate.format("DD/MM/YYYY"),
+                    minDate: moment(start.endDate.format("MM/DD/YYYY")).add(1, "day"),
+                    /*maxDate: moment(start.endDate.format("MM/DD/YYYY")).add(str_can, str_msj),*/
+                    maxDate: '31/12/' + anio,
+                    locale: {
+                        format: "DD/MM/YYYY"
+                    }
+                }, function (start, end, label) {
+                }).on('apply.daterangepicker', function (ev, start) {
+                    $("#fecha22").val(start.endDate.format("DD/MM/YYYY"));
+                    var fechaConcar1 = $("#fecha22").val();
+                    var array_fecha1 = fechaConcar1.split("/");
+                    var day_1 = parseInt(array_fecha1[0]);
+                    var month_1 = parseInt(array_fecha1[1]);
+                    var year_1 = parseInt(array_fecha1[2]);
+                    var str_msj = "";
+                    var str_can = "";
+                    if (month_1 == 12) {
+                        var lastDate = new Date(year_1, month_1 + 1, 0);
+                        var lastDay = lastDate.getDate();
+                        str_can = lastDay - day_1;
+                        str_msj = "day";
+                    } else {
+                        str_can = 12;
+                        str_msj = "month";
+                    }
+                    $("#fecha31").daterangepicker({
+                        autoApply: true,
+                        singleDatePicker: true,
+                        showDropdowns: true,
+                        linkedCalendar: false,
+                        autoUpdateInput: false,
+                        showCustomRangeLabel: false,
+                        starDate: start.endDate.format("DD/MM/YYYY"),
+                        minDate: moment(start.endDate.format("MM/DD/YYYY")).add(1, "day"),
+                        /*maxDate: moment(start.endDate.format("MM/DD/YYYY")).add(str_can, str_msj),*/
+                        maxDate: '31/12/' + anio,
+                        locale: {
+                            format: "DD/MM/YYYY"
+                        }
+                    }, function (start, end, label) {
+                    }).on('apply.daterangepicker', function (ev, start) {
+                        $("#fecha31").val(start.endDate.format("DD/MM/YYYY"));
+                        var fechaConcar1 = $("#fecha31").val();
+                        var array_fecha1 = fechaConcar1.split("/");
+                        var day_1 = parseInt(array_fecha1[0]);
+                        var month_1 = parseInt(array_fecha1[1]);
+                        var year_1 = parseInt(array_fecha1[2]);
+                        var str_msj = "";
+                        var str_can = "";
+                        if (month_1 == 12) {
+                            var lastDate = new Date(year_1, month_1 + 1, 0);
+                            var lastDay = lastDate.getDate();
+                            str_can = lastDay - day_1;
+                            str_msj = "day";
+                        } else {
+                            str_can = 12;
+                            str_msj = "month";
+                        }
+                        $("#fecha32").daterangepicker({
+                            autoApply: true,
+                            singleDatePicker: true,
+                            showDropdowns: true,
+                            linkedCalendar: false,
+                            autoUpdateInput: false,
+                            showCustomRangeLabel: false,
+                            starDate: start.endDate.format("DD/MM/YYYY"),
+                            minDate: moment(start.endDate.format("MM/DD/YYYY")).add(1, "day"),
+                            /*maxDate: moment(start.endDate.format("MM/DD/YYYY")).add(str_can, str_msj),*/
+                            maxDate: '31/12/' + anio,
+                            locale: {
+                                format: "DD/MM/YYYY"
+                            }
+                        }, function (start, end, label) {
+                        }).on('apply.daterangepicker', function (ev, start) {
+                            $("#fecha32").val(start.endDate.format("DD/MM/YYYY"));
+                            var fechaConcar1 = $("#fecha32").val();
+                            var array_fecha1 = fechaConcar1.split("/");
+                            var day_1 = parseInt(array_fecha1[0]);
+                            var month_1 = parseInt(array_fecha1[1]);
+                            var year_1 = parseInt(array_fecha1[2]);
+                            var str_msj = "";
+                            var str_can = "";
+                            if (month_1 == 12) {
+                                var lastDate = new Date(year_1, month_1 + 1, 0);
+                                var lastDay = lastDate.getDate();
+                                str_can = lastDay - day_1;
+                                str_msj = "day";
+                            } else {
+                                str_can = 12;
+                                str_msj = "month";
+                            }
+                            $("#fecha41").daterangepicker({
+                                autoApply: true,
+                                singleDatePicker: true,
+                                showDropdowns: true,
+                                linkedCalendar: false,
+                                autoUpdateInput: false,
+                                showCustomRangeLabel: false,
+                                starDate: start.endDate.format("DD/MM/YYYY"),
+                                minDate: moment(start.endDate.format("MM/DD/YYYY")).add(1, "day"),
+                                /*maxDate: moment(start.endDate.format("MM/DD/YYYY")).add(str_can, str_msj),*/
+                                maxDate: '31/12/' + anio,
+                                locale: {
+                                    format: "DD/MM/YYYY"
+                                }
+                            }, function (start, end, label) {
+                            }).on('apply.daterangepicker', function (ev, start) {
+                                $("#fecha41").val(start.endDate.format("DD/MM/YYYY"));
+                                var fechaConcar1 = $("#fecha41").val();
+                                var array_fecha1 = fechaConcar1.split("/");
+                                var day_1 = parseInt(array_fecha1[0]);
+                                var month_1 = parseInt(array_fecha1[1]);
+                                var year_1 = parseInt(array_fecha1[2]);
+                                var str_msj = "";
+                                var str_can = "";
+                                if (month_1 == 12) {
+                                    var lastDate = new Date(year_1, month_1 + 1, 0);
+                                    var lastDay = lastDate.getDate();
+                                    str_can = lastDay - day_1;
+                                    str_msj = "day";
+                                } else {
+                                    str_can = 12;
+                                    str_msj = "month";
+                                }
+                                $("#fecha42").daterangepicker({
+                                    autoApply: true,
+                                    singleDatePicker: true,
+                                    showDropdowns: true,
+                                    linkedCalendar: false,
+                                    autoUpdateInput: false,
+                                    showCustomRangeLabel: false,
+                                    starDate: start.endDate.format("DD/MM/YYYY"),
+                                    minDate: moment(start.endDate.format("MM/DD/YYYY")).add(1, "day"),
+                                    /*maxDate: moment(start.endDate.format("MM/DD/YYYY")).add(str_can, str_msj),*/
+                                    maxDate: '31/12/' + anio,
+                                    locale: {
+                                        format: "DD/MM/YYYY"
+                                    }
+                                }, function (start, end, label) {
+                                }).on('apply.daterangepicker', function (ev, start) {
+                                    $("#fecha42").val(start.endDate.format("DD/MM/YYYY"));
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+
+}
+
+function registrar_bimestres() {
+    $("#btnRegistrarBimestres").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var hdnCodiBi = $("#hdnCodiBi").val();
+    var anio = $("#cbbAnios").select().val();
+    var fecha11 = $("#fecha11").val();
+    var fecha12 = $("#fecha12").val();
+    var fecha21 = $("#fecha21").val();
+    var fecha22 = $("#fecha22").val();
+    var fecha31 = $("#fecha31").val();
+    var fecha32 = $("#fecha32").val();
+    var fecha41 = $("#fecha41").val();
+    var fecha42 = $("#fecha42").val();
+    var mensaje = "";
+    if ($.trim(fecha11) === "") {
+        mensaje += "*Ingrese la fecha de inicio del Primer Bimestre<br>";
+        $("#fecha11").addClass("is-invalid");
+    }
+    if ($.trim(fecha12) === "") {
+        mensaje += "*Ingrese la fecha fin del Primer Bimestre<br>";
+        $("#fecha12").addClass("is-invalid");
+    }
+    if ($.trim(fecha21) === "") {
+        mensaje += "*Ingrese la fecha de inicio del Segundo Bimestre<br>";
+        $("#fecha21").addClass("is-invalid");
+    }
+    if ($.trim(fecha22) === "") {
+        mensaje += "*Ingrese la fecha fin del Segundo Bimestre<br>";
+        $("#fecha22").addClass("is-invalid");
+    }
+    if ($.trim(fecha31) === "") {
+        mensaje += "*Ingrese la fecha de inicio del Tercer Bimestre<br>";
+        $("#fecha31").addClass("is-invalid");
+    }
+    if ($.trim(fecha32) === "") {
+        mensaje += "*Ingrese la fecha fin del Tercer Bimestre<br>";
+        $("#fecha32").addClass("is-invalid");
+    }
+    if ($.trim(fecha41) === "") {
+        mensaje += "*Ingrese la fecha de inicio del Cuarto Bimestre<br>";
+        $("#fecha41").addClass("is-invalid");
+    }
+    if ($.trim(fecha42) === "") {
+        mensaje += "*Ingrese la fecha fin del Cuarto Bimestre<br>";
+        $("#fecha42").addClass("is-invalid");
+    }
+
+    if (mensaje !== "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: mensaje,
+            showConfirmButton: false
+        });
+        $("#btnRegistrarBimestres").attr("disabled", false);
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "proceso_registrar_bimestres",
+                sm_codigo: $.trim(hdnCodiBi),
+                s_anio: anio,
+                s_fecha11: $.trim(fecha11),
+                s_fecha12: $.trim(fecha12),
+                s_fecha21: $.trim(fecha21),
+                s_fecha22: $.trim(fecha22),
+                s_fecha31: $.trim(fecha31),
+                s_fecha32: $.trim(fecha32),
+                s_fecha41: $.trim(fecha41),
+                s_fecha42: $.trim(fecha42)
+            },
+            beforeSend: function (objeto) {
+                $("#modal-nuevos-bimestres").find('.modal-footer div label').html("");
+                $("#modal-nuevos-bimestres").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                var resp = datos.split("***");
+                if (resp[1] === "1") {
+                    var lista_sm = resp[3].split("--");
+                    $("#modal-nuevos-bimestres").find('.modal-footer div label').html('');
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $('#modal-nuevos-bimestres').modal('hide');
+                        $("#btnRegistrarBimestres").attr("disabled", false);
+                        $('.modal-backdrop').remove();
+                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                    }, 4500);
+                } else {
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $("#btnRegistrarBimestres").attr("disabled", false);
+                    }, 4500);
+                }
+            }
+        });
+    }
+}
+
+function mostrar_editar_bimestres(modal, codigo) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_editar_bimestres",
+            u_anio_codigo: codigo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+            var anio = $("#cbbAnios_edi").select().val();
+            validar_rango_fechas_x_anio_edi(anio);
+            $("#fecha11_edi").click(function () {
+                var value = $(this).val().length;
+                if (value !== "" && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+            $("#fecha12_edi").click(function () {
+                var value = $(this).val().length;
+                if (value !== "" && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+            $("#fecha21_edi").click(function () {
+                var value = $(this).val().length;
+                if (value !== "" && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+            $("#fecha22_edi").click(function () {
+                var value = $(this).val().length;
+                if (value !== "" && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+            $("#fecha31_edi").click(function () {
+                var value = $(this).val().length;
+                if (value !== "" && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+            $("#fecha32_edi").click(function () {
+                var value = $(this).val().length;
+                if (value !== "" && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+            $("#fecha41_edi").click(function () {
+                var value = $(this).val().length;
+                if (value !== "" && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+            $("#fecha42_edi").click(function () {
+                var value = $(this).val().length;
+                if (value !== "" && $(this).is(".is-invalid")) {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+        }
+    });
+}
+
+function validar_rango_fechas_x_anio_edi(anio) {
+    $("#fecha11_edi").daterangepicker({
+        autoApply: true,
+        showButtonPanel: false,
+        singleDatePicker: true,
+        showDropdowns: true,
+        linkedCalendar: false,
+        autoUpdateInput: false,
+        showCustomRangeLabel: false,
+        locale: {
+            format: "DD/MM/YYYY"
+        },
+        minDate: '01/01/' + anio,
+        maxDate: '31/12/' + anio
+    }).on('apply.daterangepicker', function (ev, start) {
+        $("#fecha11_edi").val(start.endDate.format('DD/MM/YYYY'));
+        var fechaConcar1 = $("#fecha11_edi").val();
+        var array_fecha1 = fechaConcar1.split("/");
+        var day_1 = parseInt(array_fecha1[0]);
+        var month_1 = parseInt(array_fecha1[1]);
+        var year_1 = parseInt(array_fecha1[2]);
+        var str_msj = "";
+        var str_can = "";
+        if (month_1 == 12) {
+            var lastDate = new Date(year_1, month_1 + 1, 0);
+            var lastDay = lastDate.getDate();
+            str_can = lastDay - day_1;
+            str_msj = "day";
+        } else {
+            str_can = 12;
+            str_msj = "month";
+        }
+
+        $("#fecha12_edi").daterangepicker({
+            autoApply: true,
+            singleDatePicker: true,
+            showDropdowns: true,
+            linkedCalendar: false,
+            autoUpdateInput: false,
+            showCustomRangeLabel: false,
+            starDate: start.endDate.format("DD/MM/YYYY"),
+            minDate: moment(start.endDate.format("MM/DD/YYYY")).add(1, "day"),
+            /*maxDate: moment(start.endDate.format("MM/DD/YYYY")).add(str_can, str_msj),*/
+            maxDate: '31/12/' + anio,
+            locale: {
+                format: "DD/MM/YYYY"
+            }
+        }, function (start, end, label) {
+        }).on('apply.daterangepicker', function (ev, start) {
+            $("#fecha12_edi").val(start.endDate.format("DD/MM/YYYY"));
+            var fechaConcar1 = $("#fecha12_edi").val();
+            var array_fecha1 = fechaConcar1.split("/");
+            var day_1 = parseInt(array_fecha1[0]);
+            var month_1 = parseInt(array_fecha1[1]);
+            var year_1 = parseInt(array_fecha1[2]);
+            var str_msj = "";
+            var str_can = "";
+            if (month_1 == 12) {
+                var lastDate = new Date(year_1, month_1 + 1, 0);
+                var lastDay = lastDate.getDate();
+                str_can = lastDay - day_1;
+                str_msj = "day";
+            } else {
+                str_can = 12;
+                str_msj = "month";
+            }
+            $("#fecha21_edi").daterangepicker({
+                autoApply: true,
+                singleDatePicker: true,
+                showDropdowns: true,
+                linkedCalendar: false,
+                autoUpdateInput: false,
+                showCustomRangeLabel: false,
+                starDate: start.endDate.format("DD/MM/YYYY"),
+                minDate: moment(start.endDate.format("MM/DD/YYYY")).add(1, "day"),
+                /*maxDate: moment(start.endDate.format("MM/DD/YYYY")).add(str_can, str_msj),*/
+                maxDate: '31/12/' + anio,
+                locale: {
+                    format: "DD/MM/YYYY"
+                }
+            }, function (start, end, label) {
+            }).on('apply.daterangepicker', function (ev, start) {
+                $("#fecha21_edi").val(start.endDate.format("DD/MM/YYYY"));
+                var fechaConcar1 = $("#fecha21_edi").val();
+                var array_fecha1 = fechaConcar1.split("/");
+                var day_1 = parseInt(array_fecha1[0]);
+                var month_1 = parseInt(array_fecha1[1]);
+                var year_1 = parseInt(array_fecha1[2]);
+                var str_msj = "";
+                var str_can = "";
+                if (month_1 == 12) {
+                    var lastDate = new Date(year_1, month_1 + 1, 0);
+                    var lastDay = lastDate.getDate();
+                    str_can = lastDay - day_1;
+                    str_msj = "day";
+                } else {
+                    str_can = 12;
+                    str_msj = "month";
+                }
+                $("#fecha22_edi").daterangepicker({
+                    autoApply: true,
+                    singleDatePicker: true,
+                    showDropdowns: true,
+                    linkedCalendar: false,
+                    autoUpdateInput: false,
+                    showCustomRangeLabel: false,
+                    starDate: start.endDate.format("DD/MM/YYYY"),
+                    minDate: moment(start.endDate.format("MM/DD/YYYY")).add(1, "day"),
+                    /*maxDate: moment(start.endDate.format("MM/DD/YYYY")).add(str_can, str_msj),*/
+                    maxDate: '31/12/' + anio,
+                    locale: {
+                        format: "DD/MM/YYYY"
+                    }
+                }, function (start, end, label) {
+                }).on('apply.daterangepicker', function (ev, start) {
+                    $("#fecha22_edi").val(start.endDate.format("DD/MM/YYYY"));
+                    var fechaConcar1 = $("#fecha22_edi").val();
+                    var array_fecha1 = fechaConcar1.split("/");
+                    var day_1 = parseInt(array_fecha1[0]);
+                    var month_1 = parseInt(array_fecha1[1]);
+                    var year_1 = parseInt(array_fecha1[2]);
+                    var str_msj = "";
+                    var str_can = "";
+                    if (month_1 == 12) {
+                        var lastDate = new Date(year_1, month_1 + 1, 0);
+                        var lastDay = lastDate.getDate();
+                        str_can = lastDay - day_1;
+                        str_msj = "day";
+                    } else {
+                        str_can = 12;
+                        str_msj = "month";
+                    }
+                    $("#fecha31_edi").daterangepicker({
+                        autoApply: true,
+                        singleDatePicker: true,
+                        showDropdowns: true,
+                        linkedCalendar: false,
+                        autoUpdateInput: false,
+                        showCustomRangeLabel: false,
+                        starDate: start.endDate.format("DD/MM/YYYY"),
+                        minDate: moment(start.endDate.format("MM/DD/YYYY")).add(1, "day"),
+                        /*maxDate: moment(start.endDate.format("MM/DD/YYYY")).add(str_can, str_msj),*/
+                        maxDate: '31/12/' + anio,
+                        locale: {
+                            format: "DD/MM/YYYY"
+                        }
+                    }, function (start, end, label) {
+                    }).on('apply.daterangepicker', function (ev, start) {
+                        $("#fecha31_edi").val(start.endDate.format("DD/MM/YYYY"));
+                        var fechaConcar1 = $("#fecha31_edi").val();
+                        var array_fecha1 = fechaConcar1.split("/");
+                        var day_1 = parseInt(array_fecha1[0]);
+                        var month_1 = parseInt(array_fecha1[1]);
+                        var year_1 = parseInt(array_fecha1[2]);
+                        var str_msj = "";
+                        var str_can = "";
+                        if (month_1 == 12) {
+                            var lastDate = new Date(year_1, month_1 + 1, 0);
+                            var lastDay = lastDate.getDate();
+                            str_can = lastDay - day_1;
+                            str_msj = "day";
+                        } else {
+                            str_can = 12;
+                            str_msj = "month";
+                        }
+                        $("#fecha32_edi").daterangepicker({
+                            autoApply: true,
+                            singleDatePicker: true,
+                            showDropdowns: true,
+                            linkedCalendar: false,
+                            autoUpdateInput: false,
+                            showCustomRangeLabel: false,
+                            starDate: start.endDate.format("DD/MM/YYYY"),
+                            minDate: moment(start.endDate.format("MM/DD/YYYY")).add(1, "day"),
+                            /*maxDate: moment(start.endDate.format("MM/DD/YYYY")).add(str_can, str_msj),*/
+                            maxDate: '31/12/' + anio,
+                            locale: {
+                                format: "DD/MM/YYYY"
+                            }
+                        }, function (start, end, label) {
+                        }).on('apply.daterangepicker', function (ev, start) {
+                            $("#fecha32_edi").val(start.endDate.format("DD/MM/YYYY"));
+                            var fechaConcar1 = $("#fecha32_edi").val();
+                            var array_fecha1 = fechaConcar1.split("/");
+                            var day_1 = parseInt(array_fecha1[0]);
+                            var month_1 = parseInt(array_fecha1[1]);
+                            var year_1 = parseInt(array_fecha1[2]);
+                            var str_msj = "";
+                            var str_can = "";
+                            if (month_1 == 12) {
+                                var lastDate = new Date(year_1, month_1 + 1, 0);
+                                var lastDay = lastDate.getDate();
+                                str_can = lastDay - day_1;
+                                str_msj = "day";
+                            } else {
+                                str_can = 12;
+                                str_msj = "month";
+                            }
+                            $("#fecha41_edi").daterangepicker({
+                                autoApply: true,
+                                singleDatePicker: true,
+                                showDropdowns: true,
+                                linkedCalendar: false,
+                                autoUpdateInput: false,
+                                showCustomRangeLabel: false,
+                                starDate: start.endDate.format("DD/MM/YYYY"),
+                                minDate: moment(start.endDate.format("MM/DD/YYYY")).add(1, "day"),
+                                /*maxDate: moment(start.endDate.format("MM/DD/YYYY")).add(str_can, str_msj),*/
+                                maxDate: '31/12/' + anio,
+                                locale: {
+                                    format: "DD/MM/YYYY"
+                                }
+                            }, function (start, end, label) {
+                            }).on('apply.daterangepicker', function (ev, start) {
+                                $("#fecha41_edi").val(start.endDate.format("DD/MM/YYYY"));
+                                var fechaConcar1 = $("#fecha41_edi").val();
+                                var array_fecha1 = fechaConcar1.split("/");
+                                var day_1 = parseInt(array_fecha1[0]);
+                                var month_1 = parseInt(array_fecha1[1]);
+                                var year_1 = parseInt(array_fecha1[2]);
+                                var str_msj = "";
+                                var str_can = "";
+                                if (month_1 == 12) {
+                                    var lastDate = new Date(year_1, month_1 + 1, 0);
+                                    var lastDay = lastDate.getDate();
+                                    str_can = lastDay - day_1;
+                                    str_msj = "day";
+                                } else {
+                                    str_can = 12;
+                                    str_msj = "month";
+                                }
+                                $("#fecha42_edi").daterangepicker({
+                                    autoApply: true,
+                                    singleDatePicker: true,
+                                    showDropdowns: true,
+                                    linkedCalendar: false,
+                                    autoUpdateInput: false,
+                                    showCustomRangeLabel: false,
+                                    starDate: start.endDate.format("DD/MM/YYYY"),
+                                    minDate: moment(start.endDate.format("MM/DD/YYYY")).add(1, "day"),
+                                    /*maxDate: moment(start.endDate.format("MM/DD/YYYY")).add(str_can, str_msj),*/
+                                    maxDate: '31/12/' + anio,
+                                    locale: {
+                                        format: "DD/MM/YYYY"
+                                    }
+                                }, function (start, end, label) {
+                                }).on('apply.daterangepicker', function (ev, start) {
+                                    $("#fecha42_edi").val(start.endDate.format("DD/MM/YYYY"));
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+}
+
+function editar_bimestres() {
+    $("#btnEditarBimestres").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var hdnCodiBi = $("#hdnCodiBi").val();
+    var codi_edi = $("#codi_edi").val();
+    var anio = $("#cbbAnios_edi").select().val();
+    var fecha11 = $("#fecha11_edi").val();
+    var fecha12 = $("#fecha12_edi").val();
+    var fecha21 = $("#fecha21_edi").val();
+    var fecha22 = $("#fecha22_edi").val();
+    var fecha31 = $("#fecha31_edi").val();
+    var fecha32 = $("#fecha32_edi").val();
+    var fecha41 = $("#fecha41_edi").val();
+    var fecha42 = $("#fecha42_edi").val();
+    var mensaje = "";
+    if ($.trim(fecha11) === "") {
+        mensaje += "*Ingrese la fecha de inicio del Primer Bimestre<br>";
+        $("#fecha11").addClass("is-invalid");
+    }
+    if ($.trim(fecha12) === "") {
+        mensaje += "*Ingrese la fecha fin del Primer Bimestre<br>";
+        $("#fecha12").addClass("is-invalid");
+    }
+    if ($.trim(fecha21) === "") {
+        mensaje += "*Ingrese la fecha de inicio del Segundo Bimestre<br>";
+        $("#fecha21").addClass("is-invalid");
+    }
+    if ($.trim(fecha22) === "") {
+        mensaje += "*Ingrese la fecha fin del Segundo Bimestre<br>";
+        $("#fecha22").addClass("is-invalid");
+    }
+    if ($.trim(fecha31) === "") {
+        mensaje += "*Ingrese la fecha de inicio del Tercer Bimestre<br>";
+        $("#fecha31").addClass("is-invalid");
+    }
+    if ($.trim(fecha32) === "") {
+        mensaje += "*Ingrese la fecha fin del Tercer Bimestre<br>";
+        $("#fecha32").addClass("is-invalid");
+    }
+    if ($.trim(fecha41) === "") {
+        mensaje += "*Ingrese la fecha de inicio del Cuarto Bimestre<br>";
+        $("#fecha41").addClass("is-invalid");
+    }
+    if ($.trim(fecha42) === "") {
+        mensaje += "*Ingrese la fecha fin del Cuarto Bimestre<br>";
+        $("#fecha42").addClass("is-invalid");
+    }
+
+    if (mensaje !== "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: mensaje,
+            showConfirmButton: false
+        });
+        $("#btnEditarBimestres").attr("disabled", false);
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "proceso_editar_bimestres",
+                sm_codigo: $.trim(hdnCodiBi),
+                s_codi_edi: $.trim(codi_edi),
+                s_anio: anio,
+                s_fecha11: $.trim(fecha11),
+                s_fecha12: $.trim(fecha12),
+                s_fecha21: $.trim(fecha21),
+                s_fecha22: $.trim(fecha22),
+                s_fecha31: $.trim(fecha31),
+                s_fecha32: $.trim(fecha32),
+                s_fecha41: $.trim(fecha41),
+                s_fecha42: $.trim(fecha42)
+            },
+            beforeSend: function (objeto) {
+                $("#modal-editar-bimestres").find('.modal-footer div label').html("");
+                $("#modal-editar-bimestres").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                var resp = datos.split("***");
+                if (resp[1] === "1") {
+                    var lista_sm = resp[3].split("--");
+                    $("#modal-editar-bimestres").find('.modal-footer div label').html('');
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $('#modal-editar-bimestres').modal('hide');
+                        $("#btnEditarBimestres").attr("disabled", false);
+                        $('.modal-backdrop').remove();
+                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                    }, 4500);
+                } else {
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $("#btnEditarBimestres").attr("disabled", false);
+                    }, 4500);
+                }
+            }
+        });
+    }
+}
+
+function mostrar_registra_nuevo_semaforo(modal) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_registro_nuevo_semaforo"
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+            var txt = document.getElementById('valor12');
+            var txt2 = document.getElementById('valor22');
+            txt.addEventListener('blur', limitDecimal);
+            txt2.addEventListener('blur', limitDecimal);
+            $('#valor12').keypress(function (event) {
+                if (event.which == 8 || event.which == 0) {
+                    return true;
+                }
+                if (event.which < 46 || event.which > 59) {
+                    return false;
+                    //event.preventDefault();
+                } // prevent if not number/dot
+
+                if (event.which == 46 && $(this).val().indexOf('.') != -1) {
+                    return false;
+                    //event.preventDefault();
+                } // prevent if already dot
+            });
+            $('#valor22').keypress(function (event) {
+                if (event.which == 8 || event.which == 0) {
+                    return true;
+                }
+                if (event.which < 46 || event.which > 59) {
+                    return false;
+                    //event.preventDefault();
+                } // prevent if not number/dot
+
+                if (event.which == 46 && $(this).val().indexOf('.') != -1) {
+                    return false;
+                    //event.preventDefault();
+                } // prevent if already dot
+            });
+        }
+    });
+}
+
+function minmax(value, min, max) {
+    if (parseFloat(value) < min || isNaN(value))
+        return 0;
+    else if (parseFloat(value) > max)
+        return value.substring(0, 2);
+    else
+        return value;
+}
+
+function limitDecimal(e) {
+    var val = this.value;
+    var ide = this.id;
+    var numberId = ide.replace('valor', '');
+    var number = val.split(".");
+    if (number.length > 1) {
+        var entera = number[0];
+        var decimal = number[1];
+        if (decimal.length === 0) {
+            this.value = entera + ".00";
+        } else if (decimal.length === 1) {
+            this.value = entera + "." + decimal + "0";
+        } else {
+
+        }
+    } else {
+        this.value = this.value + ".00";
+    }
+    var dato = parseInt(numberId) + parseInt(9);
+    var newid = $("#valor" + dato);
+    var newValue = parseFloat(this.value) + parseFloat('0.01');
+    newid.val(newValue.toFixed(2));
+}
+
+
+function registrar_semaforo() {
+    $("#btnRegistrarSemaforo").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var hdnCodiBi = $("#hdnCodiSema").val();
+    var anio = $("#cbbAnios").select().val();
+    var valor11 = $("#valor11").val();
+    var valor12 = $("#valor12").val();
+    var valor21 = $("#valor21").val();
+    var valor22 = $("#valor22").val();
+    var valor31 = $("#valor31").val();
+    var valor32 = $("#valor32").val();
+    var mensaje = "";
+    if ($.trim(valor12) === "") {
+        mensaje += "*Ingrese el valor Hasta del Semaforo color Rojo<br>";
+        $("#valor12").addClass("is-invalid");
+    }
+    if ($.trim(valor22) === "") {
+        mensaje += "*Ingrese el valor Hasta del Semaforo color Ambar<br>";
+        $("#valor22").addClass("is-invalid");
+    }
+    if (valor12 > valor22) {
+        mensaje += "*El valor del semaforo Rojo no puede ser mayor al valor del color Ambar<br>";
+    }
+    if (mensaje !== "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: mensaje,
+            showConfirmButton: false
+        });
+        $("#btnRegistrarSemaforo").attr("disabled", false);
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "proceso_registrar_semaforo",
+                sm_codigo: $.trim(hdnCodiBi),
+                s_anio: anio,
+                s_valor11: $.trim(valor11),
+                s_valor12: $.trim(valor12),
+                s_valor21: $.trim(valor21),
+                s_valor22: $.trim(valor22),
+                s_valor31: $.trim(valor31),
+                s_valor32: $.trim(valor32)
+            },
+            beforeSend: function (objeto) {
+                $("#modal-nuevo-semaforo").find('.modal-footer div label').html("");
+                $("#modal-nuevo-semaforo").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                var resp = datos.split("***");
+                if (resp[1] === "1") {
+                    var lista_sm = resp[3].split("--");
+                    $("#modal-nuevo-semaforo").find('.modal-footer div label').html('');
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $('#modal-nuevo-semaforo').modal('hide');
+                        $("#btnRegistrarSemaforo").attr("disabled", false);
+                        $('.modal-backdrop').remove();
+                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                    }, 4500);
+                } else {
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $("#btnRegistrarSemaforo").attr("disabled", false);
+                    }, 4500);
+                }
+            }
+        });
+    }
+}
+
+function mostrar_editar_semaforo(modal, codigo) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_editar_semaforo",
+            u_anio_codigo: codigo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+            var txt = document.getElementById('valor12_edi');
+            var txt2 = document.getElementById('valor22_edi');
+            txt.addEventListener('blur', limitDecimal_edi);
+            txt2.addEventListener('blur', limitDecimal_edi);
+            $('#valor12_edi').keypress(function (event) {
+                if (event.which == 8 || event.which == 0) {
+                    return true;
+                }
+                if (event.which < 46 || event.which > 59) {
+                    return false;
+                    //event.preventDefault();
+                } // prevent if not number/dot
+
+                if (event.which == 46 && $(this).val().indexOf('.') != -1) {
+                    return false;
+                    //event.preventDefault();
+                } // prevent if already dot
+            });
+            $('#valor22_edi').keypress(function (event) {
+                if (event.which == 8 || event.which == 0) {
+                    return true;
+                }
+                if (event.which < 46 || event.which > 59) {
+                    return false;
+                    //event.preventDefault();
+                } // prevent if not number/dot
+
+                if (event.which == 46 && $(this).val().indexOf('.') != -1) {
+                    return false;
+                    //event.preventDefault();
+                } // prevent if already dot
+            });
+
+        }
+    });
+}
+
+function limitDecimal_edi(e) {
+    var val = this.value;
+    var ide = this.id;
+    var numberId = ide.replace('valor', '');
+    var number = val.split(".");
+    if (number.length > 1) {
+        var entera = number[0];
+        var decimal = number[1];
+        if (decimal.length === 0) {
+            this.value = entera + ".00";
+        } else if (decimal.length === 1) {
+            this.value = entera + "." + decimal + "0";
+        } else {
+
+        }
+    } else {
+        this.value = this.value + ".00";
+    }
+    var dato = parseInt(numberId) + parseInt(9);
+    var newid = $("#valor" + dato + "_edi");
+    var newValue = parseFloat(this.value) + parseFloat('0.01');
+    newid.val(newValue.toFixed(2));
+}
+
+function editar_semaforo() {
+    $("#btnEditarSemaforo").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var hdnCodiSema = $("#hdnCodiSema").val();
+    var codi_edi = $("#codi_edi").val();
+    var anio = $("#cbbAnios_edi").select().val();
+    var valor11 = $("#valor11_edi").val();
+    var valor12 = $("#valor12_edi").val();
+    var valor21 = $("#valor21_edi").val();
+    var valor22 = $("#valor22_edi").val();
+    var valor31 = $("#valor31_edi").val();
+    var valor32 = $("#valor32_edi").val();
+    var mensaje = "";
+    if ($.trim(valor12) === "") {
+        mensaje += "*Ingrese el valor Hasta del Semaforo color Rojo<br>";
+        $("#valor12_edi").addClass("is-invalid");
+    }
+    if ($.trim(valor22) === "") {
+        mensaje += "*Ingrese el valor Hasta del Semaforo color Ambar<br>";
+        $("#valor22_edi").addClass("is-invalid");
+    }
+    if (valor12 > valor22) {
+        mensaje += "*El valor del semaforo Rojo no puede ser mayor al valor del color Ambar<br>";
+    }
+
+    if (mensaje !== "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: mensaje,
+            showConfirmButton: false
+        });
+        $("#btnEditarSemaforo").attr("disabled", false);
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "proceso_editar_semaforo",
+                sm_codigo: $.trim(hdnCodiSema),
+                s_codi_edi: $.trim(codi_edi),
+                s_anio: anio,
+                s_valor11: $.trim(valor11),
+                s_valor12: $.trim(valor12),
+                s_valor21: $.trim(valor21),
+                s_valor22: $.trim(valor22),
+                s_valor31: $.trim(valor31),
+                s_valor32: $.trim(valor32)
+            },
+            beforeSend: function (objeto) {
+                $("#modal-editar-semaforo").find('.modal-footer div label').html("");
+                $("#modal-editar-semaforo").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                var resp = datos.split("***");
+                if (resp[1] === "1") {
+                    var lista_sm = resp[3].split("--");
+                    $("#modal-editar-semaforo").find('.modal-footer div label').html('');
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $('#modal-editar-semaforo').modal('hide');
+                        $("#btnEditarSemaforo").attr("disabled", false);
+                        $('.modal-backdrop').remove();
+                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                    }, 4500);
+                } else {
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $("#btnEditarSemaforo").attr("disabled", false);
+                    }, 4500);
+                }
+            }
+        });
+    }
+}
+
+function descargar_historial_pdf() {
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var hdnCodi = $("#hdnCodiSR").val();
+    var matricula = $("#matricH").val();
+    var selectedHistorial = [];
+    var selectedCampos = [];
+    $('#tablaHistorial tr td input:checked').each(function () {
+        selectedHistorial.push($(this).attr('value'));
+    });
+    $('#listFieldsetCampos label input:checked').each(function () {
+        selectedCampos.push($(this).attr('value'));
+    });
+    if (selectedHistorial.length <= 0) {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: 'Debe seleccionar por lo menos 1 registro del historial del alumno.',
+            showConfirmButton: false
+        });
+        $("#btnEnviarSolicitudAlumno").attr("disabled", false);
+    } else if (selectedCampos.length <= 0) {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: 'Debe seleccionar por lo menos 1 registro de la lista de Campos.',
+            showConfirmButton: false
+        });
+    } else {
+        window.location.href = "php/aco_php/psi_generar_historial_pdf.php?codi=" + hdnCodi + "&matricula=" + matricula + "&historial=" + selectedHistorial + "&campos=" + selectedCampos;
+    }
+}
+
+function descargar_historial_excel() {
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var hdnCodi = $("#hdnCodiSR").val();
+    var matricula = $("#matricH").val();
+    var selectedHistorial = [];
+    var selectedCampos = [];
+    $('#tablaHistorial tr td input:checked').each(function () {
+        selectedHistorial.push($(this).attr('value'));
+    });
+    $('#listFieldsetCampos label input:checked').each(function () {
+        selectedCampos.push($(this).attr('value'));
+    });
+    if (selectedHistorial.length <= 0) {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: 'Debe seleccionar por lo menos 1 registro del historial del alumno.',
+            showConfirmButton: false
+        });
+        $("#btnEnviarSolicitudAlumno").attr("disabled", false);
+    } else if (selectedCampos.length <= 0) {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: 'Debe seleccionar por lo menos 1 registro de la lista de Campos.',
+            showConfirmButton: false
+        });
+    } else {
+        window.location.href = "php/aco_php/psi_generar_historial_excel.php?codi=" + hdnCodi + "&matricula=" + matricula + "&historial=" + selectedHistorial + "&campos=" + selectedCampos;
+    }
+}
+
+function cargar_selector_grado(nivel) {
+    var str_nivel = nivel.value;
+    $("#cbbGrado").html("");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_selector_grado",
+            s_nivel: str_nivel
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#cbbGrado").html(datos);
+        }
+    });
+}
+
+function cargar_selector_seccion(grado) {
+    var str_grado = grado.value;
+    var str_nivel = $("#cbbNivel").select().val();
+    $("#cbbSeccion").html("");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_selector_seccion",
+            s_nivel: str_nivel,
+            s_grado: str_grado
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#cbbSeccion").html(datos);
+        }
+    });
+}
+
+function limpiar_campos_semaforo() {
+    $("#dataDocente").html("Docente:");
+    $("#docen").val("");
+    $('#cbbSemaforo option[value=0]').attr('selected', 'selected');
+    $('#cbbBimestre option[value=0]').attr('selected', 'selected');
+    $('#cbbNivel option[value=0]').attr('selected', 'selected');
+    $('#cbbGrado option[value=0]').attr('selected', 'selected');
+    $('#cbbSeccion option[value=0]').attr('selected', 'selected');
+}
+
+function alumnos_no_entrevistas_grafico_barras_niveles(nivel) {
+    var str_sede = $("#cbbSedes").select().val();
+    var str_nivel = $("#cbbNivel").select().val();
+    if ($.trim(str_nivel) == "") {
+        $("#bar-chart2").html("");
+        $("#div_Grados").html("");
+        $("#div_Secciones").html("");
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "json",
+            type: "POST",
+            data: {
+                opcion: "formulario_alumnos_no_entrevistas_grafico_barras_niveles",
+                s_sede: str_sede,
+                s_nivel: str_nivel
+            },
+            beforeSend: function (objeto) {
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                $("#bar-chart2").html("");
+                if (datos.length !== 0) {
+                    window.barChart = Morris.Bar({
+                        element: 'bar-chart2',
+                        data: datos,
+                        xkey: 'y',
+                        ykeys: ['a', 'b', 'c'],
+                        labels: ['Total', 'No entrevistados', 'Entrevistados'],
+                        lineColors: ['#34495E', '#26B99A', '#3dbeee'],
+                        lineWidth: '3px',
+                        resize: true,
+                        redraw: true
+                    }
+                    );
+                    $(window).resize(function () {
+                        window.barChart.redraw();
+                    });
+                    //$("#div_Niveles").html("");
+                    $("#div_Grados").html("");
+                    $("#div_Secciones").html("");
+                    cargar_formulario_nivel_grado_no_entrevistados("#div_Grados");
+                } else {
+                    $("#bar-chart2").html('<div class="col-md-12"><span><i class="nav-icon fa fa-info-circle" style="color: red"></i> Respuesta: No se encontraron registros.</span>&nbsp;&nbsp;</div>');
+                    $("#div_Niveles").html("");
+                    $("#div_Grados").html("");
+                    $("#div_Secciones").html("");
+                }
+            }
+        });
+    }
+}
+
+function cargar_formulario_nivel_grado_no_entrevistados(div) {
+    var str_sede = $("#cbbSedes").select().val();
+    var str_nivel = $("#cbbNivel").select().val();
+    $(div).html("");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_nivel_grado_no_entrevistados",
+            s_sede: str_sede,
+            s_nivel: str_nivel
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $(div).html(datos);
+        }
+    });
+}
+
+function alumnos_no_entrevistados_grafico_barras_grados(grado) {
+    var str_sede = $("#cbbSedes").select().val();
+    var str_nivel = $("#cbbNivel").select().val();
+    var str_grado = $("#cbbGrado").select().val();
+    if ($.trim(str_grado) == "") {
+        $("#bar-chart3").html("");
+        $("#div_Secciones").html("");
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "json",
+            type: "POST",
+            data: {
+                opcion: "formulario_alumnos_no_entrevistas_grafico_barras_grados",
+                s_sede: str_sede,
+                s_nivel: str_nivel,
+                s_grado: str_grado
+            },
+            beforeSend: function (objeto) {
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                $("#bar-chart3").html("");
+                if (datos.length !== 0) {
+                    window.barChart = Morris.Bar({
+                        element: 'bar-chart3',
+                        data: datos,
+                        xkey: 'y',
+                        ykeys: ['a', 'b', 'c'],
+                        labels: ['Total', 'No entrevistados', 'Entrevistados'],
+                        lineColors: ['#34495E', '#26B99A', '#3dbeee'],
+                        lineWidth: '3px',
+                        resize: true,
+                        redraw: true
+                    }
+                    );
+                    $(window).resize(function () {
+                        window.barChart.redraw();
+                    });
+                    //$("#div_Niveles").html("");
+                    //$("#div_Grados").html("");
+                    $("#div_Secciones").html("");
+                    cargar_formulario_grado_seccion_no_entrevistados("#div_Secciones");
+                } else {
+                    $("#bar-chart3").html('<div class="col-md-12"><span><i class="nav-icon fa fa-info-circle" style="color: red"></i> Respuesta: No se encontraron registros.</span>&nbsp;&nbsp;</div>');
+                    $("#div_Niveles").html("");
+                    $("#div_Grados").html("");
+                    $("#div_Secciones").html("");
+                }
+            }
+        });
+    }
+}
+
+function cargar_formulario_grado_seccion_no_entrevistados(div) {
+    var str_sede = $("#cbbSedes").select().val();
+    var str_nivel = $("#cbbNivel").select().val();
+    var str_grado = $("#cbbGrado").select().val();
+    $(div).html("");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_grado_seccion_no_entrevistados",
+            s_sede: str_sede,
+            s_nivel: str_nivel,
+            s_grado: str_grado
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $(div).html(datos);
+        }
+    });
+}
+
+function alumnos_no_entrevistados_grafico_barras_secciones(seccion) {
+    var str_sede = $("#cbbSedes").select().val();
+    var str_nivel = $("#cbbNivel").select().val();
+    var str_grado = $("#cbbGrado").select().val();
+    var str_seccion = $("#cbbSeccion").select().val();
+    if ($.trim(str_seccion) == "") {
+        $("#bar-chart4").html("");
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "json",
+            type: "POST",
+            data: {
+                opcion: "formulario_alumnos_no_entrevistas_grafico_barras_secciones",
+                s_sede: str_sede,
+                s_nivel: str_nivel,
+                s_grado: str_grado,
+                s_seccion: str_seccion
+            },
+            beforeSend: function (objeto) {
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                $("#bar-chart4").html("");
+                if (datos.length !== 0) {
+                    window.barChart = Morris.Bar({
+                        element: 'bar-chart4',
+                        data: datos,
+                        xkey: 'y',
+                        ykeys: ['a', 'b', 'c'],
+                        labels: ['Total', 'No entrevistados', 'Entrevistados'],
+                        lineColors: ['#34495E', '#26B99A', '#3dbeee'],
+                        lineWidth: '3px',
+                        resize: true,
+                        redraw: true
+                    }
+                    );
+                    $(window).resize(function () {
+                        window.barChart.redraw();
+                    });
+                    //$("#div_Niveles").html("");
+                    //$("#div_Grados").html("");
+                    //$("#div_Secciones").html("");
+                } else {
+                    $("#bar-chart4").html('<div class="col-md-12"><span><i class="nav-icon fa fa-info-circle" style="color: red"></i> Respuesta: No se encontraron registros.</span>&nbsp;&nbsp;</div>');
+                }
+            }
+        });
+    }
 }
 
 function valida_correo(id) {
@@ -5584,4 +7798,22 @@ function minutos_a_hora(minutos) {
     var minuto = Math.floor((data % 3600) / 60);
     var segundo = data % 60;
     return  hora + ":" + minuto + ":" + segundo;
+}
+
+function reiniciar_cronometro() {
+    timeLimit = 40; //tiempo en minutos
+    document.getElementById('hora').innerHTML = '';
+    document.getElementById('minuto').innerHTML = '';
+    document.getElementById('segundo').innerHTML = '';
+    clearInterval(intervaloRegresivo);
+    $("#fecha").hide();
+}
+
+function reiniciar_cronometro_2() {
+    timeLimit = 40; //tiempo en minutos
+    document.getElementById('hora').innerHTML = '';
+    document.getElementById('minuto').innerHTML = '';
+    document.getElementById('segundo').innerHTML = '';
+    clearInterval(intervaloRegresivo);
+    $("#fecha_s").hide();
 }

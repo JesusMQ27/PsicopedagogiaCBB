@@ -14,12 +14,13 @@ $con = new DB(1111);
 $conexion = $con->connect();
 $sm_codigo = strip_tags(trim($_POST["sm_codigo"]));
 $s_docAlumno = strip_tags(trim($_POST["s_docAlumno"]));
-$sol_matricula = strip_tags(trim($_POST["s_matricula"]));
+$s_matricu = strip_tags(trim($_POST["s_matricula"]));
 $s_sede = strip_tags(trim($_POST["s_sede"]));
 $codigo_usuario = $_SESSION["psi_user"]["id"];
 $s_solicitud_tipo = strip_tags(trim($_POST["s_solicitud_tipo"]));
 $s_categoria = strip_tags(trim($_POST["s_categoria"]));
 $s_subcategoria = strip_tags(trim($_POST["s_subcategoria"]));
+$s_sexo = strip_tags(trim($_POST["s_sexo"]));
 $s_motivo = strip_tags(trim($_POST["s_motivo"]));
 $s_planEstudiante = strip_tags(trim($_POST["s_planEstudiante"]));
 $s_planEntrevistador = strip_tags(trim($_POST["s_planEntrevistador"]));
@@ -34,10 +35,13 @@ $s_privacidad = strip_tags(trim($_POST["s_privacidad"]));
 $s_img1 = $_POST['s_dataURL1'];
 $s_img2 = $_POST['s_dataURL2'];
 $s_hora_total = strip_tags(trim($_POST["s_hora_total"]));
-
+$arreglo_matricula = explode("*", $s_matricu);
+$s_matricula = $arreglo_matricula[0];
+$s_alumno = $arreglo_matricula[1];
 try {
+    fnc_modificar_alumno_datos($conexion, $s_alumno, $s_sexo);
     $sol_codigo = "ent_" . $s_docAlumno . "_" . fnc_generate_random_string(6);
-    $cadena = "('" . $sol_codigo . "','" . $sol_matricula . "','" . $codigo_usuario . "','" . $s_solicitud_tipo . "','" . $s_subcategoria .
+    $cadena = "('" . $sol_codigo . "','" . $s_matricula . "','" . $codigo_usuario . "','" . $s_solicitud_tipo . "','" . $s_subcategoria .
             "','" . $s_motivo . "',NOW(),'" . $s_sede . "','" . $s_planEstudiante . "','" . $s_planEntrevistador . "','"
             . $s_acuerdos . "','" . $s_informe . "','" . $s_planPadre . "','" . $s_planDocente . "','" . $s_acuerdosPadres . "','" . $s_acuerdosColegio . "','" . $s_apoderado . "','" . $s_privacidad . "','" . $s_hora_total . "','1')";
     $solicitud_id = fnc_registrar_solicitud_estudiante($conexion, $cadena);
@@ -47,12 +51,12 @@ try {
             $s_img1 = str_replace(' ', '+', $s_img1);
             $data = base64_decode($s_img1);
             if ($s_solicitud_tipo == "1") {
-                $file = '../aco_firmas/img_' . $sol_matricula . "_" . uniqid() . '.png';
+                $file = '../aco_firmas/img_' . $s_matricula . "_" . uniqid() . '.png';
             } else {
                 $file = '../aco_firmas/img_' . $s_apoderado . "_" . uniqid() . '.png';
             }
             if (file_put_contents($file, $data)) {
-                $cadena_imag1 = "('" . $solicitud_id . "','" . $sol_matricula . "','" . $psi_usuario . "','" . $s_apoderado .
+                $cadena_imag1 = "('" . $solicitud_id . "','" . $s_matricula . "','" . $psi_usuario . "','" . $s_apoderado .
                         "','" . $file . "',NOW(),'1','1')";
                 fnc_registrar_solicitud_firmas($conexion, $cadena_imag1);
             } else {
@@ -68,7 +72,7 @@ try {
             $file2 = '../aco_firmas/img_' . $psi_usuario . "_" . uniqid() . '.png';
 
             if (file_put_contents($file2, $data2)) {
-                $cadena_imag2 = "('" . $solicitud_id . "','" . $sol_matricula . "','" . $psi_usuario . "','" . $s_apoderado .
+                $cadena_imag2 = "('" . $solicitud_id . "','" . $s_matricula . "','" . $psi_usuario . "','" . $s_apoderado .
                         "','" . $file2 . "',NOW(),'2','1')";
                 fnc_registrar_solicitud_firmas($conexion, $cadena_imag2);
             } else {

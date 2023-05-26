@@ -15,12 +15,13 @@ $conexion = $con->connect();
 $sm_codigo = strip_tags(trim($_POST["sm_codigo"]));
 $s_codi_entre_sub = strip_tags(trim($_POST["s_codi_entre_sub"]));
 $s_docAlumno = strip_tags(trim($_POST["s_docAlumno"]));
-$sol_matricula = strip_tags(trim($_POST["s_matricula"]));
+$sol_matricu = strip_tags(trim($_POST["s_matricula"]));
 $s_sede = strip_tags(trim($_POST["s_sede"]));
 $codigo_usuario = $_SESSION["psi_user"]["id"];
 $s_solicitud_tipo = strip_tags(trim($_POST["s_solicitud_tipo"]));
 $s_categoria = strip_tags(trim($_POST["s_categoria"]));
 $s_subcategoria = strip_tags(trim($_POST["s_subcategoria"]));
+$s_sexo = strip_tags(trim($_POST["s_sexo"]));
 $s_motivo = strip_tags(trim($_POST["s_motivo"]));
 $s_planEstudiante = strip_tags(trim($_POST["s_planEstudiante"]));
 $s_planEntrevistador = strip_tags(trim($_POST["s_planEntrevistador"]));
@@ -35,8 +36,11 @@ $s_privacidad = strip_tags(trim($_POST["s_privacidad"]));
 $s_img1 = $_POST['s_dataURL1_sub'];
 $s_img2 = $_POST['s_dataURL2_sub'];
 $s_hora_total = strip_tags(trim($_POST["s_hora_total_sub"]));
-
+$arreglo_matricula = explode("*", $sol_matricu);
+$sol_matricula = $arreglo_matricula[0];
+$sol_alumno = $arreglo_matricula[1];
 try {
+    fnc_modificar_alumno_datos($conexion, $sol_alumno, $s_sexo);
     $sol_codigo = "sub_" . $s_docAlumno . "_" . fnc_generate_random_string(6);
     $cadena = "('" . $s_codi_entre_sub . "','" . $sol_codigo . "','" . $sol_matricula . "','" . $codigo_usuario . "','" . $s_solicitud_tipo . "','" . $s_subcategoria .
             "','" . $s_motivo . "',NOW(),'" . $s_sede . "','" . $s_planEstudiante . "','" . $s_planEntrevistador . "','"

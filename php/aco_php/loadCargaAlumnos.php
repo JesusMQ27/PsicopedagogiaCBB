@@ -21,6 +21,7 @@ $uploadStatus = 0;
 
 if (isset($_FILES['select_fileAlumnos'])) {
     $arreglo_data = array();
+    $sede_codigo = $_POST["cbb_sede"];
     $file_name = $_FILES['select_fileAlumnos']['name'];
     $file_size = $_FILES['select_fileAlumnos']['size'];
     $file_tmp = $_FILES['select_fileAlumnos']['tmp_name'];
@@ -81,7 +82,7 @@ if (isset($_FILES['select_fileAlumnos'])) {
                         "car_nombres" => $nombresEstudiante,
                         "car_grado" => $grado,
                         "car_seccion" => $seccion,
-                        "car_sede" => $sede,
+                        "car_sede" => $sede_codigo,
                         "car_dni" => $dni,
                         "car_nom_padre" => $nombrePadre,
                         "car_cor_padre" => $correoPadre,
@@ -114,12 +115,12 @@ if (isset($_FILES['select_fileAlumnos'])) {
                 func_inserta_data_tabla_tmp_carga_alumnos($conexion, "tmp_cbb_carga_alumnos_" . $codigo, $cadena2);
             }
             if (trim($respuesta) === "") {
-                $response['class_name'] = 'alert-success';
+                $response['class_name'] = 'alert alert-success-color';
                 $response['message'] = $respuesta;
                 $response['resp'] = '1';
                 $response['uploaded-image'] = '';
             } else {
-                $response['class_name'] = 'alert-danger';
+                $response['class_name'] = 'alert alert-danger-color';
                 $response['message'] = $respuesta;
                 $response['resp'] = '2';
                 $response['uploaded-image'] = '';
@@ -129,20 +130,20 @@ if (isset($_FILES['select_fileAlumnos'])) {
             $response['message'] = 'Hubo un error al cargar el archivo ' . $fileType . "";
             $response['uploaded-image'] = '';
             $response['resp'] = '0';
-            $response['class_name'] = 'alert-danger';
+            $response['class_name'] = 'alert alert-danger-color';
         }
     } else {
         $uploadStatus = 0;
         $response['message'] = 'Solamente archivos ' . implode('/', $allowTypes) . ' se pueden cargar.';
         $response['uploaded-image'] = '';
         $response['resp'] = '0';
-        $response['class_name'] = 'alert-danger';
+        $response['class_name'] = 'alert alert-danger-color';
     }
 } else {
     $uploadStatus = 0;
     $response['message'] = 'Error al cargar archivo.';
     $response['uploaded-image'] = '';
     $response['resp'] = '0';
-    $response['class_name'] = 'alert-danger';
+    $response['class_name'] = 'alert alert-danger-color';
 }
 echo json_encode($response);

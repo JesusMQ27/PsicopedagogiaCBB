@@ -14,24 +14,36 @@ $fechas = fnc_fechas_rango($conexion);
 $sedeCodi = "";
 $usuarioCodi = "";
 $privacidad = "";
+$grados = "";
 if ($userData[0]["sedeId"] == "1" && ($perfilId === "1" || $perfilId === "5")) {
     $sedeCodi = "0";
     $usuarioCodi = "";
     $privacidad = "0,1";
+    $grados = "";
 } else {
     $privacidad = "0";
-    if ($perfilId === "1") {
+    if ($perfilId === "1" || $perfilId === "5") {
         $sedeCodi = $userData[0]["sedeId"];
         $usuarioCodi = "";
+        $grados = "";
+        $privacidad = "0,1";
     } elseif ($perfilId === "2") {
         $sedeCodi = $userData[0]["sedeId"];
         $usuarioCodi = $codigo_user;
+        $lista_grados = fnc_secciones_por_usuario($conexion, $codigo_user);
+        if (count($lista_grados) > 0) {
+            $grados = $lista_grados[0]["seccion"];
+        } else {
+            $grados = "";
+        }
     } else {
-        $sedeCodi = $sedeCodigo;
+        $sedeCodi = $userData[0]["sedeId"];
         $usuarioCodi = "";
+        $grados = "";
     }
 }
-$lista = fnc_lista_solicitudes_grafico_linear($conexion, $sedeCodi, $privacidad);
+$lista = fnc_lista_solicitudes_grafico_linear($conexion, $sedeCodi, $privacidad, "0", "0", "0");
+$lista_niveles = fnc_lista_niveles($conexion, "", "1");
 ?>
 <html>
     <head>
@@ -50,7 +62,7 @@ $lista = fnc_lista_solicitudes_grafico_linear($conexion, $sedeCodi, $privacidad)
                             <label> Sede: </label>
                         </div>
                         <input type="hidden" id="txtPrivacidad" value="<?php echo $privacidad; ?>"/>
-                        <select id="cbbSedes" data-show-content="true" class="form-control" style="width: 100%" onchange="entrevistas_registradas_grafico_barras_sede(this)">
+                        <select id="cbbSedes" data-show-content="true" class="form-control" style="width: 100%" onchange="entrevistas_registradas_grafico_lineal_sede(this)">
                             <?php
                             if (count($sedesData) > 1) {
                                 ?>
@@ -72,6 +84,32 @@ $lista = fnc_lista_solicitudes_grafico_linear($conexion, $sedeCodi, $privacidad)
                 </div><br>
                 <div class="col-md-12">
                     <div id="line-chart"></div>
+                </div>
+                <div class="row ">
+                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                        <div class="form-group" style="margin-bottom: 0px;">
+                            <label> Nivel: </label>
+                        </div>
+                        <select id="cbbNiveles" data-show-content="true" class="form-control" style="width: 100%" onchange="entrevistas_registradas_grafico_lineal_niveles(this)">
+                            <?php
+                            if (count($lista_niveles) > 0) {
+                                ?>
+                                <option value="0">-- Seleccione --</option>
+                                <?php
+                                foreach ($lista_niveles as $nivel) {
+                                    echo "<option value='" . $nivel["codigo"] . "' >" . $nivel["nombre"] . "</option>";
+                                }
+                            }
+                            ?>
+                        </select>
+                    </div>
+                </div><br>
+                <div class="col-md-12">
+                    <div id="line-chart2"></div>
+                </div>
+                <div id="divGrados">
+                </div>
+                <div id="divSecciones">
                 </div>
             </div>
         </div>
