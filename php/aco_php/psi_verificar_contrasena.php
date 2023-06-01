@@ -25,7 +25,7 @@ if (filter_var($p_correo, FILTER_VALIDATE_EMAIL)) {
         $token = fnc_generate_token_contrasena($conexion, $con_e[0]["usu_id"]);
         $ramdom1 = fnc_generate_random_string(8);
         $ramdom = $ramdom1 . "/" . $con_e[0]["usu_id"] . "-" . fnc_generate_random_string(7);
-        $url = "http://" . $_SERVER["SERVER_NAME"] . "/SistSIAE/login/cambia_pass.php?iden=" . $ramdom . "&token=" . $token;
+        $url = fnc_obtener_url_cambia_pass_sistema($ramdom, $token);
         $str_mensaje = "Hola " . $con_e[0]["nombrecompleto"] . " <br/><br/>Se ha solicitado un reinicio de contraseña.<br/><br/>"
                 . "Para restaurar la contraseña, visita la siguiente dirección: <a href='$url' style='color:#0051B5;cursor:pointer'>Cambiar contraseña</a><br/>";
 

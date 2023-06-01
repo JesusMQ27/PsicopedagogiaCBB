@@ -60,7 +60,7 @@ $lista_niveles = fnc_lista_niveles($conexion, '', '1');
             <div class="card-body">
                 <div class="row">
                     <input type="hidden" id="hdnCodiSR" value="<?php echo $codigo; ?>"/>
-                    <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
                         <div class="form-group" style="margin-bottom: 0px;">
                             <label> Sede: </label>
                         </div>
@@ -105,7 +105,7 @@ $lista_niveles = fnc_lista_niveles($conexion, '', '1');
                             <input type="text" class="form-control pull-right" id="fecha2" value="<?php echo $fechas[0]["hoy"]; ?>" readonly >
                         </div>
                     </div>
-                    <div class="col-lg-2 col-md-3 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-3 col-sm-6 col-12">
                         <div class="form-group" style="margin-bottom: 0px;">
                             <label> Semaforo - Color: </label>
                         </div>
@@ -118,19 +118,9 @@ $lista_niveles = fnc_lista_niveles($conexion, '', '1');
                             ?>
                         </select>
                     </div>
-                    <div class="col-lg-4 col-md-4 col-sm-6 col-12">
-                        <button class="btn btn-success" id="btnNuevoSolicitud" style="bottom: 0px;margin-top: 30px" 
-                                onclick="buscar_semaforo_docente()">
-                            <i class="fa fa-search"></i>
-                            Buscar</button>&nbsp;&nbsp;
-                        <button class="btn btn-info" id="btnNuevoLimpiar" style="bottom: 0px;margin-top: 30px" 
-                                onclick="limpiar_campos_semaforo()">
-                            <i class="fa fa-search"></i>
-                            Limpiar</button> 
-                    </div>
                 </div><br>
                 <div class="row">
-                    <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
                         <div class="form-group" style="margin-bottom: 0px;">
                             <label> Bimestre: </label>
                         </div>
@@ -157,7 +147,7 @@ $lista_niveles = fnc_lista_niveles($conexion, '', '1');
 
                         </select>
                     </div>
-                    <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
                         <div class="form-group" style="margin-bottom: 0px;">
                             <label> Grado: </label>
                         </div>
@@ -173,12 +163,24 @@ $lista_niveles = fnc_lista_niveles($conexion, '', '1');
                             <option value="0">-- Todos --</option>
                         </select>
                     </div>
+                </div><br>
+                <div class="row">
                     <div class="col-lg-4 col-md-4 col-sm-6 col-12">
                         <div class="form-group" style="margin-bottom: 0px;" id="docenteData">
                             <label id="dataDocente" >Docente:</label>
                             <input type="hidden" id="docen" value=""/>
                         </div>
                         <input type="text" id="searchDocente" class="typeahead form-control" style="size:12px;text-transform: uppercase;" value="" autocomplete="off">
+                    </div>
+                    <div class="col-lg-4 col-md-4 col-sm-6 col-12">
+                        <button class="btn btn-success" id="btnNuevoSolicitud" style="bottom: 0px;margin-top: 30px" 
+                                onclick="buscar_semaforo_docente()">
+                            <i class="fa fa-search"></i>
+                            Buscar</button>&nbsp;&nbsp;
+                        <button class="btn btn-info" id="btnNuevoLimpiar" style="bottom: 0px;margin-top: 30px" 
+                                onclick="limpiar_campos_semaforo()">
+                            <i class="fa fa-search"></i>
+                            Limpiar</button> 
                     </div>
                 </div><br>
                 <div class="row">

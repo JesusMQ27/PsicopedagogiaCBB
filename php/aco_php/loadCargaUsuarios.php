@@ -35,6 +35,8 @@ if (isset($_FILES['select_fileUsuarios'])) {
             $lista_sede = fnc_lista_sede($conexion, "");
             $lista_perfiles = fnc_lista_perfiles($conexion, "");
             $lista_secciones = fnc_lista_secciones_grados($conexion, "0", "0");
+            $lista_niveles = fnc_lista_niveles($conexion, "", "");
+            $lista_planas = fnc_lista_planas($conexion, "", "");
             $codigo = $_SESSION["psi_user"]["id"];
             $reader = PHPExcel_IOFactory::createReaderForFile($targetFilePath);
             $excel_Obj = $reader->load($targetFilePath);
@@ -69,28 +71,35 @@ if (isset($_FILES['select_fileUsuarios'])) {
                 $nivel = $worksheet->getCellByColumnAndRow(8, $row)->getValue();
                 $plana = $worksheet->getCellByColumnAndRow(9, $row)->getValue();
                 //$data = $worksheet->getCellByColumnAndRow(9, $row);
-                $fechaIngreso = $worksheet->getCellByColumnAndRow(6, $row);
+                $fechaIngre = $worksheet->getCellByColumnAndRow(6, $row);
                 $seccion = $worksheet->getCellByColumnAndRow(10, $row)->getValue();
                 $horas = $worksheet->getCellByColumnAndRow(11, $row)->getValue();
                 $codigo_perfil = array();
                 $codigo_sede = array();
                 $codigo_perfil = fnc_find_array("descr", $tipoUsuarios, $lista_perfiles);
                 $codigo_sede = fnc_find_array("descr", $sede, $lista_sede);
-                if (!strtotime($fechaIngreso)) {
-                    if (PHPExcel_Shared_Date::isDateTime($fechaIngreso)) {
-                        $cellValue = $worksheet->getCellByColumnAndRow(6, $row)->getValue();
-                        $dateValue = PHPExcel_Shared_Date::ExcelToPHP($cellValue);
-                        $fechaIngreso = date('Y-m-d', $dateValue);
-                    } else {
-                        $fechaIngreso = "";
-                    }
-                }
+
+                //print_r($fechaIngreso);
+                /* $fechaIngreso2 = \PHPExcel_Style_NumberFormat::toFormattedString($fechaIngreso, 'YYYY-MM-DD');
+                  if (!strtotime($fechaIngreso2)) {
+                  if (PHPExcel_Shared_Date::isDateTime($fechaIngreso2)) {
+                  $cellValue = $worksheet->getCellByColumnAndRow(6, $row)->getValue();
+                  $dateValue = PHPExcel_Shared_Date::ExcelToPHP($cellValue);
+                  $fechaIngreso2 = date('Y-m-d', $dateValue);
+                  } else {
+                  //$fechaIngreso = \PHPExcel_Style_NumberFormat::toFormattedString($fechaIngreso, 'YYYY-MM-DD');
+                  }
+                  } else { */
+                $miliseconds = ($fechaIngre->getValue() - (25567 + 2)) * 86400 * 1000;
+                $seconds = $miliseconds / 1000;
+                $fechaIngreso = date("Y-m-d", $seconds);
+                //}
                 $seccion_codigos = "";
                 if (trim($seccion) !== "") {
-                    $arreglo_seccion = explode("-", $seccion);
+                    $arreglo_seccion = explode(",", $seccion);
                     if (count($arreglo_seccion) > 1) {
                         for ($a = 0; $a < count($arreglo_seccion); $a++) {
-                            $get_seccion = fnc_find_array("descr", $arreglo_seccion[$a], $lista_secciones);
+                            $get_seccion = fnc_find_array("descr", trim($arreglo_seccion[$a]), $lista_secciones);
                             $seccion_codigos .= $get_seccion["codigo"] . "-";
                         }
                         $seccion_codigos = substr($seccion_codigos, 0, -1);
@@ -99,8 +108,20 @@ if (isset($_FILES['select_fileUsuarios'])) {
                         $seccion_codigos = $get_seccion["codigo"];
                     }
                 }
+                if (trim($nivel) !== "") {
+                    $get_nivel = fnc_find_array("nombre", trim(strtoupper($nivel)), $lista_niveles);
+                    $nivel = $get_nivel["codigo"];
+                } else {
+                    $nivel = "";
+                }
+                if (trim($plana) !== "") {
+                    $get_plana = fnc_find_array("nombre", trim($plana), $lista_planas);
+                    $plana = $get_plana["codigo"];
+                } else {
+                    $plana = "";
+                }
                 //agregarmos los usuarios
-                if (trim($tipoDocumento) !== "") {
+                if (trim($tipoDocumento) !== "" && trim($nroDocumento) !== "" && trim($apellidoPaterno) !== "" && trim($apellidoMaterno) !== "") {
                     array_push($array_data, [
                         "usu_num" => $number,
                         "usu_tip_usu" => $tipoUsuarios,
@@ -122,6 +143,7 @@ if (isset($_FILES['select_fileUsuarios'])) {
                 }
                 $number++;
             }
+
             // Empieza a registrar la informacion de usuarios
             fnc_drop_tabla_tmp_carga_usuarios($conexion, $codigo);
             fun_crear_tabla_tmp_carga_usuarios($conexion, $codigo);

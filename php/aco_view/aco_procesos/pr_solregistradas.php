@@ -211,7 +211,7 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
             </div>
             <div class="modal-body">
             </div>
-            <div class="modal-footer justify-content-between">
+            <div class="modal-footer" style="justify-content: center;">
                 <button type="button" class="btn btn-default" data-dismiss="modal" onclick="return reiniciar_cronometro()">Cerrar</button>
                 <div style="float: right">
                     <label></label>
@@ -220,7 +220,7 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                 </div>
             </div>
             <div style="float:left;position:absolute;" class="row" onLoad="">
-                <div class="col-xs-3" style="position: fixed;bottom: 10px;right: 10px;bottom: 60px;text-align: right;padding: 5px 10px;" id="cronometro">
+                <div class="col-xs-3" style="position: fixed;bottom: 10px;right: 10px;bottom: 100px;text-align: right;padding: 5px 10px;" id="cronometro">
                     <div id="fecha" style="display: none;">
                         <span id="hora"></span> <span id="puntos1">:</span> <span id="minuto"></span> <span id="puntos2">:</span> <span id="segundo"></span>
                     </div>
@@ -292,7 +292,7 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
             </div>
             <div class="modal-body">
             </div>
-            <div class="modal-footer justify-content-between">
+            <div class="modal-footer" style="justify-content: center;">
                 <button type="button" class="btn btn-default" data-dismiss="modal" onclick="return reiniciar_cronometro_2()">Cerrar</button>
                 <div style="float: right">
                     <label></label>
@@ -301,7 +301,7 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                 </div>
             </div>
             <div style="float:left;position:absolute;" class="row" onLoad="">
-                <div class="col-xs-3" style="position: fixed;bottom: 10px;right: 10px;bottom: 60px;text-align: right;padding: 5px 10px;" id="cronometro_s">
+                <div class="col-xs-3" style="position: fixed;bottom: 10px;right: 10px;bottom: 100px;text-align: right;padding: 5px 10px;" id="cronometro_s">
                     <div id="fecha_s" style="display: none;">
                         <span id="hora_s"></span> <span id="puntos1_s">:</span> <span id="minuto_s"></span> <span id="puntos2_s">:</span> <span id="segundo_s"></span>
                     </div>
@@ -400,7 +400,7 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
             </div>
             <div class="modal-body">
             </div>
-            <div class="modal-footer justify-content-between">
+            <div class="modal-footer" style="justify-content: center;">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
                 <div style="float: right">
                     <label></label>

@@ -34,6 +34,7 @@ $s_apoderado = strip_tags(trim($_POST["s_apoderado"]));
 $s_privacidad = strip_tags(trim($_POST["s_privacidad"]));
 $s_img1 = $_POST['s_dataURL1'];
 $s_img2 = $_POST['s_dataURL2'];
+$s_img1_1 = trim($_POST['dataURL1_1']);
 $s_hora_total = strip_tags(trim($_POST["s_hora_total"]));
 $arreglo_matricula = explode("*", $s_matricu);
 $s_matricula = $arreglo_matricula[0];
@@ -46,22 +47,24 @@ try {
             . $s_acuerdos . "','" . $s_informe . "','" . $s_planPadre . "','" . $s_planDocente . "','" . $s_acuerdosPadres . "','" . $s_acuerdosColegio . "','" . $s_apoderado . "','" . $s_privacidad . "','" . $s_hora_total . "','1')";
     $solicitud_id = fnc_registrar_solicitud_estudiante($conexion, $cadena);
     if ($solicitud_id) {
-        if (strpos($s_img1, 'data:image/png;base64') === 0) {
-            $s_img1 = str_replace('data:image/png;base64,', '', $s_img1);
-            $s_img1 = str_replace(' ', '+', $s_img1);
-            $data = base64_decode($s_img1);
-            if ($s_solicitud_tipo == "1") {
-                $file = '../aco_firmas/img_' . $s_matricula . "_" . uniqid() . '.png';
-            } else {
-                $file = '../aco_firmas/img_' . $s_apoderado . "_" . uniqid() . '.png';
-            }
-            if (file_put_contents($file, $data)) {
-                $cadena_imag1 = "('" . $solicitud_id . "','" . $s_matricula . "','" . $psi_usuario . "','" . $s_apoderado .
-                        "','" . $file . "',NOW(),'1','1')";
-                fnc_registrar_solicitud_firmas($conexion, $cadena_imag1);
-            } else {
-                echo "***0***Error al registrar la imagen del entrevistado.***<br/>";
-                exit();
+        if ($s_img1_1 !== "") {
+            if (strpos($s_img1, 'data:image/png;base64') === 0) {
+                $s_img1 = str_replace('data:image/png;base64,', '', $s_img1);
+                $s_img1 = str_replace(' ', '+', $s_img1);
+                $data = base64_decode($s_img1);
+                if ($s_solicitud_tipo == "1") {
+                    $file = '../aco_firmas/img_' . $s_matricula . "_" . uniqid() . '.png';
+                } else {
+                    $file = '../aco_firmas/img_' . $s_apoderado . "_" . uniqid() . '.png';
+                }
+                if (file_put_contents($file, $data)) {
+                    $cadena_imag1 = "('" . $solicitud_id . "','" . $s_matricula . "','" . $psi_usuario . "','" . $s_apoderado .
+                            "','" . $file . "',NOW(),'1','1')";
+                    fnc_registrar_solicitud_firmas($conexion, $cadena_imag1);
+                } else {
+                    echo "***0***Error al registrar la imagen del entrevistado.***<br/>";
+                    exit();
+                }
             }
         }
 

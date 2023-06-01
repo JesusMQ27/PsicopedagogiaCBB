@@ -2,6 +2,18 @@
 
 require_once('aco_con.php');
 
+function fnc_obtener_url_sistema() {
+    //$url = "http://" . $_SERVER["SERVER_NAME"] . "/SistSIAE/index.php";
+    $url = "http://siae.cbb.edu.pe";
+    return $url;
+}
+
+function fnc_obtener_url_cambia_pass_sistema($ramdom, $token) {
+    //$url = "http://" . $_SERVER["SERVER_NAME"] . "/SistSIAE/login/cambia_pass.php?iden=" . $ramdom . "&token=" . $token;
+    $url = "http://siae.cbb.edu.pe/login/cambia_pass.php?iden=" . $ramdom . "&token=" . $token;
+    return $url;
+}
+
 function fnc_consulta_login($conexion, $p_usua, $p_clave) {
     $arreglo = array();
     $sql = con_consulta_login($p_usua, $p_clave);
@@ -23,7 +35,7 @@ function fnc_datos_usuario($conexion, $p_usuaId) {
 }
 
 function fnc_contrasena_php_mailer() {
-    $contrasena = "qfxuhvdjjpoavpej";
+    $contrasena = "nrnuebbsndqmypak";
     return $contrasena;
 }
 
@@ -1317,6 +1329,16 @@ function fnc_lista_bimestre($conexion, $id, $estado) {
 function fnc_lista_niveles($conexion, $id, $estado) {
     $arreglo = array();
     $sql = con_lista_niveles($id, $estado);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_planas($conexion, $id, $estado) {
+    $arreglo = array();
+    $sql = con_lista_planas($id, $estado);
     $stmt = $conexion->query($sql);
     foreach ($stmt as $data) {
         array_push($arreglo, $data);

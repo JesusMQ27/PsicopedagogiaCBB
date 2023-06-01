@@ -1,0 +1,131 @@
+<HTML>
+<HEAD>
+
+<FORM NAME="formname">
+
+<INPUT TYPE="hidden" NAME="SigData">
+<INPUT TYPE="hidden" NAME="txtValue">
+<DIV STYLE="position:absolute; top:204px; left:10px;">
+<b>Disclaimer information from the previous page:</b><br><br>
+<INPUT TYPE="text" size=117 name="Disclaimer">
+</DIV>
+
+<DIV STYLE="position:absolute; top:252px; left:10px;">
+<br><br><br><br><br><br><br>
+<b>Please re-enter your first name to display signature:</b><br><br>
+<INPUT TYPE="text" NAME="txtValue2">&nbsp;&nbsp;
+<input id="DoneBtn" name="DoneBtn" type="button" value="Display" onclick="LoadSig()" style="BACKGROUND-COLOR: #666699; COLOR: white; FONT: bold 8pt verdana" onmouseout="window.event.srcElement.style.background = '#666699'" onmouseover="window.event.srcElement.style.background = '#AFAFAF'">
+</DIV>
+
+</FORM>
+
+
+
+<SCRIPT LANGUAGE="JavaScript"><!--
+//These first two functions grab the data passed via the GET method, and redistribute
+//the data for use on this page
+
+function replace(string,text,by) {
+    // Replaces text with by in string
+    var i = string.indexOf(text), newstr = '';
+    if ((!i) || (i == -1))
+        return string;
+    newstr += string.substring(0,i) + by;
+    if (i+text.length < string.length)
+        newstr += replace(string.substring(i+text.length,string.length),text,by);
+    return newstr;
+}
+
+
+function getParm(string,parm) {
+    // returns value of parm from string
+    var startPos = string.indexOf(parm + "=");
+    if (startPos > -1) {
+        startPos = startPos + parm.length + 1;
+        var endPos = string.indexOf("&",startPos);
+        if (endPos == -1)
+            endPos = string.length;
+        return unescape(string.substring(startPos,endPos));
+    }
+    return '';
+}
+
+var passed = replace(location.search.substring(1),"+"," ");
+ 
+document.formname.SigData.value = getParm(passed,'SigData');
+document.formname.txtValue.value = getParm(passed,'txtValue');
+document.formname.Disclaimer.value = getParm(passed, 'Disclaimer');
+strDisclaimer = document.formname.Disclaimer.value;
+
+
+function LoadSig() {
+   if(document.formname.txtValue2.value==""){
+      SigPlus1.ClearTablet();
+      alert("Please re-enter your first name to display signature")
+   }
+   else
+   {
+   SigPlus1.JustifyX=10;
+   SigPlus1.JustifyY=10;
+   SigPlus1.AutoKeyStart();
+   SigPlus1.AutoKeyData=document.formname.txtValue2.value;
+   SigPlus1.AutoKeyData=document.formname.Disclaimer.value;
+   strDisclaimer2=document.formname.Disclaimer.value;
+   SigPlus1.AutoKeyFinish();
+   SigPlus1.EncryptionMode=1;
+   SigPlus1.SigCompressionMode=2;
+   SigPlus1.DisplayPenWidth=10;
+   SigPlus1.JustifyMode=5;
+   SigPlus1.SigString=document.formname.SigData.value;
+
+   if(strDisclaimer==strDisclaimer2){
+      if(SigPlus1.NumberOfTabletPoints==0){
+      alert("Name does not match. Signature cannot be displayed");
+      }
+}
+   else{
+      alert("Disclaimer has been changed. Signature cannot be displayed");
+      }
+   }
+}
+
+//--></SCRIPT>
+
+
+
+<TITLE>Verify Document and Display e-Signature</TITLE>
+
+
+<DIV STYLE="position:absolute; top:130px; left:10px;">
+<b><nobr>This current page has received the disclaimer and signature information. <br>You must supply your first name information again in order to decrypt and redisplay the signature. <br>Likewise, if you change the disclaimer information, you will need to restore it to its prior state before you can view the signature.</nobr></b>
+</DIV>
+
+
+</HEAD>
+<BODY>
+
+<DIV STYLE="position:absolute; top:295px; left:390px;">
+<table border=1 cellpadding="0" height="150" width="300">
+  <tr><td>
+     <OBJECT classid=clsid:69A40DA3-4D42-11D0-86B0-0000C025864A height=75
+            id=SigPlus1 name=SigPlus1
+            style="HEIGHT: 125px; WIDTH: 325px; LEFT: 0px; TOP: 0px; 
+            VIEWASTEXT>
+	<PARAM NAME="_Version" VALUE="131095">
+	<PARAM NAME="_ExtentX" VALUE="4842">
+	<PARAM NAME="_ExtentY" VALUE="1323">
+	<PARAM NAME="_StockProps" VALUE="0">
+            </OBJECT>
+</td>
+  </tr>
+</table>
+</DIV>
+
+<DIV STYLE="position:absolute; top:30px; left:10px;">
+<a>
+   <h2><FONT COLOR='#666699'>Demo<br>Verify Document and Display e-Signature</FONT></h2>
+</a>
+</DIV>
+
+</BODY>
+</HTML>

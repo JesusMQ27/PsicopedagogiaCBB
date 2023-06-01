@@ -139,7 +139,7 @@ function con_lista_tipo_documentos($id) {
 }
 
 function con_lista_sede($id) {
-    $sql = "SELECT sed_id as id,sed_nombre as nombre,sed_descripcion as descr FROM tb_sede WHERE 1=1 ";
+    $sql = "SELECT sed_id as id,sed_nombre as nombre,REPLACE(sed_descripcion,'CBB ','') as descr FROM tb_sede WHERE 1=1 ";
     if ($id !== "") {
         $sql .= " AND sed_id='$id' ";
     }
@@ -704,6 +704,7 @@ function con_registrar_data_tmp_a_usuario($cadena) {
         usu_correo,
         usu_clave,
         perf_id,
+        sed_id,
         usu_creado,
         usu_token,
         usu_estado)
@@ -720,6 +721,7 @@ function con_registrar_usuario_dictado($cadena) {
         grup_id,
         sed_id,
         sec_id,
+        dic_fecha,
         dic_estado)
      VALUES $cadena";
     return $sql;
@@ -770,7 +772,6 @@ usu_pla AS plana,
 usu_fec_ing AS fecha_ingreso,
 usu_estado as estado,
 usu_seccion as seccion,
-usu_sede as sede,
 usu_perfil_codigo as codigo_perfil,
 usu_sede_codigo as codigo_sede,
 usu_seccion_codigos as codigo_seccion,
@@ -1313,26 +1314,28 @@ function con_eliminar_sub_solicitud_alumno($id, $estado) {
 }
 
 function con_buscar_semaforo_docentes($sede, $fecha_ini, $fecha_fin, $semaforo, $bimestre, $nivel, $grado, $seccion, $docente) {
-    echo $docente;
     $cadena_no_bimestre = "";
     $cadena_bimestre = "";
     $cadena_bimestre2 = "";
+    $cantidad_semanas = "";
     if ($bimestre === "" || $bimestre === "0") {
         $cadena_no_bimestre = " AND (sol_fecha>='$fecha_ini 00:00:00' AND sol_fecha<='$fecha_fin 23:59:59') OR sol_fecha IS NULL ";
         $cadena_bimestre = "";
         $cadena_bimestre2 = "";
+        $cantidad_semanas = " ROUND(DATEDIFF('$fecha_fin','$fecha_ini')/7)*2 ";
     } else {
         $cadena_no_bimestre = "";
         $cadena_bimestre = " INNER JOIN tb_bimestre j ON (g.sol_fecha BETWEEN j.bim_fecha_ini and j.bim_fecha_fin) OR sol_fecha is NULL ";
         $cadena_bimestre2 = " AND j.bim_id=$bimestre ";
+        $cantidad_semanas = " ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 ";
     }
-    $sql = "SELECT sede,docente,grado,cantidad,cantidad_faltantes,cantidad_realizados,porcentaje, sem_id as valor,sem_color as color
+    $sql = "SELECT * FROM ( SELECT sede,docente,grado,cantidad,cantidad_faltantes,cantidad_realizados,porcentaje, sem_id as valor,sem_color as color
 FROM (
 SELECT * FROM ( SELECT sede,docente,grado,cantidad,cantidad_faltantes,cantidad_realizados,(cantidad_realizados/cantidad)*100 as resultado,CONCAT((cantidad_realizados/cantidad)*100,' %') as porcentaje,fecha
 	FROM (
 SELECT sed_nombre as sede,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as docente,
-		CONCAT(gra_nombre,' - ',sec_nombre) as grado,mat_fech_regi as fecha ,COUNT(c.mat_id) as cantidad,
-                COUNT(g.sol_id) as cantidad_realizados,COUNT(c.mat_id) -COUNT(g.sol_id) as cantidad_faltantes
+		CONCAT(gra_nombre,' - ',sec_nombre) as grado,mat_fech_regi as fecha , $cantidad_semanas as cantidad,
+                COUNT(g.sol_id) as cantidad_realizados,$cantidad_semanas -COUNT(g.sol_id) as cantidad_faltantes
 		FROM tb_usuario_dictado a
 		INNER JOIN tb_usuario b ON a.usu_id=b.usu_id
 		INNER JOIN tb_matricula c ON a.sec_id=c.sec_id AND a.sed_id=c.sed_id
@@ -1360,21 +1363,24 @@ SELECT sed_nombre as sede,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as
     }
     $sql .= " GROUP BY a.usu_id,a.sed_id,a.sec_id) as p1 ) as a1
 		INNER JOIN tb_semaforo b ON year(a1.fecha)=b.sem_nombre AND resultado BETWEEN sem_valor_ini AND sem_valor_fin
-                ) as p2 WHERE 1=1  ";
+                ) as p2 ) as p3 WHERE 1=1  ";
     if ($semaforo !== "0") {
-        $sql .= " and p2.valor=$semaforo ";
+        $sql .= " and p3.valor=$semaforo ";
     }
     $sql .= ";";
     return $sql;
 }
 
 function con_buscar_semaforo_docentes_alerta($sede, $fecha_ini, $fecha_fin, $semaforo) {
-    $sql = "SELECT * FROM ( SELECT *
+    $sql = "SELECT p2.sede,p2.docente,p2.grado,SUM(p2.cantidad) as cantidad,SUM(p2.cantidad_realizados) as cantidad_realizados,
+SUM(p2.cantidad_faltantes) as cantidad_faltantes,CONCAT(((SUM(p2.cantidad_realizados)/SUM(p2.cantidad))*100),' %') as porcentaje  FROM ( SELECT *
 	FROM (
 		SELECT sed_nombre as sede,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as docente,
-		CONCAT(gra_nombre,' - ',sec_nombre) as grado,mat_fech_regi as fecha ,COUNT(c.mat_id) as cantidad,
-                COUNT(g.sol_id) as cantidad_realizados,COUNT(c.mat_id) -COUNT(g.sol_id) as cantidad_faltantes,
-                CONCAT(((COUNT(g.sol_id)/COUNT(c.mat_id))*100),' %') as porcentaje
+		CONCAT(gra_nombre,' - ',sec_nombre) as grado,mat_fech_regi as fecha ,
+                    (SELECT ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 FROM tb_bimestre WHERE DATE(NOW()) BETWEEN bim_fecha_ini AND bim_fecha_fin) as cantidad,
+                    COUNT(g.sol_id) as cantidad_realizados,
+                    (SELECT ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 FROM tb_bimestre WHERE DATE(NOW()) BETWEEN bim_fecha_ini AND bim_fecha_fin) -COUNT(g.sol_id) as cantidad_faltantes,
+                    CONCAT(((COUNT(g.sol_id)/COUNT(c.mat_id))*100),' %') as porcentaje
 		FROM tb_usuario_dictado a
 		INNER JOIN tb_usuario b ON a.usu_id=b.usu_id
 		INNER JOIN tb_matricula c ON a.sec_id=c.sec_id AND a.sed_id=c.sed_id
@@ -1382,7 +1388,9 @@ function con_buscar_semaforo_docentes_alerta($sede, $fecha_ini, $fecha_fin, $sem
 		INNER JOIN tb_grado e ON d.gra_id=e.gra_id
 		INNER JOIN tb_sede f ON c.sed_id=f.sed_id
 		LEFT JOIN tb_solicitudes g ON c.mat_id=g.mat_id AND sol_estado=1
-		WHERE dic_estado=1 and mat_estado=1  ";
+		INNER JOIN tb_bimestre h ON (g.sol_fecha BETWEEN h.bim_fecha_ini and h.bim_fecha_fin) OR sol_fecha is NULL 
+		WHERE dic_estado=1 and mat_estado=1 AND DATE(NOW()) BETWEEN bim_fecha_ini AND bim_fecha_fin
+                GROUP BY a.usu_id,c.sed_id,c.sec_id ";
     if ($fecha_ini !== "") {
         $sql .= " AND mat_fech_regi>='$fecha_ini 00:00:00' ";
     }
@@ -1402,16 +1410,18 @@ function con_buscar_semaforo_docentes_alerta($sede, $fecha_ini, $fecha_fin, $sem
 
 function con_buscar_semaforo_docentes_grafico_barras($sede, $fecha_ini, $fecha_fin, $nivel, $grado, $seccion) {
     if ($nivel === "" && $grado === "" && $seccion === "") {
-        $sql = "SELECT p1.nombre,if(cantidad IS NULL,0,cantidad) as cantidad,
-	if(cantidad_realizados IS NULL,0,cantidad_realizados) as cantidad_realizados,
-	if(cantidad_faltantes IS NULL,0,cantidad_faltantes) as cantidad_faltantes
+        $sql = "SELECT p2.nombre,IF(p2.cantidad is NULL,0,p2.cantidad) as cantidad,
+            IF(p2.cantidad_realizados is NULL,0,p2.cantidad_realizados) as cantidad_realizados,
+            IF(p2.cantidad_faltantes is NULL,0,p2.cantidad_faltantes) as cantidad_faltantes FROM (
+		SELECT p1.id,p1.nombre,sum(cantidad) as cantidad, sum(cantidad_realizados) as cantidad_realizados,
+                sum(cantidad_faltantes) as cantidad_faltantes
 	FROM (
 	SELECT sed_id as id,sed_nombre as nombre FROM tb_sede WHERE sed_estado=1 AND sed_id!=1
 	) as p1
 	LEFT JOIN (
 	SELECT a.sed_id as id,sed_nombre as sede,
-		CONCAT(sed_nombre) as nombre,COUNT(c.mat_id) as cantidad,
-		COUNT(g.sol_id) as cantidad_realizados,COUNT(c.mat_id) -COUNT(g.sol_id) as cantidad_faltantes
+		CONCAT(sed_nombre) as nombre,ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 as cantidad,
+		COUNT(g.sol_id) as cantidad_realizados,ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 -COUNT(g.sol_id) as cantidad_faltantes
 		FROM tb_usuario_dictado a
 		INNER JOIN tb_usuario b ON a.usu_id=b.usu_id
 		INNER JOIN tb_matricula c ON a.sec_id=c.sec_id AND a.sed_id=c.sed_id
@@ -1420,7 +1430,8 @@ function con_buscar_semaforo_docentes_grafico_barras($sede, $fecha_ini, $fecha_f
 		INNER JOIN tb_sede f ON c.sed_id=f.sed_id
                 INNER JOIN tb_nivel h ON e.niv_id=h.niv_id
 		LEFT JOIN tb_solicitudes g ON c.mat_id=g.mat_id AND sol_estado=1
-		WHERE dic_estado=1 and mat_estado=1 AND YEAR(mat_fech_regi)=YEAR(NOW()) 
+                INNER JOIN tb_bimestre i ON (g.sol_fecha BETWEEN i.bim_fecha_ini and i.bim_fecha_fin) OR sol_fecha is NULL 
+		WHERE dic_estado=1 and mat_estado=1 AND DATE(NOW()) BETWEEN bim_fecha_ini AND bim_fecha_fin
 		";
         if ($fecha_ini !== "") {
             $sql .= " AND mat_fech_regi>='$fecha_ini 00:00:00' ";
@@ -1429,22 +1440,25 @@ function con_buscar_semaforo_docentes_grafico_barras($sede, $fecha_ini, $fecha_f
             $sql .= " AND mat_fech_regi<='$fecha_fin 23:59:59' ";
         }
 
-        $sql .= " GROUP BY a.sed_id ORDER BY a.sed_id
+        $sql .= " GROUP BY a.usu_id,c.sed_id,c.sec_id 
 		) as p2 ON p1.id=p2.id WHERE 1=1 ";
         if ($sede !== "0") {
             $sql .= " AND p1.id in ($sede) ";
         }
+        $sql .= " GROUP BY p1.id ORDER BY p1.id ) as p2 ORDER BY p2.id ";
     } elseif ($nivel !== "" && $grado === "" && $seccion === "") {
-        $sql = "SELECT p1.nombre,if(cantidad IS NULL,0,cantidad) as cantidad,
-	if(cantidad_realizados IS NULL,0,cantidad_realizados) as cantidad_realizados,
-	if(cantidad_faltantes IS NULL,0,cantidad_faltantes) as cantidad_faltantes
+        $sql = "SELECT p2.nombre,IF(p2.cantidad is NULL,0,p2.cantidad) as cantidad,
+            IF(p2.cantidad_realizados is NULL,0,p2.cantidad_realizados) as cantidad_realizados,
+            IF(p2.cantidad_faltantes is NULL,0,p2.cantidad_faltantes) as cantidad_faltantes FROM (
+		SELECT p1.id,p1.nombre,sum(cantidad) as cantidad, sum(cantidad_realizados) as cantidad_realizados,
+                sum(cantidad_faltantes) as cantidad_faltantes
 	FROM (
 	SELECT niv_id as id,niv_nombre as nombre FROM tb_nivel WHERE niv_estado=1 
 	) as p1
 	LEFT JOIN (
 	SELECT e.niv_id as id,niv_nombre as nivel,
-		CONCAT(niv_nombre) as nombre,COUNT(c.mat_id) as cantidad,
-		COUNT(g.sol_id) as cantidad_realizados,COUNT(c.mat_id) -COUNT(g.sol_id) as cantidad_faltantes
+		CONCAT(niv_nombre) as nombre,ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 as cantidad,
+		COUNT(g.sol_id) as cantidad_realizados,ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 -COUNT(g.sol_id) as cantidad_faltantes
 		FROM tb_usuario_dictado a
 		INNER JOIN tb_usuario b ON a.usu_id=b.usu_id
 		INNER JOIN tb_matricula c ON a.sec_id=c.sec_id AND a.sed_id=c.sed_id
@@ -1453,7 +1467,8 @@ function con_buscar_semaforo_docentes_grafico_barras($sede, $fecha_ini, $fecha_f
 		INNER JOIN tb_sede f ON c.sed_id=f.sed_id
                 INNER JOIN tb_nivel h ON e.niv_id=h.niv_id
 		LEFT JOIN tb_solicitudes g ON c.mat_id=g.mat_id AND sol_estado=1
-		WHERE dic_estado=1 and mat_estado=1 AND YEAR(mat_fech_regi)=YEAR(NOW())
+                INNER JOIN tb_bimestre i ON (g.sol_fecha BETWEEN i.bim_fecha_ini and i.bim_fecha_fin) OR sol_fecha is NULL 
+		WHERE dic_estado=1 and mat_estado=1 AND DATE(NOW()) BETWEEN bim_fecha_ini AND bim_fecha_fin                
 		";
         if ($fecha_ini !== "") {
             $sql .= " AND mat_fech_regi>='$fecha_ini 00:00:00' ";
@@ -1467,23 +1482,25 @@ function con_buscar_semaforo_docentes_grafico_barras($sede, $fecha_ini, $fecha_f
         if ($nivel !== "0") {
             $sql .= " AND e.niv_id in ($nivel) ";
         }
-        $sql .= "GROUP BY e.niv_id ORDER BY e.niv_id
-		) as p2 ON p1.id=p2.id WHERE 1=1 ";
+        $sql .= " GROUP BY a.usu_id,c.sed_id,c.sec_id )"
+                . " as p2 ON p1.id=p2.id WHERE 1=1 ";
         if ($nivel !== "0") {
             $sql .= " AND p1.id in ($nivel) ";
         }
-        $sql .= ";";
+        $sql .= " GROUP BY p1.id ORDER BY p1.id ) as p2 ORDER BY p2.id;";
     } elseif ($nivel !== "" && $grado !== "" && $seccion === "") {
-        $sql = "SELECT p1.nombre,if(cantidad IS NULL,0,cantidad) as cantidad,
-	if(cantidad_realizados IS NULL,0,cantidad_realizados) as cantidad_realizados,
-	if(cantidad_faltantes IS NULL,0,cantidad_faltantes) as cantidad_faltantes
+        $sql = "SELECT p2.nombre,IF(p2.cantidad is NULL,0,p2.cantidad) as cantidad,
+            IF(p2.cantidad_realizados is NULL,0,p2.cantidad_realizados) as cantidad_realizados,
+            IF(p2.cantidad_faltantes is NULL,0,p2.cantidad_faltantes) as cantidad_faltantes FROM (
+		SELECT p1.id,p1.nombre,sum(cantidad) as cantidad, sum(cantidad_realizados) as cantidad_realizados,
+                sum(cantidad_faltantes) as cantidad_faltantes
 	FROM (
 	SELECT gra_id as id,gra_nombre as nombre FROM tb_grado WHERE gra_estado=1 
 	) as p1
 	LEFT JOIN (
 	SELECT d.gra_id as id,gra_nombre as grado,
-		CONCAT(gra_nombre) as nombre,COUNT(c.mat_id) as cantidad,
-		COUNT(g.sol_id) as cantidad_realizados,COUNT(c.mat_id) -COUNT(g.sol_id) as cantidad_faltantes
+		CONCAT(gra_nombre) as nombre,ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 as cantidad,
+		COUNT(g.sol_id) as cantidad_realizados,ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 -COUNT(g.sol_id) as cantidad_faltantes
 		FROM tb_usuario_dictado a
 		INNER JOIN tb_usuario b ON a.usu_id=b.usu_id
 		INNER JOIN tb_matricula c ON a.sec_id=c.sec_id AND a.sed_id=c.sed_id
@@ -1491,8 +1508,9 @@ function con_buscar_semaforo_docentes_grafico_barras($sede, $fecha_ini, $fecha_f
 		INNER JOIN tb_grado e ON d.gra_id=e.gra_id
 		INNER JOIN tb_sede f ON c.sed_id=f.sed_id
                 INNER JOIN tb_nivel h ON e.niv_id=h.niv_id
-		LEFT JOIN tb_solicitudes g ON c.mat_id=g.mat_id AND sol_estado=1
-		WHERE dic_estado=1 and mat_estado=1 AND YEAR(mat_fech_regi)=YEAR(NOW())
+		LEFT JOIN tb_solicitudes g ON c.mat_id=g.mat_id AND sol_estado=1		
+                INNER JOIN tb_bimestre i ON (g.sol_fecha BETWEEN i.bim_fecha_ini and i.bim_fecha_fin) OR sol_fecha is NULL 
+		WHERE dic_estado=1 and mat_estado=1 AND DATE(NOW()) BETWEEN bim_fecha_ini AND bim_fecha_fin   
 		";
         if ($fecha_ini !== "") {
             $sql .= " AND mat_fech_regi>='$fecha_ini 00:00:00' ";
@@ -1509,16 +1527,18 @@ function con_buscar_semaforo_docentes_grafico_barras($sede, $fecha_ini, $fecha_f
         if ($grado !== "0") {
             $sql .= " AND d.gra_id in ($grado) ";
         }
-        $sql .= "GROUP BY d.gra_id ORDER BY d.gra_id
-		) as p2 ON p1.id=p2.id WHERE 1=1 ";
+        $sql .= " GROUP BY a.usu_id,c.sed_id,c.sec_id )"
+                . " as p2 ON p1.id=p2.id WHERE 1=1  ";
         if ($grado !== "0") {
             $sql .= " AND p1.id in ($grado) ";
         }
-        $sql .= ";";
+        $sql .= " GROUP BY p1.id ORDER BY p1.id ) as p2 ORDER BY p2.id;";
     } elseif ($nivel !== "" && $grado !== "" && $seccion !== "") {
-        $sql = "SELECT p1.nombre,if(cantidad IS NULL,0,cantidad) as cantidad,
-	if(cantidad_realizados IS NULL,0,cantidad_realizados) as cantidad_realizados,
-	if(cantidad_faltantes IS NULL,0,cantidad_faltantes) as cantidad_faltantes
+        $sql = "SELECT p2.nombre,IF(p2.cantidad is NULL,0,p2.cantidad) as cantidad,
+            IF(p2.cantidad_realizados is NULL,0,p2.cantidad_realizados) as cantidad_realizados,
+            IF(p2.cantidad_faltantes is NULL,0,p2.cantidad_faltantes) as cantidad_faltantes FROM (
+		SELECT p1.id,p1.nombre,sum(cantidad) as cantidad, sum(cantidad_realizados) as cantidad_realizados,
+                sum(cantidad_faltantes) as cantidad_faltantes
 	FROM (
 	SELECT sec_id as id,sec_nombre as nombre FROM tb_seccion a
             INNER JOIN tb_grado b ON a.gra_id=b.gra_id WHERE sec_estado=1 ";
@@ -1528,8 +1548,8 @@ function con_buscar_semaforo_docentes_grafico_barras($sede, $fecha_ini, $fecha_f
         $sql .= " ) as p1
 	LEFT JOIN (
 	SELECT d.sec_id as id,sec_nombre as seccion,
-		CONCAT(sec_nombre) as nombre,COUNT(c.mat_id) as cantidad,
-		COUNT(g.sol_id) as cantidad_realizados,COUNT(c.mat_id) -COUNT(g.sol_id) as cantidad_faltantes
+		CONCAT(sec_nombre) as nombre,ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 as cantidad,
+		COUNT(g.sol_id) as cantidad_realizados,ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 -COUNT(g.sol_id) as cantidad_faltantes
 		FROM tb_usuario_dictado a
 		INNER JOIN tb_usuario b ON a.usu_id=b.usu_id
 		INNER JOIN tb_matricula c ON a.sec_id=c.sec_id AND a.sed_id=c.sed_id
@@ -1538,7 +1558,8 @@ function con_buscar_semaforo_docentes_grafico_barras($sede, $fecha_ini, $fecha_f
 		INNER JOIN tb_sede f ON c.sed_id=f.sed_id
                 INNER JOIN tb_nivel h ON e.niv_id=h.niv_id
 		LEFT JOIN tb_solicitudes g ON c.mat_id=g.mat_id AND sol_estado=1
-		WHERE dic_estado=1 and mat_estado=1 AND YEAR(mat_fech_regi)=YEAR(NOW())
+                INNER JOIN tb_bimestre i ON (g.sol_fecha BETWEEN i.bim_fecha_ini and i.bim_fecha_fin) OR sol_fecha is NULL 
+		WHERE dic_estado=1 and mat_estado=1 AND DATE(NOW()) BETWEEN bim_fecha_ini AND bim_fecha_fin 
 		";
         if ($fecha_ini !== "") {
             $sql .= " AND mat_fech_regi>='$fecha_ini 00:00:00' ";
@@ -1558,12 +1579,12 @@ function con_buscar_semaforo_docentes_grafico_barras($sede, $fecha_ini, $fecha_f
         if ($seccion !== "0") {
             $sql .= " AND c.sec_id in ($seccion) ";
         }
-        $sql .= " GROUP BY c.sec_id ORDER BY c.sec_id
-		) as p2 ON p1.id=p2.id WHERE 1=1 ";
+        $sql .= " GROUP BY a.usu_id,c.sed_id,c.sec_id )"
+                . " as p2 ON p1.id=p2.id WHERE 1=1 ";
         if ($seccion !== "0") {
             $sql .= " AND p1.id in ($seccion) ";
         }
-        $sql .= ";";
+        $sql .= " GROUP BY p1.id ORDER BY p1.id ) as p2 ORDER BY p2.id;";
     }
     return $sql;
 }
@@ -2735,6 +2756,19 @@ function con_lista_niveles($id, $estado) {
     }
     if ($estado != "") {
         $sql .= " AND niv_estado='$estado' ";
+    }
+    $sql .= " ORDER BY codigo;";
+    return $sql;
+}
+
+function con_lista_planas($id, $estado) {
+    $sql = "SELECT pla_id as codigo,pla_nombre as nombre "
+            . " FROM tb_plana WHERE 1=1 ";
+    if ($id != "") {
+        $sql .= " AND pla_id=$id ";
+    }
+    if ($estado != "") {
+        $sql .= " AND pla_estado='$estado' ";
     }
     $sql .= " ORDER BY codigo;";
     return $sql;

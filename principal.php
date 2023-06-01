@@ -19,7 +19,6 @@ $userData = fnc_datos_usuario($conexion, $codigo_user);
 $perfilCodi = $userData[0]["perfil"];
 $perfil = $userData[0]["perfil_nombre"];
 $sede = $userData[0]["sedeId"];
-
 $sedeCodi = "";
 $usuarioCodi = "";
 $privacidad = "";
@@ -49,7 +48,7 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Sistema de acompa&ntilde;amiento al estudiante - SIAE</title>
+        <title>Sistema Integral de acompa&ntilde;amiento al estudiante - SIAE</title>
 
         <!-- Google Font: Source Sans Pro -->
         <link rel="stylesheet" href="plugins/fontawesome-free/fonts.googleapis.css">
@@ -87,7 +86,7 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
       * sidebar-collapse
       * sidebar-mini
     -->
-    <body class="hold-transition sidebar-mini">
+    <body class="hold-transition sidebar-mini layout-fixed">
         <div class="wrapper">
             <!-- Navbar -->
             <nav class="main-header navbar navbar-expand navbar-white navbar-light">
@@ -100,7 +99,7 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                         <a href="#" class="nav-link">Principal</a>
                     </li>
                     <li class="nav-item d-none d-sm-inline-block">
-                        <a href="#" class="nav-link">Sistema de acompañamiento al estudiante - SIAE CBB </a>
+                        <a href="#" class="nav-link">Sistema Integral de acompa&ntilde;amiento al estudiante - SIAE </a>
 
                     </li>
                 </ul>
@@ -213,7 +212,7 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-widget="control-sidebar" data-controlsidebar-slide="true" href="#" role="button">
+                        <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
                             <i class="fas fa-th-large"></i>
                         </a>
                     </li>
@@ -225,8 +224,9 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
             <aside class="main-sidebar sidebar-dark-primary elevation-4">
                 <!-- Brand Logo -->
                 <a href="principal.php" class="brand-link" style="text-align: center;">
-                    <span class="img-circle elevation-3">SIAE</span>
-                    <span class="brand-text font-weight-light" >CBB</span>
+                    <img src="php/aco_img/CBB_logo2.png" alt="" style="height: 65px;width: 200px"/>
+                    <!--<span class="img-circle elevation-3">SIAE</span>
+                    <span class="brand-text font-weight-light" >CBB</span>-->
                 </a>
 
                 <!-- Sidebar -->
@@ -234,9 +234,9 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                     <!-- Sidebar user panel (optional) -->
                     <div class="user-panel mt-3 pb-3 mb-3 d-flex">
                         <div class="image" style="padding-left: 0px;display: flex;align-items: center;">
-                            <img src="dist/img/user2-160x160.jpg" style="width: 55px;height: 55px" class="img-circle elevation-2" alt="User Image">
+                            <img src="php/aco_img/CBB_escudo.png" style="width: 70px;height: 80px" class="" alt="User Image">
                         </div>
-                        <div class="info">
+                        <div class="info" style="font-size: 14.5px">
                             <a href="javascript:void(0)" class="d-block"><?php echo $userSession["usu_nombres"]; ?></a>
                             <a href="javascript:void(0)" class="d-block"><?php echo $userSession["apellidos"]; ?></a>
                             <a href="javascript:void(0)" class="d-block"><?php echo $perfil; ?></a>
@@ -342,8 +342,16 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                                 <!-- small card -->
                                 <div class="small-box bg-success">
                                     <div class="inner">
-                                        <h3><?php echo $semaforo[0]["porcentaje"]; ?></h3>
-                                        <p>Semaforo docentes por sede</p>
+                                        <h3><?php
+                                            $str_porcentaje = "";
+                                            if (count($semaforo)) {
+                                                $str_porcentaje = $semaforo[0]["porcentaje"];
+                                            } else {
+                                                $str_porcentaje = "0.0000 %";
+                                            }
+                                            echo $str_porcentaje;
+                                            ?></h3>
+                                        <p>Semaforo docentes del bimestre actual</p>
                                         <label><a href="#" style="color: white;" onclick="mostrar_modulo_x_alerta(8);">Ir al m&oacute;dulo</a></label>
                                     </div>
                                     <div class="icon">
@@ -371,7 +379,7 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                                     </a>
                                 </div>
                             </div>
-                            <div class="col-lg-3 col-6" style="text-align: center;"><img  src="php/aco_img/logo_3.png" alt="" style="height: 170px"></div>
+                            <div class="col-lg-3 col-6" style="text-align: center;"></div>
                             <!-- ./col -->
                             <!-- ./col -->
                         </div>
@@ -393,7 +401,7 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
 
             <!-- Main Footer -->
             <footer class="main-footer">
-                <strong>Copyright &copy; 2023-2030 <a href="javascript:void(0)">Sistema de acompa&ntilde;amiento al estudiante - SIAE</a>.</strong>
+                <strong>Copyright &copy; 2023 <a href="javascript:void(0)">Sistema Integral de acompa&ntilde;amiento al estudiante - SIAE</a>.</strong>
                 Reservados todos los derechos.
                 <div class="float-right d-none d-sm-inline-block">
                     <b>Version</b> 1.0.0
@@ -421,6 +429,8 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
 
         <!-- OPTIONAL SCRIPTS -->
         <script src="plugins/chart.js/Chart.min.js"></script>
+        <!-- AdminLTE for demo purposes -->
+        <script src="dist/js/demo.js"></script>
         <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
         <script src="dist/js/pages/dashboard3.js"></script>
         <!-- DataTables  & Plugins -->
@@ -460,11 +470,9 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
 
         <script src="plugins/raphael/raphael-min.js"></script>
         <script src="plugins/morris/morris.min.js"></script>
-
-        <!-- AdminLTE App -->
-        <script src="dist/js/adminlte.js"></script>
-        <!-- AdminLTE for demo purposes -->
-        <script src="dist/js/demo.js"></script>
+        <script src="plugins/SigWeb/SigWebTablet.js" type="text/javascript"></script>
+        <script type="text/javascript">
+        </script>
     </body>
 
 </html>

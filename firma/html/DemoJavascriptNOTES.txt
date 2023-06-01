@@ -1,0 +1,7 @@
+DemoJavascript.htm and DemoJavscript2.htm together comprise a single SigPlus HTM demo (a bit more complicated than the JavascriptSimple.htm demo), using Javascript. Please run the DemoJavascript.htm page first, as the ACTION of that page's <FORM> tag is DemoJavascript2.htm 
+
+The DemoJavascript.htm page captures, encrypts, and compresses the signature, then passes the signature to the Server using the GET method.
+
+From there, the DemoJavascript2.htm page is opened, and (grabbing the data passed in the URL via the GET method from the previous page) places the information on this page. The name is not grabbed from the previous page, however, and the user must supply this to decrypt the signature, which will allow the new SigPlus object on this page to render the signature again from the previous page for viewing.
+
+If you have any questions, please contact Topaz Systems using devsupport@topazsystems.com.

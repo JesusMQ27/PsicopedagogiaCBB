@@ -1707,7 +1707,7 @@ function formulario_eliminar_detalle_grupo_usuario() {
     <div class="row space-div">
         <div class="col-md-12" style="margin-bottom: 0px;">
             <input type="hidden" id="hdnCodiGrupoUsu" class="form-control" value="<?php echo trim($eu_codi[0]); ?>"/>
-            <label>&iquest;Esta seguro de eliminar el Grupo "<label style="font-style: italic; "><?php echo $grupo[0]["codigo"] ?>"</label> de Carga de Alumno?</label>
+            <label>&iquest;Esta seguro de eliminar el Grupo "<label style="font-style: italic; "><?php echo $grupo[0]["codigo"] ?>"</label> de Carga de Usuarios y docentes?</label>
         </div>
     </div>
     <?php
@@ -1752,7 +1752,7 @@ function formulario_activar_detalle_grupo_usuario() {
     <div class="row space-div">
         <div class="col-md-12" style="margin-bottom: 0px;">
             <input type="hidden" id="hdnCodiGrupoUsu" class="form-control" value="<?php echo trim($eu_codi[0]); ?>"/>
-            <label>&iquest;Esta seguro de activar el Grupo "<label style="font-style: italic; "><?php echo $grupo[0]["codigo"] ?>"</label> de Carga de Alumno?</label>
+            <label>&iquest;Esta seguro de activar el Grupo "<label style="font-style: italic; "><?php echo $grupo[0]["codigo"] ?>"</label> de Carga de Usuarios y docentes?</label>
         </div>
     </div>
     <?php
@@ -1984,10 +1984,11 @@ function formulario_detalle_tipo_solicitud() {
                 . '<div id="signature-pad" class="signature-pad" style="margin-left: 20px;">
                     <div class="description">Firma del estudiante</div>
                     <div class="signature-pad--body">
-                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas1"></canvas>
+                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid;" id="canvas1"></canvas>
                     </div>
                    </div>
                    <div style="margin-left: 20px;">
+                        <button type="button" class="btn btn-default" onclick="iniciar_firma_1()">Iniciar</button>&nbsp;&nbsp;
                         <button type="button" class="btn btn-default" onclick="limpiar_firma();">Limpiar firma</button>
                    </div>
                    <div style="margin-left: 20px;">
@@ -2003,6 +2004,7 @@ function formulario_detalle_tipo_solicitud() {
                         <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas2"></canvas>
                     </div>
                     <div>
+                        <button type="button" class="btn btn-default" onclick="iniciar_firma_2()">Iniciar</button>&nbsp;&nbsp;
                         <button type="button" class="btn btn-default" onclick="limpiar_firma_entrevistador();">Limpiar firma</button>
                    </div>
                    <div style="margin-left: 20px;">
@@ -2143,6 +2145,7 @@ function formulario_detalle_tipo_solicitud() {
                     </div>
                    </div>
                    <div style="margin-left: 20px;">
+                        <button type="button" class="btn btn-default" onclick="iniciar_firma_1()">Iniciar</button>&nbsp;&nbsp;
                         <button type="button" class="btn btn-default" onclick="limpiar_firma();">Limpiar firma</button>
                    </div>
                    <div style="margin-left: 20px;" id="divApoderadoNombreDNI">
@@ -2158,6 +2161,7 @@ function formulario_detalle_tipo_solicitud() {
                         <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas2"></canvas>
                     </div>
                     <div>
+                        <button type="button" class="btn btn-default" onclick="iniciar_firma_2()">Iniciar</button>&nbsp;&nbsp;
                         <button type="button" class="btn btn-default" onclick="limpiar_firma_entrevistador();">Limpiar firma</button>
                    </div>
                    <div style="margin-left: 20px;">
@@ -2797,6 +2801,7 @@ function formulario_detalle_tipo_solicitud_sub() {
                     </div>
                    </div>
                    <div style="margin-left: 20px;">
+                        <button type="button" class="btn btn-default" onclick="iniciar_firma_sub_1()">Iniciar</button>&nbsp;&nbsp;
                         <button type="button" class="btn btn-default" onclick="limpiar_firma_sub();">Limpiar firma</button>
                    </div>
                    <div style="margin-left: 20px;">
@@ -2812,6 +2817,7 @@ function formulario_detalle_tipo_solicitud_sub() {
                         <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas2_sub"></canvas>
                     </div>
                     <div>
+                        <button type="button" class="btn btn-default" onclick="iniciar_firma_sub_2()">Iniciar</button>&nbsp;&nbsp;
                         <button type="button" class="btn btn-default" onclick="limpiar_firma_entrevistador_sub();">Limpiar firma</button>
                    </div>
                    <div style="margin-left: 20px;">
@@ -2951,7 +2957,8 @@ function formulario_detalle_tipo_solicitud_sub() {
                     </div>
                    </div>
                    <div style="margin-left: 20px;">
-                        <button type="button" class="btn btn-default" onclick="limpiar_firma();">Limpiar firma</button>
+                        <button type="button" class="btn btn-default" onclick="iniciar_firma_sub_1()">Iniciar</button>&nbsp;&nbsp;
+                        <button type="button" class="btn btn-default" onclick="limpiar_firma_sub();">Limpiar firma</button>
                    </div>
                    <div style="margin-left: 20px;" id="divApoderadoNombreDNI_sub">
                        <label><label/>
@@ -2966,7 +2973,8 @@ function formulario_detalle_tipo_solicitud_sub() {
                         <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas2_sub"></canvas>
                     </div>
                     <div>
-                        <button type="button" class="btn btn-default" onclick="limpiar_firma_entrevistador();">Limpiar firma</button>
+                        <button type="button" class="btn btn-default" onclick="iniciar_firma_sub_2()">Iniciar</button>&nbsp;&nbsp;
+                        <button type="button" class="btn btn-default" onclick="limpiar_firma_entrevistador_sub();">Limpiar firma</button>
                    </div>
                    <div style="margin-left: 20px;">
                        <label>' . strtoupper($usuario_data[0]["usuariodata"]) . '<br/>' . $usuario_data[0]["usuarioDni"] . '<label/>
@@ -3529,14 +3537,18 @@ function formulario_carga_solicitudes() {
             }
             $html .= '<input type="hidden" id="firma1" value="' . $imagen_codi . '"/>
                     <div class="description">Firma del estudiante</div>
-                    <div class="signature-pad--body">';
-            $html .= '<img id="ruta_img1" src="' . $imagen1 . '" style="width: 80%;cursor:pointer;border: 1px black solid;" height="152"/>';
+                    <div class="signature-pad--body" id="divFirma1">';
+            if (trim($imagen1) !== "") {
+                $html .= '<img id="ruta_img1" src="' . $imagen1 . '" style="width: 80%;cursor:pointer;border: 1px black solid;" height="152"/>';
+            } else {
+                $html .= '<div style="height:152px;width: 80%;cursor:pointer;border: 1px black solid;"></div>';
+            }
             $html .= '<canvas style="width: 80%;cursor:pointer;border: 1px black solid;display:none" id="canvas1_edi" height="152" width="531"></canvas>
-                        <br/>
                     </div>
                    </div>
                    <div style="margin-left: 20px;">
-                        <button type="button" class="btn btn-default" onclick="limpiar_firma_edi();" ' . $campos_disabled . '>Limpiar firma</button>
+                        <button type="button" class="btn btn-default" onclick="iniciar_firma_edi()" ' . $campos_disabled . '>Iniciar</button>&nbsp;&nbsp;
+                        <button type="button" class="btn btn-default" id="btnLimpiarFirma1" onclick="limpiar_firma_edi();" disabled>Limpiar firma</button>
                    </div>
                    <div style="margin-left: 20px;">
                        <label id="divApoderadoNombreDNI_edi">' . str_replace(" - ", "<br/>", strtoupper($lista_solicitud[0]["alumno"])) . '<label/>
@@ -3556,7 +3568,7 @@ function formulario_carga_solicitudes() {
             $imagen2 = "";
             if (count($imagen_soli2) > 0) {
                 if ($imagen_soli2[0]["id"] !== "") {
-                    $imagen_codi2 = $imagen_soli[0]["id"];
+                    $imagen_codi2 = $imagen_soli2[0]["id"];
                     $imagen2 = "./php/" . str_replace("../", "", $imagen_soli2[0]["imagen"]);
                 } else {
                     $imagen_codi2 = "";
@@ -3568,13 +3580,18 @@ function formulario_carga_solicitudes() {
             }
             $html .= '<input type="hidden" id="firma2" value="' . $imagen_codi2 . '"/>
                     <div class="description">Firma del entrevistador</div>
-                    <div class="signature-pad--body">';
-            $html .= '<img id="ruta_img2" src="' . $imagen2 . '" style="width: 80%;cursor:pointer;border: 1px black solid;" height="152"/>';
+                    <div class="signature-pad--body" id="divFirma2">';
+            if (trim($imagen2) !== "") {
+                $html .= '<img id="ruta_img2" src="' . $imagen2 . '" style="width: 80%;cursor:pointer;border: 1px black solid;" height="152"/>';
+            } else {
+                $html .= '<div style="height:152px;"></div>';
+            }
             $html .= '<canvas style = "width: 80%;cursor:pointer;border: 1px black solid;display:none" id = "canvas2_edi" height = "152" width = "531"></canvas>
             <br/>
             </div>
             <div>
-            <button type = "button" class = "btn btn-default" onclick="limpiar_firma_entrevistador_edi();" ' . $campos_disabled . '>Limpiar firma</button>
+            <button type="button" class="btn btn-default" onclick="iniciar_firma_edi2()" ' . $campos_disabled . '>Iniciar</button>&nbsp;&nbsp;
+            <button type = "button" class = "btn btn-default" id="btnLimpiarFirma2" onclick="limpiar_firma_entrevistador_edi();" disabled>Limpiar firma</button>
             </div>
             <div style = "margin-left: 20px;">
             <label>' . strtoupper($lista_solicitud[0]["usuario"]) . '<br/>' . $lista_solicitud[0]["dni"] . '<label/>
@@ -3742,14 +3759,19 @@ function formulario_carga_solicitudes() {
             $html .= '<div id = "signature-pad-edi" class = "signature-pad" style = "margin-left: 20px;">
             <input type = "hidden" id = "firma1" value = "' . $imagen_codi . '"/>
             <div class = "description">Firma del padre, madre o apoderado</div>
-            <div class = "signature-pad--body">
-            <img id = "ruta_img1" src = "' . $imagen1 . '" style = "width: 80%;cursor:pointer;border: 1px black solid;" height = "152"/>
-            <canvas style = "width: 80%;cursor:pointer;border: 1px black solid;display:none" id = "canvas1_edi" height = "152" width = "531"></canvas>
+            <div class = "signature-pad--body" id="divFirma1">';
+            if (trim($imagen1) !== "") {
+                $html .= '<img id="ruta_img1" src="' . $imagen1 . '" style="width: 80%;cursor:pointer;border: 1px black solid;" height="152"/>';
+            } else {
+                $html .= '<div style="height:152px;width: 80%;cursor:pointer;border: 1px black solid;"></div>';
+            }
+            $html .= '<canvas style = "width: 80%;cursor:pointer;border: 1px black solid;display:none" id = "canvas1_edi" height = "152" width = "531"></canvas>
             <br/>
             </div>
             </div>
             <div style = "margin-left: 20px;">
-            <button type = "button" class = "btn btn-default" onclick = "limpiar_firma_edi();" ' . $campos_disabled . '>Limpiar firma</button>
+                <button type="button" class="btn btn-default" onclick="iniciar_firma_edi()" ' . $campos_disabled . '>Iniciar</button>&nbsp;&nbsp;
+                <button type = "button" class = "btn btn-default" id="btnLimpiarFirma1" onclick = "limpiar_firma_edi();" disabled>Limpiar firma</button>
             </div>
             <div style = "margin-left: 20px;" id = "divApoderadoNombreDNI_edi">
             <label>' . strtoupper($apoderado[0]["nombre"]) . '<br/>' . $apoderado[0]["dni"] . '<label/>
@@ -3781,13 +3803,19 @@ function formulario_carga_solicitudes() {
             $html .= '<div id = "signature-pad-entrevistador-edi" class = "signature-pad" >
             <input type = "hidden" id = "firma2" value = "' . $imagen_codi2 . '"/>
             <div class = "description">Firma del entrevistador</div>
-            <div class = "signature-pad--body">
-            <img id = "ruta_img2" src = "' . $imagen2 . '" style = "width: 80%;cursor:pointer;border: 1px black solid;" height = "152"/>
-            <canvas style = "width: 80%;cursor:pointer;border: 1px black solid;display:none" id = "canvas2_edi" height = "152" width = "531"></canvas>
+            <div class = "signature-pad--body" id="divFirma2">';
+            if (trim($imagen2) !== "") {
+                $html .= '<img id = "ruta_img2" src = "' . $imagen2 . '" style = "width: 80%;cursor:pointer;border: 1px black solid;" height = "152"/>';
+            } else {
+                $html .= '<div style="height:152px;"></div>';
+            }
+            $html .= '<canvas style = "width: 80%;cursor:pointer;border: 1px black solid;display:none" id = "canvas2_edi" height = "152" width = "531"></canvas>
             <br/>
             </div>
             <div>
-            <button type = "button" class = "btn btn-default" onclick = "limpiar_firma_entrevistador_edi();" ' . $campos_disabled . '>Limpiar firma</button>
+            <button type = "button" class = "btn btn-default" onclick = "iniciar_firma_edi2()" ' . $campos_disabled . '>Iniciar</button>&nbsp;
+            &nbsp;
+            <button type = "button" class = "btn btn-default" id = "btnLimpiarFirma2" onclick = "limpiar_firma_entrevistador_edi();" disabled>Limpiar firma</button>
             </div>
             <div style = "margin-left: 20px;">
             <label>' . strtoupper($lista_solicitud[0]["usuario"]) . '<br/>' . $lista_solicitud[0]["dni"] . '<label/>
@@ -4311,13 +4339,16 @@ function formulario_carga_solicitudes_detalla() {
                 $imagen_codi = "";
                 $imagen1 = "";
             }
-            $html .= '<div id = "signature-pad-edi" class = "signature-pad" style = "margin-left: 20px;">
+            $html .= '<div class = "signature-pad" style = "margin-left: 20px;">
             <input type = "hidden" id = "firma1" value = "' . $imagen_codi . '"/>
             <div class = "description">Firma del estudiante</div>
-            <div class = "signature-pad--body">
-            <img id = "ruta_img1" src = "' . $imagen1 . '" style = "width: 80%;cursor:pointer;border: 1px black solid;" height = "152"/>
-            <canvas style = "width: 80%;cursor:pointer;border: 1px black solid;display:none" id = "canvas1_edi" height = "152" width = "531"></canvas>
-            <br/>
+            <div class = "signature-pad--body">';
+            if (trim($imagen1) !== "") {
+                $html .= '<img id = "ruta_imgdet1" src = "' . $imagen1 . '" style = "width: 80%;cursor:pointer;border: 1px black solid;" height = "152"/>';
+            } else {
+                $html .= '<div style = "height:152px"></div>';
+            }
+            $html .= '<canvas style = "width: 80%;cursor:pointer;border: 1px black solid;display:none" id = "canvas1_edi" height = "152" width = "531"></canvas>
             </div>
             </div>
             <div style = "margin-left: 20px;">
@@ -4337,7 +4368,7 @@ function formulario_carga_solicitudes_detalla() {
             $imagen2 = "";
             if (count($imagen_soli2) > 0) {
                 if ($imagen_soli2[0]["id"] !== "") {
-                    $imagen_codi2 = $imagen_soli[0]["id"];
+                    $imagen_codi2 = $imagen_soli2[0]["id"];
                     $imagen2 = "./php/" . str_replace("../", "", $imagen_soli2[0]["imagen"]);
                 } else {
                     $imagen_codi2 = "";
@@ -4347,12 +4378,14 @@ function formulario_carga_solicitudes_detalla() {
                 $imagen_codi2 = "";
                 $imagen2 = "";
             }
-            $html .= '<div id = "signature-pad-entrevistador-edi" class = "signature-pad" >
+            $html .= '<div class = "signature-pad" >
             <input type = "hidden" id = "firma2" value = "' . $imagen_codi2 . '"/>
             <div class = "description">Firma del entrevistador</div>
-            <div class = "signature-pad--body">
-            <img id = "ruta_img2" src = "' . $imagen2 . '" style = "width: 80%;cursor:pointer;border: 1px black solid;" height = "152"/>
-            <canvas style = "width: 80%;cursor:pointer;border: 1px black solid;display:none" id = "canvas2_edi" height = "152" width = "531"></canvas>
+            <div class = "signature-pad--body">';
+            if ($imagen2 != "") {
+                $html .= '<img id = "ruta_imgdet2" src = "' . $imagen2 . '" style = "width: 80%;cursor:pointer;border: 1px black solid;" height = "152"/>';
+            }
+            $html .= '<canvas style = "width: 80%;cursor:pointer;border: 1px black solid;display:none" id = "canvas2_edi" height = "152" width = "531"></canvas>
             <br/>
             </div>
             <div style = "margin-left: 20px;">
@@ -4486,11 +4519,11 @@ function formulario_carga_solicitudes_detalla() {
                 $imagen1 = "";
             }
 
-            $html .= '<div id = "signature-pad-edi" class = "signature-pad" style = "margin-left: 20px;">
+            $html .= '<div class = "signature-pad" style = "margin-left: 20px;">
             <input type = "hidden" id = "firma1" value = "' . $imagen_codi . '"/>
             <div class = "description">Firma del padre, madre o apoderado</div>
             <div class = "signature-pad--body">
-            <img id = "ruta_img1" src = "' . $imagen1 . '" style = "width: 80%;cursor:pointer;border: 1px black solid;" height = "152"/>
+            <img id = "ruta_imgdet1" src = "' . $imagen1 . '" style = "width: 80%;cursor:pointer;border: 1px black solid;" height = "152"/>
             <br/>
             </div>
             </div>
@@ -4523,11 +4556,11 @@ function formulario_carga_solicitudes_detalla() {
                 $imagen_codi2 = "";
                 $imagen2 = "";
             }
-            $html .= '<div id = "signature-pad-entrevistador-edi" class = "signature-pad" >
+            $html .= '<div class = "signature-pad" >
             <input type = "hidden" id = "firma2" value = "' . $imagen_codi2 . '"/>
             <div class = "description">Firma del entrevistador</div>
             <div class = "signature-pad--body">
-            <img id = "ruta_img2" src = "' . $imagen2 . '" style = "width: 80%;cursor:pointer;border: 1px black solid;" height = "152"/>
+            <img id = "ruta_imgdet2" src = "' . $imagen2 . '" style = "width: 80%;cursor:pointer;border: 1px black solid;" height = "152"/>
             <br/>
             </div>
             <div>

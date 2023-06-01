@@ -1,0 +1,99 @@
+<HTML>
+    <HEAD>
+
+        <script LANGUAGE="Javascript">
+
+
+
+            function SetSig() {
+                if (document.SigForm.txtValue.value == "") {
+                    alert("Please enter your first name to continue");
+                    return false;
+                } else
+                {
+                    if (SigPlus1.NumberOfTabletPoints == 0) {
+                        alert("Please sign to continue");
+                        return false;
+                    } else {
+                        SigPlus1.TabletState = 0;
+                        SigPlus1.AutoKeyStart();
+                        SigPlus1.AutoKeyData = document.SigForm.txtValue.value;
+                        SigPlus1.AutoKeyData = document.SigForm.Disclaimer.value;
+                        SigPlus1.AutoKeyFinish();
+                        SigPlus1.EncryptionMode = 1;
+                        SigPlus1.SigCompressionMode = 2;
+                        document.SigForm.SigData.value = SigPlus1.SigString;
+                        document.SigForm.submit();
+                    }
+                }
+            }
+
+            function OnClear() {
+                SigPlus1.ClearTablet();
+            }
+
+            function OnCancel() {
+                SigPlus1.TabletState = 0;
+            }
+
+            function OnSign() {
+                SigPlus1.TabletState = 1;
+            }
+
+        </script> 
+        <script type="text/javascript" src="SigWebTablet.js"></script>
+        <TITLE>Sign & Submit</TITLE>
+
+
+    </HEAD>
+    <BODY>
+
+
+        <FORM ACTION="DemoJavascript2.htm" METHOD=GET NAME="SigForm">
+
+            <DIV STYLE="position:absolute; top:60px; left:10px;">
+                <br><br><b>Please provide your first name below and press the SIGN button to sign. When submitted, your first name and the disclaimer information will be used to encrypt the e-signature. You will need to provide your first name again on the next page to retrieve the signature.</b><br><br>
+
+                <br>The following is nonsense disclaimer information:
+                <INPUT TYPE=TEXT SIZE=117 NAME=Disclaimer VALUE="Signing to this form is for example purposes only and authorizes no agreement whatsoever between signer and Company" onChange="this.value = 'Signing to this form is for example purposes only and authorizes no agreement whatsoever between signer and Company';" readonly><br><br>
+
+                <br>Please enter your first name here:<br>
+                <INPUT TYPE="text" NAME="txtValue"><br><br><br><br><br><br><br>
+
+
+
+                <input id="SignBtn" name="SignBtn" type="button" value="Sign" onclick="OnSign()" style="BACKGROUND-COLOR: #666699; COLOR: white; FONT: bold 8pt verdana" onmouseout="window.event.srcElement.style.background = '#666699'" onmouseover="window.event.srcElement.style.background = '#AFAFAF'">&nbsp;&nbsp;
+                <input id="button1" name="ClearBtn" type="button" value="Clear" onclick="OnClear()" style="BACKGROUND-COLOR: #666699; COLOR: white; FONT: bold 8pt verdana" onmouseout="window.event.srcElement.style.background = '#666699'" onmouseover="window.event.srcElement.style.background = '#AFAFAF'"><br><br>
+                <INPUT TYPE=HIDDEN NAME="SigData">
+                <INPUT TYPE=BUTTON VALUE="   Submit   " onClick="SetSig()" style="BACKGROUND-COLOR: #666699; COLOR: white; FONT: bold 8pt verdana" onmouseout="window.event.srcElement.style.background = '#666699'" onmouseover="window.event.srcElement.style.background = '#AFAFAF'">&nbsp;
+            </DIV>
+
+
+        </FORM>
+
+        <DIV STYLE="position:absolute; top:220px; left:250px;">
+            <table border=1 cellpadding="0">
+                <tr><td>   
+                        <OBJECT classid=clsid:69A40DA3-4D42-11D0-86B0-0000C025864A height=75
+                                id=SigPlus1 name=SigPlus1
+                                style="HEIGHT: 180px; WIDTH: 320px; LEFT: 0px; TOP: 0px; 
+                                VIEWASTEXT>
+                                <PARAM NAME="_Version" VALUE="131095">
+                                <PARAM NAME="_ExtentX" VALUE="4842">
+                            <PARAM NAME="_ExtentY" VALUE="1323">
+                            <PARAM NAME="_StockProps" VALUE="0">
+                        </OBJECT>
+                    </td></tr>
+            </table>
+        </DIV>
+
+
+
+        <DIV STYLE="position:absolute; top:10px; left:10px;">
+            <a>
+                <FONT COLOR='#666699'><h2>Demo:<br>Sign & Submit</h2></FONT>
+            </a>
+        </DIV>
+
+    </BODY>
+</HTML>

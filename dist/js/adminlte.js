@@ -2341,11 +2341,11 @@
             return "<strong class=\"" + _this4.options.highlightClass + "\">" + str + "</strong>";
           });
         }
-      }
-
+      }//
       var groupItemElement = $__default["default"]('<a/>', {
         href: decodeURIComponent(link),
-        class: 'list-group-item'
+        class: 'list-group-item',
+        onclick: 'cargar_opcion'
       });
       var searchTitleElement = $__default["default"]('<div/>', {
         class: 'search-title'

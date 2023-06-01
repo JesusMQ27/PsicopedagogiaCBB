@@ -31,6 +31,10 @@ if ($userData[0]["sedeId"] == "1" && ($perfilId === "1" || $perfilId === "5")) {
         $usuarioCodi = "";
     }
 }
+
+$lista_semaforo = fnc_lista_semaforo($conexion, '', '1');
+$lista_bimestre = fnc_lista_bimestre($conexion, '', '1');
+$lista_niveles = fnc_lista_niveles($conexion, '', '1');
 ?>
 
 <section class="content-header">
@@ -56,7 +60,7 @@ if ($userData[0]["sedeId"] == "1" && ($perfilId === "1" || $perfilId === "5")) {
             <div class="card-body">
                 <div class="row">
                     <input type="hidden" id="hdnCodiSR" value="<?php echo $codigo; ?>"/>
-                    <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
                         <div class="form-group" style="margin-bottom: 0px;">
                             <label> Sede: </label>
                         </div>
@@ -101,11 +105,70 @@ if ($userData[0]["sedeId"] == "1" && ($perfilId === "1" || $perfilId === "5")) {
                             <input type="text" class="form-control pull-right" id="fecha2" value="<?php echo $fechas[0]["hoy"]; ?>" readonly >
                         </div>
                     </div>
+                </div><br>
+                <div class="row">
+                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                        <div class="form-group" style="margin-bottom: 0px;">
+                            <label> Bimestre: </label>
+                        </div>
+                        <select id="cbbBimestre" data-show-content="true" class="form-control" style="width: 100%">
+                            <option value="0">-- Todos --</option>
+                            <?php
+                            foreach ($lista_bimestre as $bimestre) {
+                                echo "<option value='" . $bimestre["id"] . "' >" . $bimestre["nombre"] . "</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+                        <div class="form-group" style="margin-bottom: 0px;">
+                            <label> Nivel: </label>
+                        </div>
+                        <select id="cbbNivel" data-show-content="true" class="form-control" style="width: 100%" onchange="cargar_selector_grado(this)">
+                            <option value="0">-- Todos --</option>
+                            <?php
+                            foreach ($lista_niveles as $nivel) {
+                                echo "<option value='" . $nivel["codigo"] . "' >" . $nivel["nombre"] . "</option>";
+                            }
+                            ?>
+
+                        </select>
+                    </div>
+                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                        <div class="form-group" style="margin-bottom: 0px;">
+                            <label> Grado: </label>
+                        </div>
+                        <select id="cbbGrado" data-show-content="true" class="form-control" style="width: 100%" onchange="cargar_selector_seccion(this)">
+                            <option value="0">-- Todos --</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-sm-6 col-12">
+                        <div class="form-group" style="margin-bottom: 0px;">
+                            <label> Secci&oacute;n: </label>
+                        </div>
+                        <select id="cbbSeccion" data-show-content="true" class="form-control" style="width: 100%">
+                            <option value="0">-- Todos --</option>
+                        </select>
+                    </div>
+                </div><br>
+                <div class="row">
+                    <div class="col-lg-4 col-md-4 col-sm-6 col-12">
+                        <div class="form-group" style="margin-bottom: 0px;" id="docenteData">
+                            <label id="dataDocente" >Docente:</label>
+                            <input type="hidden" id="docen" value=""/>
+                        </div>
+                        <input type="text" id="searchDocente" class="typeahead form-control" style="size:12px;text-transform: uppercase;" value="" autocomplete="off">
+                    </div>
                     <div class="col-lg-2 col-md-4 col-sm-6 col-12">
                         <button class="btn btn-success" id="btnNuevoSolicitud" style="bottom: 0px;margin-top: 30px" 
                                 onclick="buscar_alumnos_no_entrevistados()">
                             <i class="fa fa-search"></i>
                             Buscar</button>
+                        &nbsp;&nbsp;
+                        <button class="btn btn-info" id="btnNuevoLimpiar" style="bottom: 0px;margin-top: 30px" 
+                                onclick="limpiar_campos_no_entrevistados()">
+                            <i class="fa fa-search"></i>
+                            Limpiar</button>
                     </div>
                 </div><br>
                 <div class="row">

@@ -39,27 +39,27 @@ try {
                 $u_clave = hash("sha256", md5($clave));
                 $cadenaInsertUsuario = '("' . $value["tipDocId"] . '","' . $value["dni"] . '","' . $value["paterno"] . '","' .
                         $value["materno"] . '","' . $value["nombres"] . '","' . $value["correo"] . '","' .
-                        $u_clave . '","' . $value["codigo_perfil"] . '",NOW(),"' . $u_token . '","1")';
+                        $u_clave . '","' . $value["codigo_perfil"] . '","' . $value["codigo_sede"] . '",NOW(),"' . $u_token . '","1")';
                 $str_usuarios .= $value["nombres"] . " " . $value["paterno"] . " " . $value["materno"] . "*" .
                         $value["dni"] . "*" .
-                        $u_clave . "*" .
+                        $clave . "*" .
                         $value["correo"] . "/";
                 if ($value["actual_usu_id"] == 0) {
                     $usuCodigo = fnc_registrar_data_tmp_a_usuario($conexion, $cadenaInsertUsuario);
-                    if ($usuCodigo && trim($value["usu_seccion"]) == "") {
+                    if ($usuCodigo && trim($value["seccion"]) !== "") {
                         $arreglo_secciones = explode("-", $value["codigo_seccion"]);
                         for ($i = 0; $i < count($arreglo_secciones); $i++) {
                             $cadenaInsertDictado = "('" . $usuCodigo . "','" . $value["registrar_nivel_id"] . "','" . $value["registrar_plana_id"] . "','" .
-                                    $value["fecha_ingreso"] . "','" . $grupo_creado . "','" . $value["codigo_sede"] . "','" . $arreglo_secciones[$i] . "','1')";
+                                    $value["fecha_ingreso"] . "','" . $grupo_creado . "','" . $value["codigo_sede"] . "','" . $arreglo_secciones[$i] . "',NOW(),'1')";
                             fnc_registrar_usuario_dictado($conexion, $cadenaInsertDictado);
                         }
                     }
                 } else {
-                    if (trim($value["validar_dictado"]) == "") {
+                    if (trim($value["seccion"]) !== "") {
                         $arreglo_secciones = explode("-", $value["codigo_seccion"]);
                         for ($i = 0; $i < count($arreglo_secciones); $i++) {
                             $cadenaInsertDictado = "('" . $value["actual_usu_id"] . "','" . $value["registrar_nivel_id"] . "','" . $value["registrar_plana_id"] . "','" .
-                                    $value["fecha_ingreso"] . "','" . $grupo_creado . "','" . $value["codigo_sede"] . "','" . $arreglo_secciones[$i] . "','1')";
+                                    $value["fecha_ingreso"] . "','" . $grupo_creado . "','" . $value["codigo_sede"] . "','" . $arreglo_secciones[$i] . "',NOW(),'1')";
                             fnc_registrar_usuario_dictado($conexion, $cadenaInsertDictado);
                         }
                     }
@@ -89,7 +89,7 @@ try {
             $mail->Subject = utf8_decode("Registro de usuario - Sistema de acompañamiento al estudiante - SIAE");
             $mail->setFrom("soporteSistemaSIAE@cbb.edu.pe");
             $mail->addAttachment('../aco_img/CBB.png');
-            $url_inicio = "http://" . $_SERVER["SERVER_NAME"] . "/SistSIAE/index.php";
+            $url_inicio = fnc_obtener_url_sistema();
 
             for ($i = 0; $i < count($arreglo_usuarios); $i++) {
                 $usuario_array = explode("*", $arreglo_usuarios[$i]);
@@ -101,12 +101,14 @@ try {
                 $mail->Body = utf8_decode($str_mensaje_correo);
                 $mail->addAddress($usuario_array[3]);
                 $valueCount++;
-            }
-            $exito = $mail->Send();
-            if ($exito == 1) {
-                $valueCount = $valueCount + 0;
-            } else {
-                $valueCount = 0;
+
+                $exito = $mail->Send();
+                if ($exito == 1) {
+                    $valueCount = $valueCount + 0;
+                } else {
+                    $valueCount = 0;
+                }
+                $mail->clearAllRecipients();
             }
             $mail->smtpClose();
         }

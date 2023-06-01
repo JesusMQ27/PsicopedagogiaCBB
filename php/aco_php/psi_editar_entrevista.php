@@ -35,6 +35,7 @@ $s_apoderado = strip_tags(trim($_POST["s_apoderado"]));
 $s_privacidad = strip_tags(trim($_POST["s_privacidad"]));
 $s_img1 = $_POST['s_dataURL1'];
 $s_img2 = $_POST['s_dataURL2'];
+$s_img1_1 = trim($_POST["s_dataURL1_1"]);
 $arreglo_matricula = explode("*", $sol_matricu);
 $sol_matricula = $arreglo_matricula[0];
 $sol_alumno = $arreglo_matricula[1];
@@ -46,31 +47,33 @@ try {
     if ($tipo === "ent") {//entrevista
         fnc_modificar_alumno_datos($conexion, $sol_alumno, $s_sexo_alu);
         fnc_modificar_solicitud_entrevista($conexion, $id, $sol_matricula, $codigo_usuario, $s_solicitud_tipo, $s_subcategoria, $s_motivo, "NOW()", $s_sede, $s_planEstudiante, $s_planEntrevistador, $s_acuerdos, $s_informe, $s_planPadre, $s_planDocente, $s_acuerdosPadres, $s_acuerdosColegio, $s_apoderado, $s_privacidad, '1');
-        if (strpos($s_img1, 'data:image/png;base64') === 0) {
-            $s_img1 = str_replace('data:image/png;base64,', '', $s_img1);
-            $s_img1 = str_replace(' ', '+', $s_img1);
-            $data = base64_decode($s_img1);
-            if ($s_solicitud_tipo == "1") {
-                $file = '../aco_firmas/img_' . $sol_matricula . "_" . uniqid() . '.png';
-            } else {
-                $file = '../aco_firmas/img_' . $s_apoderado . "_" . uniqid() . '.png';
-            }
-
-            if (file_put_contents($file, $data)) {
-                $busca_firma = fnc_buscar_solicitud_entrevista_firmas($conexion, $id, "1");
-                if (count($busca_firma) > 0) {
-                    fnc_modificar_solicitud_entrevista_firmas($conexion, $id, "1", $sol_matricula, $codigo_usuario, $s_apoderado, $file, "NOW()", "1");
+        if ($s_img1_1 !== "") {
+            if (strpos($s_img1, 'data:image/png;base64') === 0) {
+                $s_img1 = str_replace('data:image/png;base64,', '', $s_img1);
+                $s_img1 = str_replace(' ', '+', $s_img1);
+                $data = base64_decode($s_img1);
+                if ($s_solicitud_tipo == "1") {
+                    $file = '../aco_firmas/img_' . $sol_matricula . "_" . uniqid() . '.png';
                 } else {
-                    $cadena_imag1 = "('" . $id . "','" . $sol_matricula . "','" . $codigo_usuario . "','" . $s_apoderado .
-                            "','" . $file . "',NOW(),'1','1')";
-                    fnc_registrar_solicitud_firmas($conexion, $cadena_imag1);
+                    $file = '../aco_firmas/img_' . $s_apoderado . "_" . uniqid() . '.png';
+                }
+
+                if (file_put_contents($file, $data)) {
+                    $busca_firma = fnc_buscar_solicitud_entrevista_firmas($conexion, $id, "1");
+                    if (count($busca_firma) > 0) {
+                        fnc_modificar_solicitud_entrevista_firmas($conexion, $id, "1", $sol_matricula, $codigo_usuario, $s_apoderado, $file, "NOW()", "1");
+                    } else {
+                        $cadena_imag1 = "('" . $id . "','" . $sol_matricula . "','" . $codigo_usuario . "','" . $s_apoderado .
+                                "','" . $file . "',NOW(),'1','1')";
+                        fnc_registrar_solicitud_firmas($conexion, $cadena_imag1);
+                    }
+                } else {
+                    echo "***0***Error al editar la imagen del entrevistado.***<br/>";
+                    exit();
                 }
             } else {
-                echo "***0***Error al editar la imagen del entrevistado.***<br/>";
-                exit();
+                fnc_modificar_solicitud_entrevista_firmas($conexion, $id, "1", $sol_matricula, $codigo_usuario, $s_apoderado, str_replace("./php/", "../", $s_img1), "NOW()", "1");
             }
-        } else {
-            fnc_modificar_solicitud_entrevista_firmas($conexion, $id, "1", $sol_matricula, $codigo_usuario, $s_apoderado, str_replace("./php/", "../", $s_img1), "NOW()", "1");
         }
         if (strpos($s_img2, 'data:image/png;base64') === 0) {
             $s_img2 = str_replace('data:image/png;base64,', '', $s_img2);

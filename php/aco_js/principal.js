@@ -15,6 +15,16 @@ var intervaloRegresivo;
 var intervaloRegresivo_s;
 var timeLimit = 40; //tiempo en minutos
 var timeLimitSub = 40; //tiempo en minutos
+var tmr;
+var tmr2;
+var tmr_sub;
+var tmr_sub2;
+var tmr_edi;
+var tmr_edi2;
+var resetIsSupported = false;
+var SigWeb_1_6_4_0_IsInstalled = false; //SigWeb 1.6.4.0 and above add the Reset() and GetSigWebVersion functions
+var SigWeb_1_7_0_0_IsInstalled = false; //SigWeb 1.7.0.0 and above add the GetDaysUntilCertificateExpires() function
+
 function cargar_opcion(codigo, ruta, nombre) {
     $.ajax({
         url: ruta,
@@ -2369,21 +2379,21 @@ function mostrar_tipo_solicitud(dato) {
                 $('#divEntrevista').html(datos);
                 $("#btnRegistrarSolicitud").attr("disabled", false);
                 var wrapper = document.getElementById("signature-pad");
-                canvas1 = wrapper.querySelector("canvas");
-                signaturePad = new SignaturePad(canvas1, {
-                    backgroundColor: 'rgb(255, 255, 255)'
-                });
+                canvas1 = document.getElementById("canvas1");
+                /*signaturePad = new SignaturePad(canvas1, {
+                 backgroundColor: 'rgb(255, 255, 255)'
+                 });*/
                 var wrapper_entrevistador = document.getElementById("signature-pad-entrevistador");
-                canvas2 = wrapper_entrevistador.querySelector("canvas");
-                signaturePad_entrevistador = new SignaturePad(canvas2, {
-                    backgroundColor: 'rgb(255, 255, 255)'
-                });
+                canvas2 = document.getElementById("canvas2");
+                /*signaturePad_entrevistador = new SignaturePad(canvas2, {
+                 backgroundColor: 'rgb(255, 255, 255)'
+                 });*/
                 function resizeCanvas() {
                     var ratio = Math.max(window.devicePixelRatio || 1, 1);
                     canvas1.width = canvas1.offsetWidth * ratio;
                     canvas1.height = canvas1.offsetHeight * ratio;
                     canvas1.getContext("2d").scale(ratio, ratio);
-                    signaturePad.clear();
+                    //signaturePad.clear();
                 }
 
                 function resizeCanvas2() {
@@ -2391,22 +2401,22 @@ function mostrar_tipo_solicitud(dato) {
                     canvas2.width = canvas2.offsetWidth * ratio;
                     canvas2.height = canvas2.offsetHeight * ratio;
                     canvas2.getContext("2d").scale(ratio, ratio);
-                    signaturePad_entrevistador.clear();
+                    //signaturePad_entrevistador.clear();
                 }
                 window.onresize = resizeCanvas;
                 resizeCanvas();
                 window.onresize = resizeCanvas2;
                 resizeCanvas2();
-                canvas1.addEventListener("click", function (event) {
-                    if (!signaturePad.isEmpty()) {
-                        canvas1.style.border = '1px solid black';
-                    }
-                });
-                canvas2.addEventListener("click", function (event) {
-                    if (!signaturePad_entrevistador.isEmpty()) {
-                        canvas2.style.border = '1px solid black';
-                    }
-                });
+                /*canvas1.addEventListener("click", function (event) {
+                 if (!isCanvasBlank(document.getElementById('canvas1'))) {
+                 canvas1.style.border = '1px solid black';
+                 }
+                 });
+                 canvas2.addEventListener("click", function (event) {
+                 if (!isCanvasBlank(document.getElementById('canvas2'))) {
+                 canvas2.style.border = '1px solid black';
+                 }
+                 });*/
                 $("#cbbSubcategoria").change(function () {
                     var value = $(this).val();
                     if (value > 0 && $(this).is(".is-invalid")) {
@@ -2484,13 +2494,13 @@ function mostrar_tipo_solicitud(dato) {
     }
 }
 
-function limpiar_firma() {
-    signaturePad.clear();
-}
+/*function limpiar_firma() {
+ signaturePad.clear();
+ }*/
 
-function limpiar_firma_entrevistador() {
-    signaturePad_entrevistador.clear();
-}
+/*function limpiar_firma_entrevistador() {
+ signaturePad_entrevistador.clear();
+ }*/
 
 function buscar_entrevistas() {
     var sede = $("#cbbSedes").select().val();
@@ -2561,6 +2571,12 @@ function registrar_solicitud() {
     var canvas_1 = wrapper.querySelector("canvas");
     var wrapper_entrevistador = document.getElementById("signature-pad-entrevistador");
     var canvas_2 = wrapper_entrevistador.querySelector("canvas");
+    var blank = isCanvasBlank(document.getElementById('canvas1'));
+    var blank2 = isCanvasBlank(document.getElementById('canvas2'));
+    SetTabletState(0, tmr, 0);
+    SetTabletState(0, tmr2, 0);
+    clearInterval(tmr);
+    clearInterval(tmr2);
     var checkPrivacidad = $("#checkPrivacidad").is(':checked');
     var hora = $("#hora");
     var minuto = $("#minuto");
@@ -2617,11 +2633,11 @@ function registrar_solicitud() {
             mensaje += "*Ingrese los Acuerdos<br>";
             $("#txtAcuerdos").addClass("is-invalid");
         }
-        if (signaturePad.isEmpty()) {
-            mensaje += "*Ingrese la firma del estudiante<br>";
-            canvas_1.style.border = '1px solid #dc3545';
-        }
-        if (signaturePad_entrevistador.isEmpty()) {
+        //if (signaturePad.isEmpty()) {
+        //    mensaje += "*Ingrese la firma del estudiante<br>";
+        //    canvas_1.style.border = '1px solid #dc3545';
+        //}
+        if (blank2 == true) {
             mensaje += "*Ingrese la firma del entrevistador<br>";
             canvas_2.style.border = '1px solid #dc3545';
         }
@@ -2668,7 +2684,7 @@ function registrar_solicitud() {
 //mensaje += "Ingrese la firma del padre, madre o apoderado<br>";
 //canvas.style.border = '1px solid #dc3545';
 //}
-        if (signaturePad_entrevistador.isEmpty()) {
+        if (blank2 === true) {
             mensaje += "*Ingrese la firma del entrevistador<br>";
             canvas_2.style.border = '1px solid #dc3545';
         }
@@ -2687,6 +2703,10 @@ function registrar_solicitud() {
         var dataURL1 = canvas1.toDataURL();
         var canvas2 = document.getElementById('canvas2');
         var dataURL2 = canvas2.toDataURL();
+        var dataURL1_1 = "aaa";
+        if (blank === true) {
+            dataURL1_1 = "";
+        }
         $.ajax({
             url: "php/aco_php/psi_registrar_entrevista.php",
             dataType: "html",
@@ -2713,6 +2733,7 @@ function registrar_solicitud() {
                 s_privacidad: privacidad_value,
                 s_dataURL1: dataURL1,
                 s_dataURL2: dataURL2,
+                dataURL1_1: dataURL1_1,
                 s_hora_total: hora_total
             },
             beforeSend: function (objeto) {
@@ -3068,20 +3089,20 @@ function mostrar_tipo_solicitud_sub(dato) {
                 $("#btnRegistrarSubSolicitud").attr("disabled", false);
                 var wrapper = document.getElementById("signature-pad-sub");
                 canvas1_sub = wrapper.querySelector("canvas");
-                signaturePad_sub = new SignaturePad(canvas1_sub, {
-                    backgroundColor: 'rgb(255, 255, 255)'
-                });
+                /*signaturePad_sub = new SignaturePad(canvas1_sub, {
+                 backgroundColor: 'rgb(255, 255, 255)'
+                 });*/
                 var wrapper_entrevistador = document.getElementById("signature-pad-entrevistador-sub");
                 canvas2_sub = wrapper_entrevistador.querySelector("canvas");
-                signaturePad_entrevistador_sub = new SignaturePad(canvas2_sub, {
-                    backgroundColor: 'rgb(255, 255, 255)'
-                });
+                /*signaturePad_entrevistador_sub = new SignaturePad(canvas2_sub, {
+                 backgroundColor: 'rgb(255, 255, 255)'
+                 });*/
                 function resizeCanvas() {
                     var ratio = Math.max(window.devicePixelRatio || 1, 1);
                     canvas1_sub.width = canvas1_sub.offsetWidth * ratio;
                     canvas1_sub.height = canvas1_sub.offsetHeight * ratio;
                     canvas1_sub.getContext("2d").scale(ratio, ratio);
-                    signaturePad_sub.clear();
+                    //signaturePad_sub.clear();
                 }
 
                 function resizeCanvas2() {
@@ -3089,22 +3110,22 @@ function mostrar_tipo_solicitud_sub(dato) {
                     canvas2_sub.width = canvas2_sub.offsetWidth * ratio;
                     canvas2_sub.height = canvas2_sub.offsetHeight * ratio;
                     canvas2_sub.getContext("2d").scale(ratio, ratio);
-                    signaturePad_entrevistador_sub.clear();
+                    //signaturePad_entrevistador_sub.clear();
                 }
                 window.onresize = resizeCanvas;
                 resizeCanvas();
                 window.onresize = resizeCanvas2;
                 resizeCanvas2();
-                canvas1_sub.addEventListener("click", function (event) {
-                    if (!signaturePad_sub.isEmpty()) {
-                        canvas1_sub.style.border = '1px solid black';
-                    }
-                });
-                canvas2_sub.addEventListener("click", function (event) {
-                    if (!signaturePad_entrevistador_sub.isEmpty()) {
-                        canvas2_sub.style.border = '1px solid black';
-                    }
-                });
+                /*canvas1_sub.addEventListener("click", function (event) {
+                 if (!signaturePad_sub.isEmpty()) {
+                 canvas1_sub.style.border = '1px solid black';
+                 }
+                 });
+                 canvas2_sub.addEventListener("click", function (event) {
+                 if (!signaturePad_entrevistador_sub.isEmpty()) {
+                 canvas2_sub.style.border = '1px solid black';
+                 }
+                 });*/
                 $("#cbbSubcategoria_sub").change(function () {
                     var value = $(this).val();
                     if (value > 0 && $(this).is(".is-invalid")) {
@@ -3182,13 +3203,13 @@ function mostrar_tipo_solicitud_sub(dato) {
     }
 }
 
-function limpiar_firma_sub() {
-    signaturePad_sub.clear();
-}
-
-function limpiar_firma_entrevistador_sub() {
-    signaturePad_entrevistador_sub.clear();
-}
+/*function limpiar_firma_sub() {
+ signaturePad_sub.clear();
+ }
+ 
+ function limpiar_firma_entrevistador_sub() {
+ signaturePad_entrevistador_sub.clear();
+ }*/
 
 function registrar_sub_solicitud() {
     $("#btnRegistrarSubSolicitud").attr("disabled", true);
@@ -3221,6 +3242,12 @@ function registrar_sub_solicitud() {
     var canvas_1 = wrapper.querySelector("canvas");
     var wrapper_entrevistador = document.getElementById("signature-pad-entrevistador-sub");
     var canvas_2 = wrapper_entrevistador.querySelector("canvas");
+    var blank = isCanvasBlank(document.getElementById('canvas1_sub'));
+    var blank2 = isCanvasBlank(document.getElementById('canvas2_sub'));
+    SetTabletState(0, tmr_sub, 0);
+    SetTabletState(0, tmr_sub2, 0);
+    clearInterval(tmr_sub);
+    clearInterval(tmr_sub2);
     var checkPrivacidad = $("#checkPrivacidad_sub").is(':checked');
     var privacidad_value = "";
     var hora = $("#hora_s");
@@ -3278,11 +3305,11 @@ function registrar_sub_solicitud() {
             mensaje += "*Ingrese los Acuerdos<br>";
             $("#txtAcuerdos_sub").addClass("is-invalid");
         }
-        if (signaturePad_sub.isEmpty()) {
-            mensaje += "*Ingrese la firma del estudiante<br>";
-            canvas_1.style.border = '1px solid #dc3545';
-        }
-        if (signaturePad_entrevistador_sub.isEmpty()) {
+        //if (signaturePad_sub.isEmpty()) {
+        //    mensaje += "*Ingrese la firma del estudiante<br>";
+        //    canvas_1.style.border = '1px solid #dc3545';
+        //}
+        if (blank2 == true) {
             mensaje += "*Ingrese la firma del entrevistador<br>";
             canvas_2.style.border = '1px solid #dc3545';
         }
@@ -3329,7 +3356,7 @@ function registrar_sub_solicitud() {
          mensaje += "Ingrese la firma del padre, madre o apoderado<br>";
          canvas.style.border = '1px solid #dc3545';
          }*/
-        if (signaturePad_entrevistador_sub.isEmpty()) {
+        if (blank2 === true) {
             mensaje += "*Ingrese la firma del entrevistador<br>";
             canvas_2.style.border = '1px solid #dc3545';
         }
@@ -3348,6 +3375,10 @@ function registrar_sub_solicitud() {
         var dataURL1 = canvas1.toDataURL();
         var canvas2 = document.getElementById('canvas2_sub');
         var dataURL2 = canvas2.toDataURL();
+        var dataURL1_1 = "aaa";
+        if (blank === true) {
+            dataURL1_1 = "";
+        }
         $.ajax({
             url: "php/aco_php/psi_registrar_sub_entrevista.php",
             dataType: "html",
@@ -3375,6 +3406,7 @@ function registrar_sub_solicitud() {
                 s_privacidad: privacidad_value,
                 s_dataURL1_sub: dataURL1,
                 s_dataURL2_sub: dataURL2,
+                dataURL1_sub1: dataURL1_1,
                 s_hora_total_sub: hora_total
             },
             beforeSend: function (objeto) {
@@ -3840,46 +3872,46 @@ function cargar_solicitudes_a_editar(solicitud) {
                 //var canvas1_edi_val = $("#canvas1_edi").is(':visible');
                 //var canvas2_edi_val = $("#canvas_2edi").is(':visible');
                 //if (canvas1_edi_val === true) {
-                var wrapper = document.getElementById("signature-pad-edi");
-                canvas1_edi = wrapper.querySelector("canvas");
-                signaturePad_edi = new SignaturePad(canvas1_edi, {
-                    backgroundColor: 'rgb(255, 255, 255)'
-                });
-                function resizeCanvas() {
-                    var ratio = Math.max(window.devicePixelRatio || 1, 1);
-                    canvas1_edi.width = canvas1_edi.offsetWidth * ratio;
-                    canvas1_edi.height = canvas1_edi.offsetHeight * ratio;
-                    canvas1_edi.getContext("2d").scale(ratio, ratio);
-                    signaturePad_edi.clear();
-                }
-                window.onresize = resizeCanvas;
-                resizeCanvas();
-                canvas1_edi.addEventListener("click", function (event) {
-                    if (!signaturePad_edi.isEmpty()) {
-                        canvas1_edi.style.border = '1px solid black';
-                    }
-                });
-                //}
-                //if (canvas2_edi_val === true) {
-                var wrapper_entrevistador = document.getElementById("signature-pad-entrevistador-edi");
-                canvas2_edi = wrapper_entrevistador.querySelector("canvas");
-                signaturePad_entrevistador_edi = new SignaturePad(canvas2_edi, {
-                    backgroundColor: 'rgb(255, 255, 255)'
-                });
-                function resizeCanvas2() {
-                    var ratio = Math.max(window.devicePixelRatio || 1, 1);
-                    canvas2_edi.width = canvas2_edi.offsetWidth * ratio;
-                    canvas2_edi.height = canvas2_edi.offsetHeight * ratio;
-                    canvas2_edi.getContext("2d").scale(ratio, ratio);
-                    signaturePad_entrevistador_edi.clear();
-                }
-                window.onresize = resizeCanvas2;
-                resizeCanvas2();
-                canvas2_edi.addEventListener("click", function (event) {
-                    if (!signaturePad_entrevistador_edi.isEmpty()) {
-                        canvas2_edi.style.border = '1px solid black';
-                    }
-                });
+                /*var wrapper = document.getElementById("signature-pad-edi");
+                 canvas1_edi = wrapper.querySelector("canvas");
+                 signaturePad_edi = new SignaturePad(canvas1_edi, {
+                 backgroundColor: 'rgb(255, 255, 255)'
+                 });
+                 function resizeCanvas() {
+                 var ratio = Math.max(window.devicePixelRatio || 1, 1);
+                 canvas1_edi.width = canvas1_edi.offsetWidth * ratio;
+                 canvas1_edi.height = canvas1_edi.offsetHeight * ratio;
+                 canvas1_edi.getContext("2d").scale(ratio, ratio);
+                 signaturePad_edi.clear();
+                 }
+                 window.onresize = resizeCanvas;
+                 resizeCanvas();
+                 canvas1_edi.addEventListener("click", function (event) {
+                 if (!signaturePad_edi.isEmpty()) {
+                 canvas1_edi.style.border = '1px solid black';
+                 }
+                 });
+                 //}
+                 //if (canvas2_edi_val === true) {
+                 var wrapper_entrevistador = document.getElementById("signature-pad-entrevistador-edi");
+                 canvas2_edi = wrapper_entrevistador.querySelector("canvas");
+                 signaturePad_entrevistador_edi = new SignaturePad(canvas2_edi, {
+                 backgroundColor: 'rgb(255, 255, 255)'
+                 });
+                 function resizeCanvas2() {
+                 var ratio = Math.max(window.devicePixelRatio || 1, 1);
+                 canvas2_edi.width = canvas2_edi.offsetWidth * ratio;
+                 canvas2_edi.height = canvas2_edi.offsetHeight * ratio;
+                 canvas2_edi.getContext("2d").scale(ratio, ratio);
+                 signaturePad_entrevistador_edi.clear();
+                 }
+                 window.onresize = resizeCanvas2;
+                 resizeCanvas2();
+                 canvas2_edi.addEventListener("click", function (event) {
+                 if (!signaturePad_entrevistador_edi.isEmpty()) {
+                 canvas2_edi.style.border = '1px solid black';
+                 }
+                 });*/
                 //}
 
                 $("#cbbSubcategoria_edi").change(function () {
@@ -4394,6 +4426,12 @@ function editar_solicitud() {
         var ruta_img2 = $("#ruta_img2").is(':visible');
         var canvas_1 = document.getElementById("canvas1_edi");
         var canvas_2 = document.getElementById("canvas2_edi");
+        var blank = isCanvasBlank(document.getElementById('canvas1_edi'));
+        var blank2 = isCanvasBlank(document.getElementById('canvas2_edi'));
+        SetTabletState(0, tmr, 0);
+        SetTabletState(0, tmr2, 0);
+        clearInterval(tmr);
+        clearInterval(tmr2);
         var checkPrivacidad = $("#checkPrivacidad_edi").is(':checked');
         var privacidad_value = "";
         if (checkPrivacidad) {
@@ -4440,16 +4478,23 @@ function editar_solicitud() {
                 mensaje += "*Ingrese los Acuerdos<br>";
                 $("#txtAcuerdos_edi").addClass("is-invalid");
             }
-            if (ruta_img1 == false) {
-                if (signaturePad_edi.isEmpty()) {
-                    mensaje += "*Ingrese la firma del estudiante<br>";
-                    canvas_1.style.border = '1px solid #dc3545';
-                }
-            }
+            //if (ruta_img1 == false) {
+            //    if (signaturePad_edi.isEmpty()) {
+            //        mensaje += "*Ingrese la firma del estudiante<br>";
+            //        canvas_1.style.border = '1px solid #dc3545';
+            //    }
+            //}
             if (ruta_img2 == false) {
-                if (signaturePad_entrevistador_edi.isEmpty()) {
+                if (blank2 == true) {
                     mensaje += "*Ingrese la firma del entrevistador<br>";
                     canvas_2.style.border = '1px solid #dc3545';
+                    $("#ruta_img2").css("border", "1px solid #dc3545");
+                }
+            } else {
+                if (blank2 == true) {
+                    mensaje += "*Ingrese la firma del entrevistador<br>";
+                    canvas_2.style.border = '1px solid #dc3545';
+                    $("#ruta_img2").css("border", "1px solid #dc3545");
                 }
             }
         } else {
@@ -4496,9 +4541,16 @@ function editar_solicitud() {
              canvas.style.border = '1px solid #dc3545';
              }*/
             if (ruta_img2 == false) {
-                if (signaturePad_entrevistador_edi.isEmpty()) {
+                if (blank2 == true) {
                     mensaje += "*Ingrese la firma del entrevistador<br>";
                     canvas_2.style.border = '1px solid #dc3545';
+                    $("#ruta_img2").css("border", "1px solid #dc3545");
+                }
+            } else {
+                if (blank2 == true) {
+                    mensaje += "*Ingrese la firma del entrevistador<br>";
+                    canvas_2.style.border = '1px solid #dc3545';
+                    $("#ruta_img2").css("border", "1px solid #dc3545");
                 }
             }
         }
@@ -4516,6 +4568,10 @@ function editar_solicitud() {
             var dataURL1 = {};
             var canvas2 = {};
             var dataURL2 = {};
+            var dataURL1_1 = "aaa";
+            if (blank === true) {
+                dataURL1_1 = "";
+            }
             if (ruta_img1 == false) {
                 canvas1 = document.getElementById('canvas1_edi');
                 dataURL1 = canvas1.toDataURL();
@@ -4556,7 +4612,8 @@ function editar_solicitud() {
                     s_apoderado: apoderado,
                     s_privacidad: privacidad_value,
                     s_dataURL1: dataURL1,
-                    s_dataURL2: dataURL2
+                    s_dataURL2: dataURL2,
+                    s_dataURL1_1: dataURL1_1
                 },
                 beforeSend: function (objeto) {
                     $("#modal-editar-solicitud-alumno").find('.modal-footer div label').html("");
@@ -4600,35 +4657,41 @@ function editar_solicitud() {
 }
 
 function limpiar_firma_edi() {
-    var ruta_img1 = $("#ruta_img1").is(':visible');
+    //var ruta_img1 = $("#ruta_img1").is(':visible');
+    var ruta_img1 = $("#ruta_img1").attr('src');
     var canvas1_edi = $("#canvas1_edi");
     var canvas1_edi_1 = document.getElementById("canvas1_edi");
-    if (ruta_img1 == true) {
+    if (ruta_img1 !== "") {
         $("#ruta_img1").attr("src", "");
         $("#ruta_img1").hide();
         canvas1_edi_1.width = 500;
         canvas1_edi_1.height = 150;
         canvas1_edi.show();
+        ClearTablet();
     } else {
         $("#ruta_img1").src = "";
-        signaturePad_edi.clear();
+        ClearTablet();
+        //signaturePad_edi.clear();
     }
 }
 
 function limpiar_firma_entrevistador_edi() {
-    var ruta_img2 = $("#ruta_img2").is(':visible');
+    //var ruta_img2 = $("#ruta_img2").is(':visible');
+    var ruta_img2 = $("#ruta_img2").attr('src');
     var canvas2_edi = $("#canvas2_edi");
     var canvas1_edi_2 = document.getElementById("canvas2_edi");
-    if (ruta_img2 == true) {
+    if (ruta_img2 !== "") {
         $("#ruta_img2").attr("src", "");
         $("#ruta_img2").hide();
         canvas1_edi_2.width = 500;
         canvas1_edi_2.height = 150;
         canvas2_edi.show();
+        ClearTablet();
     } else {
         $("#ruta_img2").src = "";
-        signaturePad_entrevistador_edi.clear();
+        ClearTablet();
     }
+
 }
 
 function cargar_solicitudes_a_detallar(solicitud) {
@@ -7507,6 +7570,11 @@ function cargar_selector_seccion(grado) {
 }
 
 function limpiar_campos_semaforo() {
+    $('#cbbSemaforo option[value=0]').removeAttr('selected');
+    $('#cbbBimestre option[value=0]').removeAttr('selected');
+    $('#cbbNivel option[value=0]').removeAttr('selected');
+    $('#cbbGrado option[value=0]').removeAttr('selected');
+    $('#cbbSeccion option[value=0]').removeAttr('selected');
     $("#dataDocente").html("Docente:");
     $("#docen").val("");
     $('#cbbSemaforo option[value=0]').attr('selected', 'selected');
@@ -7816,4 +7884,251 @@ function reiniciar_cronometro_2() {
     document.getElementById('segundo').innerHTML = '';
     clearInterval(intervaloRegresivo);
     $("#fecha_s").hide();
+}
+
+function isSigWeb_1_6_4_0_Installed(sigWebVer) {
+    var minSigWebVersionResetSupport = "1.6.4.0";
+
+    if (isOlderSigWebVersionInstalled(minSigWebVersionResetSupport, sigWebVer)) {
+        console.log("SigWeb version 1.6.4.0 or higher not installed.");
+        return false;
+    }
+    return true;
+}
+
+function isSigWeb_1_7_0_0_Installed(sigWebVer) {
+    var minSigWebVersionGetDaysUntilCertificateExpiresSupport = "1.7.0.0";
+
+    if (isOlderSigWebVersionInstalled(minSigWebVersionGetDaysUntilCertificateExpiresSupport, sigWebVer)) {
+        console.log("SigWeb version 1.7.0.0 or higher not installed.");
+        return false;
+    }
+    return true;
+}
+
+function isOlderSigWebVersionInstalled(cmprVer, sigWebVer) {
+    return isOlderVersion(cmprVer, sigWebVer);
+}
+
+function isOlderVersion(oldVer, newVer) {
+    const oldParts = oldVer.split('.')
+    const newParts = newVer.split('.')
+    for (var i = 0; i < newParts.length; i++) {
+        const a = parseInt(newParts[i]) || 0
+        const b = parseInt(oldParts[i]) || 0
+        if (a < b)
+            return true
+        if (a > b)
+            return false
+    }
+    return false;
+}
+
+function iniciar_firma_1() {
+    if (IsSigWebInstalled()) {
+        var ctx = document.getElementById('canvas1').getContext('2d');
+        SetDisplayXSize(500);
+        SetDisplayYSize(100);
+        SetTabletState(0, tmr);
+        SetJustifyMode(0);
+        ClearTablet();
+        if (tmr == null) {
+            tmr = SetTabletState(1, ctx, 50);
+        } else {
+            SetTabletState(0, tmr);
+            tmr = null;
+            tmr = SetTabletState(1, ctx, 50);
+        }
+    } else {
+        alert("No se puede comunicar con SigWeb. Confirme que SigWeb está instalado y ejecutándose en esta PC.");
+    }
+}
+
+function iniciar_firma_2() {
+    if (IsSigWebInstalled()) {
+        var canva = document.getElementById('canvas2');
+        var ctx = canva.getContext('2d');
+        canva.style.border = '1px solid black';
+        SetDisplayXSize(500);
+        SetDisplayYSize(100);
+        SetTabletState(0, tmr2);
+        SetJustifyMode(0);
+        ClearTablet();
+        if (tmr2 == null)
+        {
+            tmr2 = SetTabletState(1, ctx, 50);
+        } else
+        {
+            SetTabletState(0, tmr);
+            tmr2 = null;
+            tmr2 = SetTabletState(1, ctx, 50);
+        }
+    } else {
+        alert("No se puede comunicar con SigWeb. Confirme que SigWeb está instalado y ejecutándose en esta PC.");
+    }
+}
+
+function iniciar_firma_sub_1() {
+    if (IsSigWebInstalled()) {
+        var ctx = document.getElementById('canvas1_sub').getContext('2d');
+        SetDisplayXSize(500);
+        SetDisplayYSize(100);
+        SetTabletState(0, tmr_sub);
+        SetJustifyMode(0);
+        ClearTablet();
+        if (tmr_sub == null) {
+            tmr_sub = SetTabletState(1, ctx, 50);
+        } else {
+            SetTabletState(0, tmr_sub);
+            tmr_sub = null;
+            tmr_sub = SetTabletState(1, ctx, 50);
+        }
+    } else {
+        alert("No se puede comunicar con SigWeb. Confirme que SigWeb está instalado y ejecutándose en esta PC.");
+    }
+}
+
+function iniciar_firma_sub_2() {
+    if (IsSigWebInstalled()) {
+        var canva = document.getElementById('canvas2_sub');
+        var ctx = canva.getContext('2d');
+        canva.style.border = '1px solid black';
+        SetDisplayXSize(500);
+        SetDisplayYSize(100);
+        SetTabletState(0, tmr_sub2);
+        SetJustifyMode(0);
+        ClearTablet();
+        if (tmr_sub2 == null)
+        {
+            tmr_sub2 = SetTabletState(1, ctx, 50);
+        } else
+        {
+            SetTabletState(0, tmr);
+            tmr_sub2 = null;
+            tmr_sub2 = SetTabletState(1, ctx, 50);
+        }
+    } else {
+        alert("No se puede comunicar con SigWeb. Confirme que SigWeb está instalado y ejecutándose en esta PC.");
+    }
+}
+
+function iniciar_firma_edi() {
+    if (IsSigWebInstalled()) {
+        var divFirma1 = $("#divFirma1").find("div").length;
+        var divFirma1_1 = $("#divFirma1").find("img").length;
+        if (divFirma1 > 0 || divFirma1_1 > 0) {
+            limpiar_firma_edi();
+            $("#divFirma1").find("div").hide();
+            $("#btnLimpiarFirma1").prop("disabled", false);
+        }
+        var canva = document.getElementById('canvas1_edi');
+        var ctx = canva.getContext('2d');
+        canva.style.border = '1px solid black';
+        SetDisplayXSize(500);
+        SetDisplayYSize(100);
+        SetTabletState(0, tmr_edi);
+        SetJustifyMode(0);
+        ClearTablet();
+        if (tmr_edi == null) {
+            tmr_edi = SetTabletState(1, ctx, 50);
+        } else {
+            SetTabletState(0, tmr_edi);
+            tmr_edi = null;
+            tmr_edi = SetTabletState(1, ctx, 50);
+        }
+    } else {
+        alert("No se puede comunicar con SigWeb. Confirme que SigWeb está instalado y ejecutándose en esta PC.");
+    }
+}
+
+function iniciar_firma_edi2() {
+    if (IsSigWebInstalled()) {
+        var divFirma2 = $("#divFirma2").find("div").length;
+        var divFirma2_1 = $("#divFirma2").find("img").length;
+        if (divFirma2 > 0 || divFirma2_1 > 0) {
+            limpiar_firma_entrevistador_edi();
+            $("#divFirma2").find("div").hide();
+            $("#btnLimpiarFirma2").prop("disabled", false);
+        }
+        var canva = document.getElementById('canvas2_edi');
+        var ctx = canva.getContext('2d');
+        canva.style.border = '1px solid black';
+        SetDisplayXSize(500);
+        SetDisplayYSize(100);
+        SetTabletState(0, tmr_edi2);
+        SetJustifyMode(0);
+        ClearTablet();
+        if (tmr_edi2 == null) {
+            tmr_edi2 = SetTabletState(1, ctx, 50);
+        } else {
+            SetTabletState(0, tmr_edi2);
+            tmr_edi2 = null;
+            tmr_edi2 = SetTabletState(1, ctx, 50);
+        }
+    } else {
+        alert("No se puede comunicar con SigWeb. Confirme que SigWeb está instalado y ejecutándose en esta PC.");
+    }
+}
+
+function limpiar_firma() {
+    ClearTablet();
+}
+
+function limpiar_firma_entrevistador() {
+    ClearTablet();
+}
+
+function limpiar_firma_sub() {
+    ClearTablet();
+}
+
+function limpiar_firma_entrevistador_sub() {
+    ClearTablet();
+}
+
+function onDone() {
+    if (NumberOfTabletPoints() == 0) {
+        alert("Please sign before continuing");
+    } else {
+        SetTabletState(0, tmr);
+        //RETURN TOPAZ-FORMAT SIGSTRING
+        SetSigCompressionMode(1);
+        document.FORM1.bioSigData.value = GetSigString();
+        document.FORM1.sigStringData.value = GetSigString();
+        //this returns the signature in Topaz's own format, with biometric information
+
+        //RETURN BMP BYTE ARRAY CONVERTED TO BASE64 STRING
+        SetImageXSize(500);
+        SetImageYSize(100);
+        SetImagePenWidth(5);
+        GetSigImageB64(SigImageCallback);
+    }
+}
+
+function SigImageCallback(str)
+{
+    document.FORM1.sigImageData.value = str;
+}
+
+function endDemo()
+{
+    ClearTablet();
+    SetTabletState(0, tmr);
+}
+
+function close() {
+    if (resetIsSupported) {
+        Reset();
+    } else {
+        endDemo();
+    }
+}
+
+function isCanvasBlank(canvas) {
+    const context = canvas.getContext('2d');
+    const pixelBuffer = new Uint32Array(
+            context.getImageData(0, 0, canvas.width, canvas.height).data.buffer
+            );
+
+    return !pixelBuffer.some(color => color !== 0);
 }

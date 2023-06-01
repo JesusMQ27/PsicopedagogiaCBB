@@ -1,4 +1,5 @@
-<?php session_start();
+<?php
+session_start();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,7 +23,7 @@
             <div class="card card-outline card-primary">
                 <div class="card-header text-center">
                     <div class="text-center"><img src="php/aco_img/logo_3.png" alt="" style="width: 70%"/></div><br>
-                    <a href="javascript:void(0)" class="h5"><b>Sistema de acompa&ntilde;amiento al estudiante </b><b>SIAE CBB</b></a>
+                    <a href="javascript:void(0)" class="h5"><b>Sistema Integral de acompa&ntilde;amiento al estudiante </b><b>SIAE</b></a>
                 </div>
                 <div class="card-body">
                     <p class="login-box-msg">Ingresa tu usuario y contrase&ntilde;a para iniciar sesi&oacute;n</p>
@@ -30,10 +31,10 @@
                     <div class="input-group mb-3">
                         <input type="text" id="txtUsuario" class="form-control" placeholder="Usuario" onkeypress="return enterLogin(event);"
                                value="<?php
-                               if (isset($_SESSION["usuario"])) {
-                                   echo $_SESSION["usuario"];
+                               if (isset($_COOKIE["login_usuario"])) {
+                                   echo $_COOKIE["login_usuario"];
                                }
-                               ?>" >
+                               ?>">
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-user"></span>
@@ -43,10 +44,10 @@
                     <div class="input-group mb-3">
                         <input type="password" id="txtClave" class="form-control" placeholder="Contraseña" onkeypress="return enterLogin(event);"
                                value="<?php
-                               if (isset($_SESSION["contrasena"])) {
-                                   echo $_SESSION["contrasena"];
+                               if (isset($_COOKIE["usuario_password"])) {
+                                   echo $_COOKIE["usuario_password"];
                                }
-                               ?>" >
+                               ?>"  >
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-lock"></span>
@@ -57,7 +58,8 @@
                     <div class="row">
                         <div class="col-8">
                             <div class="icheck-primary">
-                                <input type="checkbox" id="remember" name="remember">
+                                <input type="checkbox" id="remember" name="remember" <?php if (isset($_COOKIE["login_usuario"])) { ?> checked
+                                       <?php } ?> >
                                 <label for="remember">
                                     Recordar
                                 </label>

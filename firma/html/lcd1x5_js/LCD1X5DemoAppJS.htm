@@ -1,0 +1,225 @@
+<HTML>
+<HEAD>
+<TITLE>Topaz SigPlus LCD4X3 Demo Application</TITLE>
+
+
+<DIV STYLE="position:absolute; top:50px; left:75px;">
+<TABLE height=150 cellPadding=0 width=286 border=1>
+  <TR>
+    <TD>
+      <OBJECT id=SigPlus1 
+      style="LEFT: 250px; WIDTH: 300px; TOP: 350px; HEIGHT: 150px" height=150 
+      width=300 classid=clsid:69A40DA3-4D42-11D0-86B0-0000C025864A name=SigPlus1 
+      VIEWASTEXT><PARAM NAME="_Version" VALUE="131095">
+     <PARAM NAME="_ExtentX" VALUE="4842">
+     <PARAM NAME="_ExtentY" VALUE="1323">
+     <PARAM NAME="_StockProps" VALUE="0">
+      </OBJECT>
+    </TD>
+  </TR>
+</TABLE>
+</DIV>
+
+<DIV STYLE="position:absolute; top:235px; left:64px;">
+   <FORM NAME="LCDDemo">
+   <P>&nbsp;&nbsp;&nbsp;&nbsp;
+   <INPUT id=LoadBtn onclick=OnLoad() type=button value="Start Demo" name=LoadBtn    disabled=true>
+   </P>
+   </FORM>
+</DIV>
+
+<script LANGUAGE="Javascript">
+<!--
+
+if(SigPlus1.TabletLogicalYSize == 700){
+     document.LCDDemo.LoadBtn.disabled=false;
+     }
+else if (SigPlus1.TabletLogicalYSize > 0){
+     alert("SigPlus.ini is not properly set up for an LCD1X5 tablet. Please adjust before continuing.");
+     }
+else{
+     alert("SigPlus Error: Cannot locate Topaz SigPlus software. Please be sure you have loaded SigPlus.");
+    } 
+
+      SigPlus1.LCDRefresh (0, 0, 0, 240, 64);
+      SigPlus1.ClearTablet();
+      SigPlus1.LCDWriteFile( 0, 2, 0, 20, 240, 45, 0, "c:\\lcd1x5\\Sign.bmp");
+      SigPlus1.LCDWriteFile( 0, 2, 207, 4, 21, 12, 0, "c:\\lcd1x5\\OK.bmp");
+      SigPlus1.LCDWriteFile( 0, 2, 15, 4, 38, 11, 0, "c:\\lcd1x5\\CLEAR.bmp");
+
+
+function finishHS1(){
+SigPlus1.clearTablet();
+SigPlus1.LCDWriteFile( 0, 2, 0, 20, 240, 45, 0, "c:\\lcd1x5\\Sign.bmp");
+SigPlus1.LCDWriteFile( 0, 2, 207, 4, 21, 12, 0, "c:\\lcd1x5\\OK.bmp");
+SigPlus1.LCDWriteFile( 0, 2, 15, 4, 38, 11, 0, "c:\\lcd1x5\\CLEAR.bmp");
+}
+
+
+function OnLoad(){
+
+document.LCDDemo.LoadBtn.disabled=true;
+
+
+SigPlus1.LCDSetTabletMap (0, 240, 64, 100, 0, 1900, 700);
+
+
+//******************************************************************
+// The following parameters are set in case the user's INI file is not correctly set up for an LCD 1X5 tablet
+// Otherwise, if the INI is correctly set up, these parameters do not need to be set
+SigPlus1.TabletXStart = 400;
+SigPlus1.TabletXStop = 2400;
+SigPlus1.TabletYStart = 350;
+SigPlus1.TabletYStop = 1050;
+SigPlus1.TabletLogicalXSize = 2000;
+SigPlus1.TabletLogicalYSize = 700;
+//******************************************************************
+
+//SigPlus1.LCDRefresh (0, 0, 0, 240, 64);
+
+SigPlus1.LCDCaptureMode = 2; //Sets mode so ink will not disappear after a few seconds
+
+//The following code will write BMP images out to the LCD 1X5 screen
+SigPlus1.LCDWriteFile(1, 2, 0, 0, 240, 55, 0, "c:\\lcd1x5\\ThankYou.bmp");
+//This image is written out to the background
+
+//These two BMPs are written out to the foreground
+SigPlus1.LCDWriteFile( 0, 2, 0, 20, 240, 45, 0, "c:\\lcd1x5\\Sign.bmp");
+SigPlus1.LCDWriteFile( 0, 2, 207, 4, 21, 12, 0, "c:\\lcd1x5\\OK.bmp");
+SigPlus1.LCDWriteFile( 0, 2, 15, 4, 38, 11, 0, "c:\\lcd1x5\\CLEAR.bmp");
+
+
+//Create the hot spot for the OK BMP
+SigPlus1.KeyPadAddHotSpot (0, 1, 197, 5, 19, 17); //For OK button
+SigPlus1.KeyPadAddHotSpot (1, 1, 10, 5, 53, 17); //For CLEAR button
+
+
+SigPlus1.ClearTablet();
+SigPlus1.TabletState = 1; //Turns tablet on to collect signature
+
+//The following sets the LCD's signature window up to display ink only in the
+//certain spot on the LCD specified--in this case, the Signature BMP area
+SigPlus1.LCDSetWindow (0, 22, 240, 40);
+SigPlus1.SetSigWindow (1, 0, 22, 240, 40); //Sets the area where ink is permitted in the SigPlus object
+
+//blnClearTab = False;
+SigPlus1.SetEventEnableMask (1);
+
+}
+
+
+//-->
+</script>
+
+
+
+
+
+<SCRIPT LANGUAGE=javascript FOR=SigPlus1 EVENT=PenDown>
+<!--
+SigPlus1_PenDown()
+//-->
+</SCRIPT>
+
+
+
+<SCRIPT LANGUAGE="javascript">
+<!--
+
+
+function SigPlus1_PenDown()
+{
+
+
+var AppScreen;
+var blnClearTab;
+var strSig;
+
+if (SigPlus1.KeyPadQueryHotSpot(0) > 0)
+
+   {
+    strSig = SigPlus1.SigString;
+    //strSig now holds signature as a long ASCII hex string
+    SigPlus1.LCDRefresh (1, 210, 3, 14, 14); //Refresh LCD at 'OK' to indicate to user that this option has been sucessfully chosen
+
+   if (SigPlus1.NumberOfTabletPoints > 0 )
+   {
+      SigPlus1.LCDSetWindow (0, 0, 0, 0);
+      SigPlus1.LCDRefresh (0, 0, 0, 240, 64);
+      SigPlus1.LCDRefresh (2, 0, 0, 240, 52); //Brings the background image already loaded into foreground
+      SigPlus1.ClearTablet();
+      SigPlus1.ClearSigWindow (1);
+      SigPlus1.KeyPadClearHotSpotList();
+      SigPlus1.KeyPadAddHotSpot (2, 1, 29, 38, 44, 19); //For BACK button
+      SigPlus1.KeyPadAddHotSpot (3, 1, 172, 37, 40, 19); //For EXIT button
+      SigPlus1.SetEventEnableMask (1);
+   }
+    else
+   {
+      SigPlus1.LCDRefresh (0, 0, 0, 240, 64);
+      SigPlus1.LCDWriteFile( 0, 2, 4, 20, 234, 21, 0, "c:\\lcd1x5\\please.bmp");
+      setTimeout("finishHS1()",1500);
+
+   }
+
+}
+
+
+if (SigPlus1.KeyPadQueryHotSpot(1) > 0) //if the CLEAR hotspot is tapped, then...
+   {
+    SigPlus1.LCDRefresh (1, 10, 0, 53, 17); //Refresh LCD at 'CLEAR' to indicate to user that this     //option has been sucessfully chosen
+    SigPlus1.LCDWriteFile( 0, 2, 0, 20, 240, 44, 0, "c:\\lcd1x5\\Sign.bmp");
+    SigPlus1.ClearTablet();
+    SigPlus1.LCDRefresh (1, 10, 0, 53, 17); //Refresh LCD at 'CLEAR' to return CLEAR button to normal
+   }
+if (SigPlus1.KeyPadQueryHotSpot(2) > 0) //if the BACK hotspot is tapped, then...
+    {
+    SigPlus1.LCDRefresh (1, 29, 38, 44, 19); //Refresh (invert) LCD at 'BACK' to indicate to user that this option has been sucessfully chosen
+    SigPlus1.LCDRefresh (0, 0, 0, 240, 64);
+    SigPlus1.ClearTablet();
+    SigPlus1.ClearSigWindow (1);
+    SigPlus1.LCDSetWindow (0, 22, 240, 40);
+    SigPlus1.LCDWriteFile( 0, 2, 0, 20, 240, 45, 0, "c:\\lcd1x5\\Sign.bmp");
+    SigPlus1.LCDWriteFile( 0, 2, 207, 4, 21, 12, 0, "c:\\lcd1x5\\OK.bmp");
+    SigPlus1.LCDWriteFile( 0, 2, 15, 4, 38, 11, 0, "c:\\lcd1x5\\CLEAR.bmp");
+    SigPlus1.ClearTablet();
+    SigPlus1.KeyPadClearHotSpotList();
+    SigPlus1.KeyPadAddHotSpot (0, 1, 197, 5, 19, 17); //For OK button
+    SigPlus1.KeyPadAddHotSpot (1, 1, 10, 5, 53, 17); //For CLEAR button
+    }
+
+
+if (SigPlus1.KeyPadQueryHotSpot(3) > 0) //if the EXIT hotspot is tapped, then...
+    {
+    SigPlus1.LCDRefresh (1, 182, 37, 30, 19); //Refresh (invert) LCD at 'OK' to indicate to user that this option has been successfully chosen
+    SigPlus1.LCDCaptureMode = 1;
+    SigPlus1.LCDRefresh (0, 0, 0, 240, 64);
+    SigPlus1.TabletState = 0;
+    //take steps to finish
+    }
+
+
+
+SigPlus1.SetEventEnableMask(1);
+
+}
+
+
+
+//-->
+</SCRIPT>
+
+
+
+</HEAD>
+
+<BODY>
+
+
+
+
+</BODY>
+</HTML>
+
+
+

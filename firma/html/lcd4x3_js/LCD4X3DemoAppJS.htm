@@ -1,0 +1,245 @@
+<HTML>
+<HEAD>
+<TITLE>Topaz SigPlus LCD4X3 Demo Application</TITLE>
+
+
+<DIV STYLE="position:absolute; top:50px; left:75px;">
+<TABLE height=150 cellPadding=0 width=286 border=1>
+  <TR>
+    <TD>
+      <OBJECT id=SigPlus1 
+      style="LEFT: 250px; WIDTH: 300px; TOP: 350px; HEIGHT: 150px" height=150 
+      width=300 classid=clsid:69A40DA3-4D42-11D0-86B0-0000C025864A name=SigPlus1 
+      VIEWASTEXT><PARAM NAME="_Version" VALUE="131095">
+     <PARAM NAME="_ExtentX" VALUE="4842">
+     <PARAM NAME="_ExtentY" VALUE="1323">
+     <PARAM NAME="_StockProps" VALUE="0">
+      </OBJECT>
+    </TD>
+  </TR>
+</TABLE>
+</DIV>
+
+<DIV STYLE="position:absolute; top:235px; left:64px;">
+   <FORM NAME="LCDDemo">
+   <P>&nbsp;&nbsp;&nbsp;&nbsp;
+   <INPUT id=LoadBtn onclick=OnLoad() type=button value="Start Demo" name=LoadBtn    disabled=true>
+   </P>
+   </FORM>
+</DIV>
+
+<script LANGUAGE="Javascript">
+<!--
+
+if(SigPlus1.TabletLogicalYSize == 1700){
+     document.LCDDemo.LoadBtn.disabled=false;
+     }
+else if (SigPlus1.TabletLogicalYSize > 0){
+     alert("SigPlus.ini is not properly set up for an LCD4X3 tablet. Please adjust before continuing.");
+     }
+else{
+     alert("SigPlus Error: Cannot locate Topaz SigPlus software. Please be sure you have loaded SigPlus.");
+    } 
+
+function holdIt(){
+setTimeout("finishTabletDemo()",2500);
+}
+
+function finishTabletDemo(){
+SigPlus1.KeyPadClearHotSpotList()
+SigPlus1.LCDCaptureMode = 1;
+SigPlus1.TabletState = 0;
+document.LCDDemo.LoadBtn.disabled=false;
+}
+
+
+
+function OnLoad(){
+
+document.LCDDemo.LoadBtn.disabled=true;
+
+SigPlus1.ClearTablet();
+
+SigPlus1.LCDSetTabletMap(0, 240, 128, 200, 250, 2000, 1300); //Sets up SigPlus for LCD 4X3 tablet
+SigPlus1.TabletXStart = 500;
+SigPlus1.TabletXStop = 2650;
+SigPlus1.TabletYStart = 400;
+SigPlus1.TabletYStop = 2100;
+SigPlus1.TabletLogicalXSize = 2150;
+SigPlus1.TabletLogicalYSize = 1700;
+
+SigPlus1.LCDSetWindow(0, 0, 0, 0); //Prohibit inking on entire LCD
+SigPlus1.LCDRefresh(0, 0, 0, 240, 128); //Refresh entire tablet
+
+SigPlus1.LCDCaptureMode = 2; //Sets up LCD to retain data rather than
+//auto clearing it every few seconds screen
+
+SigPlus1.KeyPadAddHotSpot(0, 1, 11, 55, 15, 25); //set up hot spots
+SigPlus1.KeyPadAddHotSpot(1, 1, 11, 75, 15, 25);
+SigPlus1.KeyPadAddHotSpot(2, 1, 70, 95, 30, 30);
+SigPlus1.KeyPadAddHotSpot(3, 1, 132, 95, 40, 30);
+
+
+SigPlus1.LCDWriteFile(1, 2, 0, 0, 240, 128, 0, "c:\\lcd4x3\\Screen2.bmp"); //load BMPs
+
+SigPlus1.LCDWriteFile(0, 2, 10, 0, 100, 10, 0, "c:\\lcd4x3\\prescription.bmp");
+
+SigPlus1.LCDWriteFile(0, 2, 10, 11, 178, 48, 0, "c:\\lcd4x3\\prescnums.bmp");
+
+SigPlus1.LCDWriteFile(0, 2, 10, 64, 130, 40, 0, "c:\\lcd4x3\\checkboxes.bmp");
+
+SigPlus1.LCDWriteFile(0, 2, 70, 110, 100, 10, 0, "c:\\lcd4x3\\next_clear.bmp");
+SigPlus1.SetEventEnableMask (1);
+
+SigPlus1.LCDSetWindow(0, 0, 0, 0); //Prohibit inking on entire LCD
+SigPlus1.LCDCaptureMode = 2;
+SigPlus1.TabletState = 1; //Turn on tablet
+
+}
+
+
+//-->
+</script>
+
+
+
+
+
+<SCRIPT LANGUAGE=javascript FOR=SigPlus1 EVENT=PenDown>
+<!--
+SigPlus1_PenDown()
+//-->
+</SCRIPT>
+
+
+
+<SCRIPT LANGUAGE="javascript">
+<!--
+var AppScreen;
+
+function SigPlus1_PenDown(){
+
+
+if ( SigPlus1.KeyPadQueryHotSpot(0) > 0)
+{
+    SigPlus1.ClearSigWindow(1);
+    SigPlus1.ClearTablet(); //Clear SigPlus
+    SigPlus1.LCDWriteFile(0, 3, 12, 65, 14, 13, 0, "c:\\lcd4x3\\check.bmp");
+}
+if( SigPlus1.KeyPadQueryHotSpot(1) > 0)
+{
+    SigPlus1.ClearSigWindow(1);
+    SigPlus1.ClearTablet();
+    SigPlus1.LCDWriteFile(0, 3, 12, 88, 14, 13, 0, "c:\\lcd4x3\\check.bmp");
+}
+if( SigPlus1.KeyPadQueryHotSpot(2) > 0)
+{
+    SigPlus1.ClearSigWindow(1);
+    SigPlus1.ClearTablet();
+    SigPlus1.LCDRefresh(1, 70, 110, 30, 15); //Inverts (makes black) only
+    //the section of the LCD specified...typically used to indicate to
+    //the user that their pen tap has been recognized
+
+    SigPlus1.KeypadClearHotSpotList();
+    SigPlus1.KeyPadAddHotSpot(4, 1, 17, 53, 60, 15);
+    SigPlus1.KeyPadAddHotSpot(5, 1, 106, 51, 36, 16);
+    SigPlus1.KeyPadAddHotSpot(6, 1, 187, 52, 30, 15);
+
+    SigPlus1.LCDRefresh(2, 0, 0, 240, 128); //sets the BMP in the background
+    //to the foreground
+    SigPlus1.SetSigWindow(1, 0, 67, 240, 61);
+    SigPlus1.LCDSetWindow(0, 74, 240, 118); //Permits only the section
+    //specified to draw ink on the LCD screen
+    
+}
+if( SigPlus1.KeyPadQueryHotSpot(3) > 0)
+{
+    SigPlus1.ClearSigWindow(1);
+    SigPlus1.ClearTablet();
+    SigPlus1.LCDRefresh(1, 132, 110, 40, 15); //Inverts only the section of the
+    //LCD specified
+    
+    SigPlus1.LCDWriteFile(0, 2, 10, 64, 130, 40, 0, "c:\\lcd4x3\\checkboxes.bmp");
+    SigPlus1.LCDRefresh(1, 132, 110, 40, 15); //Reverses inversion to
+    //return that section of the LCD to normal
+    
+}
+
+if( SigPlus1.KeyPadQueryHotSpot(4) > 0)
+{
+    SigPlus1.ClearSigWindow(1);
+    SigPlus1.ClearTablet();
+    SigPlus1.LCDRefresh(1, 18, 53, 58, 15); //Inverts that section of LCD
+    SigPlus1.LCDRefresh(0, 0, 0, 240, 128);
+
+    SigPlus1.KeypadClearHotSpotList();
+    SigPlus1.KeyPadAddHotSpot(0, 1, 11, 55, 15, 25); //set up hot spots
+    SigPlus1.KeyPadAddHotSpot(1, 1, 11, 75, 15, 25);
+    SigPlus1.KeyPadAddHotSpot(2, 1, 70, 95, 30, 30);
+    SigPlus1.KeyPadAddHotSpot(3, 1, 132, 95, 40, 30);
+    
+    //Redraw all of the BMPs, user goes back to page 1
+
+    SigPlus1.LCDWriteFile(0, 2, 10, 0, 100, 10, 0, "c:\\lcd4x3\\prescription.bmp");
+    SigPlus1.LCDWriteFile(0, 2, 10, 11, 178, 48, 0, "c:\\lcd4x3\\prescnums.bmp");
+    SigPlus1.LCDWriteFile(0, 2, 10, 64, 130, 40, 0, "c:\\lcd4x3\\checkboxes.bmp");
+    SigPlus1.LCDWriteFile(0, 2, 70, 110, 100, 10, 0, "c:\\lcd4x3\\next_clear.bmp");
+    SigPlus1.LCDSetWindow (0, 0, 0, 0); //Prohibit ink from being drawn on entire LCD
+}
+if( SigPlus1.KeyPadQueryHotSpot(5) > 0)
+{
+    SigPlus1.ClearSigWindow(1);
+    SigPlus1.ClearTablet();
+    SigPlus1.LCDRefresh(1, 106, 52, 40, 16);
+    SigPlus1.LCDRefresh(2, 0, 0, 240, 128);
+    SigPlus1.SetSigWindow(1, 0, 67, 240, 61);
+}
+if(SigPlus1.KeyPadQueryHotSpot(6) > 0)
+{
+    var strSignature;
+    SigPlus1.ClearSigWindow(1);
+    SigPlus1.LCDRefresh(1, 186, 53, 35, 15);
+    
+    if( SigPlus1.NumberOfTabletPoints == 0){ //If there is no signature
+       alert( "Please sign before continuing");
+       SigPlus1.LCDRefresh(1, 186, 53, 35, 15);
+       SigPlus1.ClearTablet();
+       }
+    else{
+       //*****************************************
+       //strSignature = SigPlus1.SigString; //This places the signature as a long ASCII string into
+       //the strSignature variable. You can pass the sig string back as you would any other
+       //string data
+       //*****************************************
+       SigPlus1.ClearTablet();
+       SigPlus1.LCDRefresh (0, 0, 0, 240, 128); //Clears entire LCD screen
+       SigPlus1.LCDWriteFile (0, 2, 3, 46, 233, 24, 0, "c:\\lcd4x3\\thanks.bmp");
+       holdIt(); 
+        }
+}
+SigPlus1.ClearSigWindow(1);
+SigPlus1.SetEventEnableMask(1);
+
+}
+
+
+//-->
+</SCRIPT>
+
+
+
+
+
+
+
+
+
+</HEAD>
+
+<BODY>
+
+
+
+
+</BODY>
+</HTML>

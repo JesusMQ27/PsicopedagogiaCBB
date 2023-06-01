@@ -19,6 +19,32 @@ $html = '<html lang="en">
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
+             header {
+                position: fixed;
+                top: -30px;
+                left: 0px;
+                right: 0px;
+                height: 45px;
+                /** Extra personal styles **/
+                /*background-color: #03a9f4;*/
+                color: white;
+                text-align: center;
+                line-height: 35px;
+            }
+
+            footer {
+                position: fixed; 
+                bottom: 0px; 
+                left: 0px; 
+                right: 0px;
+                height: 230px; 
+
+                /** Extra personal styles **/
+                /*background-color: #03a9f4;*/
+                /*color: white;*/
+                text-align: center;
+                line-height: 35px;
+            }
             .card-header:{
                 background-color: #007bff;
                 border-bottom: 1px solid rgba(0,0,0,.125);
@@ -29,6 +55,14 @@ $html = '<html lang="en">
             }
             .label: {
                 font-weight:bold;
+            }
+            main{
+                position: relative;
+                top: 20px;
+                bottom: 0px; 
+                left: 0px; 
+                right: 0px;
+                page-break-after: always;
             }
             </style>
         </head>
@@ -47,14 +81,31 @@ if (count($lista_solicitud) > 0) {
     $lista_subcategorias = fnc_lista_subcategorias($conexion, $lista_solicitud[0]["categoria"], $lista_solicitud[0]["subcategorgia"]);
     if ($lista_solicitud[0]["ent_id"] === "1") {
         $nombre_pdf = "entrevista_estudiante";
-        $html .= '<div>
-                <img src="../../php/aco_img/logo_2.png" width="128px" height="45px" style="float:left;position: relative;top: 0;left: 0;right: 0;margin: 0 auto;"/>
-            </div>
-            <div class="card-header" style="">
+        $html .= '<header>
+                <div style="">
+                    <img src="../../php/aco_img/logo_2.png" width="128px" height="45px" style="float:left;position: relative;top: 0;left: 0;right: 0;margin: 0 auto;"/>
+                </div>
+            </header>';
+        $imagen_soli = "";
+        if ($array[0] === "ent") {
+            $imagen_soli = fnc_obtener_firma_entrevista($conexion, $array[1], "1");
+        } else {
+            $imagen_soli = fnc_obtener_firma_subentrevista($conexion, $array[1], "1");
+        }
+        $imagen_soli2 = "";
+        if ($array[0] === "ent") {
+            $imagen_soli2 = fnc_obtener_firma_entrevista($conexion, $array[1], "2");
+        } else {
+            $imagen_soli2 = fnc_obtener_firma_subentrevista($conexion, $array[1], "2");
+        }
+
+
+        $html .= '<main>
+              <div class="card-header" style="">
                 <h4 style="text-align:center;text-decoration: underline">FICHA DE ENTREVISTA A ESTUDIANTE</h4>
               </div>
               <div class="card-body">';
-        $html .= '<br/><div class="row space-div">
+        $html .= '<div class="row space-div">
             <table style="font-size:12px">
                 <tr>
                     <td>C&oacute;digo de ' . $entre_sub . ': </td>
@@ -126,42 +177,28 @@ if (count($lista_solicitud) > 0) {
                  </table>';
         $html .= '</div>
                 <h5>II. DESARROLLO DE LA ENTREVISTA:</h5>
-                <div class="row space-div">
-                <table style="font-size:12px">
-                    <tr>
-                        <td><label>Planteamiento del estudiante: </label></td>
-                        <td>' . $lista_solicitud[0]["plan_estudiante"] . '</td>
-                    </tr>
-                    <tr>
-                        <td><label>Planteamiento del entrevistador(a): </label></td>
-                        <td>' . $lista_solicitud[0]["plan_entrevistador"] . '</td>
-                    </tr>
-                    <tr>
-                        <td><label>Acuerdos: </label></td>
-                        <td>' . $lista_solicitud[0]["acuerdos"] . '</td>
-                    </tr>
-                </table>
-              </div>'
-                . '<div class="row space-div">';
-        $imagen_soli = "";
-        if ($array[0] === "ent") {
-            $imagen_soli = fnc_obtener_firma_entrevista($conexion, $array[1], "1");
-        } else {
-            $imagen_soli = fnc_obtener_firma_subentrevista($conexion, $array[1], "1");
-        }
-        $imagen_soli2 = "";
-        if ($array[0] === "ent") {
-            $imagen_soli2 = fnc_obtener_firma_entrevista($conexion, $array[1], "2");
-        } else {
-            $imagen_soli2 = fnc_obtener_firma_subentrevista($conexion, $array[1], "2");
-        }
-        $html .= '<table style="text-align:center">
+                <div class="row space-div" style="font-size:12px">
+                    <label>Planteamiento del estudiante: </label>
+                </div>';
+        $html .= '<div class="row space-div" style="font-size:12px;text-align: justify;text-justify: inter-word;">' . $lista_solicitud[0]["plan_estudiante"] . '</div><br/>
+                <div class="row space-div" style="font-size:12px">
+                    <label>Planteamiento del entrevistador(a): </label>
+                </div>
+                <div class="row space-div" style="font-size:12px;text-align: justify;text-justify: inter-word;">' . $lista_solicitud[0]["plan_entrevistador"] . '</div><br/>
+                <div class="row space-div" style="font-size:12px">
+                    <label>Acuerdos: </label>
+                </div>
+                <span style="font-size:12px;text-align: justify;text-justify: inter-word;">' . $lista_solicitud[0]["acuerdos"] . '</span>'
+                . '</main>';
+        $html .= ''
+                . '';
+        $html .= '<footer><table style="text-align:center">
                     <tr>
                         <td>
-                            <img id="ruta_img1" src="' . "../../php/" . str_replace("../", "", $imagen_soli[0]["imagen"]) . '" style="width:50%" />
+                            <img id="ruta_imgprint1" src="' . "../../php/" . str_replace("../", "", $imagen_soli[0]["imagen"]) . '" style="width:50%" />
                         </td>
                         <td>
-                            <img id="ruta_img2" src="' . "../../php/" . str_replace("../", "", $imagen_soli2[0]["imagen"]) . '" style="width:50%"/>
+                            <img id="ruta_imgprint2" src="' . "../../php/" . str_replace("../", "", $imagen_soli2[0]["imagen"]) . '" style="width:50%"/>
                         </td>
                     </tr>
                     <tr>
@@ -172,16 +209,16 @@ if (count($lista_solicitud) > 0) {
                 strtoupper($lista_solicitud[0]["usuario"]) . '<br/>' . $lista_solicitud[0]["dni"]
                 . '</td>
                     </tr>
-                    </table>';
-        $html .= ''
-                . '</div>';
+                    </table></footer>';
     } elseif ($lista_solicitud[0]["ent_id"] === "2") {
         $nombre_pdf = "entrevista_padres";
         $lista_apoderados = fnc_lista_apoderados_de_alumno($conexion, $lista_solicitud[0]["aluId"], "");
         $apoderado = fnc_lista_apoderados_de_alumno($conexion, $lista_solicitud[0]["aluId"], $lista_solicitud[0]["apoderado"]);
-        $html .= '<div>
-                <img src="../../php/aco_img/logo_2.png" width="128px" height="45px" style="float:left;position: relative;top: 0;left: 0;right: 0;margin: 0 auto;"/>
-            </div>
+        $html .= '<header>
+                <div>
+                    <img src="../../php/aco_img/logo_2.png" width="128px" height="45px" style="float:left;position: relative;top: 0;left: 0;right: 0;margin: 0 auto;"/>
+                </div>
+            </header>
             <div class="card-header" style="">
                 <h4 style="text-align:center;text-decoration: underline">FICHA DE ENTREVISTA A PADRES DE FAMILIA</h4>
               </div>
@@ -286,25 +323,22 @@ if (count($lista_solicitud) > 0) {
                     <label>' . $lista_solicitud[0]["informe"] . '</label>
                 </div>
                 <h5>III. DESARROLLO DE LA ENTREVISTA::</h5>
-                <div class="row space-div">
-                  <table style="font-size:12px">
-                    <tr>
-                        <td><label>Planteamiento del padre, madre o apoderado: </label></td>
-                        <td>' . $lista_solicitud[0]["plan_padre"] . '</td>
-                    </tr>
-                    <tr>
-                        <td><label>Planteamiento del docente, tutor/a, psicólogo(a), director(a): </label></td>
-                        <td>' . $lista_solicitud[0]["plan_docente"] . '</td>
-                    </tr>
-                    <tr>
-                        <td><label>Acuerdos - Acciones a realizar por los padres: </label></td>
-                        <td>' . $lista_solicitud[0]["acuerdos1"] . '</td>
-                    </tr>
-                    <tr>
-                        <td><label>Acuerdos - Acciones a realizar por el colegio: </label></td>
-                        <td>' . $lista_solicitud[0]["acuerdos2"] . '</td>
-                    </tr>
-                </table>
+                <div class="row space-div" style="font-size:12px">
+                    <label>Planteamiento del padre, madre o apoderado: </label>
+                </div>
+                <div class="row space-div" style="font-size:12px;text-align: justify;text-justify: inter-word;">' . $lista_solicitud[0]["plan_padre"] . '</div><br/>
+                <div class="row space-div" style="font-size:12px">
+                    <label>Planteamiento del docente, tutor/a, psicólogo(a), director(a): </label>
+                </div>
+                <div class="row space-div" style="font-size:12px;text-align: justify;text-justify: inter-word;">' . $lista_solicitud[0]["plan_docente"] . '</div><br/>
+                <div class="row space-div" style="font-size:12px">
+                    <label>Acuerdos - Acciones a realizar por los padres: </label>
+                </div>
+                <div class="row space-div" style="font-size:12px;text-align: justify;text-justify: inter-word;">' . $lista_solicitud[0]["acuerdos1"] . '</div><br/>
+                <div class="row space-div" style="font-size:12px">
+                    <label>Acuerdos - Acciones a realizar por el colegio: </label>
+                </div>
+                <div class="row space-div" style="font-size:12px;text-align: justify;text-justify: inter-word;">' . $lista_solicitud[0]["acuerdos2"] . '</div>
               </div>';
         $html .= '<div class="row space-div">';
         $imagen_soli = "";
@@ -319,13 +353,13 @@ if (count($lista_solicitud) > 0) {
         } else {
             $imagen_soli2 = fnc_obtener_firma_subentrevista($conexion, $array[1], "2");
         }
-        $html .= '<table style="text-align:center">
+        $html .= '<footer><table style="text-align:center">
                     <tr>
                         <td>
-                            <img id="ruta_img1" src="' . "../../php/" . str_replace("../", "", $imagen_soli[0]["imagen"]) . '" style="width:50%" />
+                            <img id="ruta_imgprint1" src="' . "../../php/" . str_replace("../", "", $imagen_soli[0]["imagen"]) . '" style="width:50%" />
                         </td>
                         <td>
-                            <img id="ruta_img2" src="' . "../../php/" . str_replace("../", "", $imagen_soli2[0]["imagen"]) . '" style="width:50%"/>
+                            <img id="ruta_imgprint2" src="' . "../../php/" . str_replace("../", "", $imagen_soli2[0]["imagen"]) . '" style="width:50%"/>
                         </td>
                     </tr>
                     <tr>
@@ -336,7 +370,7 @@ if (count($lista_solicitud) > 0) {
                 strtoupper($lista_solicitud[0]["usuario"]) . '<br/>' . $lista_solicitud[0]["dni"]
                 . '</td>
                     </tr>
-                    </table>';
+                    </table></footer>';
         $html .= ''
                 . '</div>';
     }
