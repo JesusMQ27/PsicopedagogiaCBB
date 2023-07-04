@@ -63,7 +63,7 @@ $lista_anios = fnc_lista_anio_semaforo($conexion, "", "1");
                         <?php } ?>
                     </div>
                 </div><br>
-                <table id="tableSemaforo" class="table table-bordered table-hover">
+                <table id="tableSemaforo" class="table table-bordered table-hover" style="width: 100%">
                     <thead>
                         <tr>
                             <th>Nro.</th>

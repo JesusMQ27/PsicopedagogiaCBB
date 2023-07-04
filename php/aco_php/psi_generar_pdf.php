@@ -33,7 +33,7 @@ $html = '<html lang="en">
             }
 
             footer {
-                position: fixed; 
+                position: relative; 
                 bottom: 0px; 
                 left: 0px; 
                 right: 0px;
@@ -202,10 +202,19 @@ if (count($lista_solicitud) > 0) {
                         </td>
                     </tr>
                     <tr>
-                        <td style="font-size:12px">------------------------------------------------------------------<br/>'
-                . str_replace(" - ", "<br/>", strtoupper($lista_solicitud[0]["alumno"])) .
-                '</td>
-                        <td style="font-size:12px">------------------------------------------------------------------<br/>' .
+                        <td style="font-size:12px">------------------------------------------------------------------<br/>';
+        if ($lista_solicitud[0]["ent_id"] == "1") {
+            $html .= str_replace(" - ", "<br/>", strtoupper($lista_solicitud[0]["alumno"]));
+        } else {
+            $html .= strtoupper($lista_solicitud[0]["apoderado_nombre"]);
+            if (trim($lista_solicitud[0]["apoderado_dni"]) !== "") {
+                $html .= "<br/>" . strtoupper($lista_solicitud[0]["apoderado_dni"]);
+            } else {
+                $html .= "";
+            }
+        }
+        $html .= '</td>
+                        <td style="font-size:12px"><br/>------------------------------------------------------------------<br/>' .
                 strtoupper($lista_solicitud[0]["usuario"]) . '<br/>' . $lista_solicitud[0]["dni"]
                 . '</td>
                     </tr>
@@ -363,10 +372,19 @@ if (count($lista_solicitud) > 0) {
                         </td>
                     </tr>
                     <tr>
-                        <td style="font-size:12px">------------------------------------------------------------------<br/>'
-                . str_replace(" - ", "<br/>", strtoupper($lista_solicitud[0]["alumno"])) .
-                '</td>
-                        <td style="font-size:12px">------------------------------------------------------------------<br/>' .
+                        <td style="font-size:12px">------------------------------------------------------------------<br/>';
+        if ($lista_solicitud[0]["ent_id"] == "1") {
+            $html .= str_replace(" - ", "<br/>", strtoupper($lista_solicitud[0]["alumno"]));
+        } else {
+            $html .= strtoupper($lista_solicitud[0]["apoderado_nombre"]);
+            if (trim($lista_solicitud[0]["apoderado_dni"]) !== "") {
+                $html .= "<br/>" . strtoupper($lista_solicitud[0]["apoderado_dni"]);
+            } else {
+                $html .= "";
+            }
+        }
+        $html .= '</td>
+                        <td style="font-size:12px"><br/>------------------------------------------------------------------<br/>' .
                 strtoupper($lista_solicitud[0]["usuario"]) . '<br/>' . $lista_solicitud[0]["dni"]
                 . '</td>
                     </tr>

@@ -76,27 +76,27 @@ $lista = fnc_buscar_semaforo_docentes_grafico_barras($conexion, $sedeCodi, "", "
                 </div>
                 <div id="div_Niveles">
                     <?php
-                    $lista_niveles = fnc_lista_niveles($conexion, "", "1");
-                    $html = '<div class="row ">
-                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
-                        <div class="form-group" style="margin-bottom: 0px;">
-                            <label> Nivel: </label>
-                        </div>
-                        <select id="cbbNivel" data-show-content="true" class="form-control" style="width: 100%" onchange="semaforo_docentes_grafico_barras_niveles(this)">';
-                    if (count($lista_niveles) > 0) {
-                        $html .= '<option value="">-- Seleccione --</option>';
-                        $html .= '<option value="0">TODOS</option>';
-                        foreach ($lista_niveles as $nivel) {
-                            $html .= "<option value='" . $nivel["codigo"] . "' >" . $nivel["nombre"] . "</option>";
-                        }
-                    }
-                    $html .= '</select>
-                    </div>
-                </div><br>
-                <div class="col-md-12">
-                    <div id="bar-chart2"></div>
-                </div>';
-                    echo $html;
+                    /* $lista_niveles = fnc_lista_niveles($conexion, "", "1");
+                      $html = '<div class="row ">
+                      <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                      <div class="form-group" style="margin-bottom: 0px;">
+                      <label> Nivel: </label>
+                      </div>
+                      <select id="cbbNivel" data-show-content="true" class="form-control" style="width: 100%" onchange="semaforo_docentes_grafico_barras_niveles(this)">';
+                      if (count($lista_niveles) > 0) {
+                      $html .= '<option value="">-- Seleccione --</option>';
+                      $html .= '<option value="0">TODOS</option>';
+                      foreach ($lista_niveles as $nivel) {
+                      $html .= "<option value='" . $nivel["codigo"] . "' >" . $nivel["nombre"] . "</option>";
+                      }
+                      }
+                      $html .= '</select>
+                      </div>
+                      </div><br>
+                      <div class="col-md-12">
+                      <div id="bar-chart2"></div>
+                      </div>';
+                      echo $html; */
                     ?>
                 </div>
                 <div id="div_Grados">

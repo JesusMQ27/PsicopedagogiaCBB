@@ -14,21 +14,26 @@ $fechas = fnc_fechas_rango($conexion);
 $sedeCodi = "";
 $usuarioCodi = "";
 $privacidad = "";
+$disabled = "";
 if ($userData[0]["sedeId"] == "1" && ($perfilId === "1" || $perfilId === "5")) {
     $sedeCodi = "0";
-    $usuarioCodi = "";
+    $usuarioCodi = "0";
     $privacidad = "0,1";
+    $disabled = "";
 } else {
     $privacidad = "0";
     if ($perfilId === "1") {
         $sedeCodi = $userData[0]["sedeId"];
-        $usuarioCodi = "";
+        $usuarioCodi = "0";
+        $disabled = "";
     } elseif ($perfilId === "2") {
         $sedeCodi = $userData[0]["sedeId"];
         $usuarioCodi = $codigo_user;
+        $disabled = " disabled ";
     } else {
         $sedeCodi = $userData[0]["sedeId"];
-        $usuarioCodi = "";
+        $usuarioCodi = "0";
+        $disabled = "";
     }
 }
 
@@ -170,7 +175,7 @@ $lista_niveles = fnc_lista_niveles($conexion, '', '1');
                             <label id="dataDocente" >Docente:</label>
                             <input type="hidden" id="docen" value=""/>
                         </div>
-                        <input type="text" id="searchDocente" class="typeahead form-control" style="size:12px;text-transform: uppercase;" value="" autocomplete="off">
+                        <input type="text" id="searchDocente" class="typeahead form-control" style="size:12px;text-transform: uppercase;" value="" autocomplete="off" <?php echo $disabled; ?>>
                     </div>
                     <div class="col-lg-4 col-md-4 col-sm-6 col-12">
                         <button class="btn btn-success" id="btnNuevoSolicitud" style="bottom: 0px;margin-top: 30px" 
@@ -183,16 +188,16 @@ $lista_niveles = fnc_lista_niveles($conexion, '', '1');
                             Limpiar</button> 
                     </div>
                 </div><br>
-                <div class="row">
-                    <div class="col-12" id="divSolicitudesRegistradas">
-                        <table id="tableSemaforo" class="table table-bordered table-hover">
+                <div class="col-12">
+                    <div class="table-responsive" id="divSolicitudesRegistradas">
+                        <table id="tableSemaforo" class="table table-bordered table-hover" style="width: 100%">
                             <thead>
                                 <tr>
                                     <th>Nro.</th>
                                     <th>Sede</th>
                                     <th style='width:300px'>Docente</th>
-                                    <th style='width:200px'>Grado</th>
-                                    <th>Cantidad total de estudiantes</th>
+                                    <!--<th style='width:200px'>Grado</th>-->
+                                    <th>Cantidad de entrevistas programadas</th>
                                     <th>Cantidad faltante</th>
                                     <th>Cantidad realizados</th>
                                     <th>Porcentaje</th>
@@ -201,7 +206,7 @@ $lista_niveles = fnc_lista_niveles($conexion, '', '1');
                             </thead>
                             <tbody>
                                 <?php
-                                $lista = fnc_buscar_semaforo_docentes($conexion, $sedeCodi, $fechas[0]["date_ayer"], $fechas[0]["date_hoy"], "0", "0", "0", "0", "0", "0");
+                                $lista = fnc_buscar_semaforo_docentes($conexion, $sedeCodi, $fechas[0]["date_ayer"], $fechas[0]["date_hoy"], "0", "0", "0", "0", "0", $usuarioCodi);
                                 $html = "";
                                 $aux = 1;
                                 if (count($lista) > 0) {
@@ -217,7 +222,7 @@ $lista_niveles = fnc_lista_niveles($conexion, '', '1');
                                                 . "<td>$aux</td>"
                                                 . "<td>" . $value["sede"] . "</td>"
                                                 . "<td >" . $value["docente"] . "</td>"
-                                                . "<td>" . $value["grado"] . "</td>"
+                                                //. "<td>" . $value["grado"] . "</td>"
                                                 . "<td style='text-align:center'>" . $value["cantidad"] . "</td>"
                                                 . "<td style='text-align:center'>" . $value["cantidad_faltantes"] . "</td>"
                                                 . "<td style='text-align:center'>" . $value["cantidad_realizados"] . "</td>"

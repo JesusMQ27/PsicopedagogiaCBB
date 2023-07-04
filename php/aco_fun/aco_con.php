@@ -29,6 +29,22 @@ ORDER BY e.men_id;";
     return $sql;
 }
 
+function con_registrar_auditoria($cadena) {
+    $sql = "INSERT INTO tb_auditoria(
+        submen_id,
+        audi_menu,
+        audi_controller,
+        audi_function,
+        audi_query,
+        audi_tipo,
+        audi_tabla,
+        usu_id,
+        audi_fecha,
+        audi_estado)
+               VALUES ($cadena)";
+    return $sql;
+}
+
 function con_submenu_x_menu($id, $perfil, $usuario) {
     $sql = "SELECT d.smen_id as id,d.smen_orden as orden,smen_nombre as submenu,smen_icono as icono,smen_ruta as ruta
 FROM tb_usuario a
@@ -97,7 +113,7 @@ function con_generate_token_contrasena($id, $token) {
 }
 
 function con_verificar_token_pass($id, $token) {
-    $sql = "SELECT * FROM tb_uscuario WHERE usu_id='$id' AND usu_token_clave='$token';";
+    $sql = "SELECT * FROM tb_usuario WHERE usu_id='$id' AND usu_token_clave='$token';";
     return $sql;
 }
 
@@ -299,14 +315,14 @@ function con_eliminar_submenu($id) {
 }
 
 function con_registrar_perfil($codigo, $descripcion) {
-    $sql = "INSERT INTO tb_perfil(perf_codigo,perf_nombre,perf_estado)
-               VALUES ('" . $codigo . "','" . $descripcion . "','1')";
+    $sql = "INSERT INTO tb_perfil(perf_codigo,perf_nombre,perf_estado) "
+            . "VALUES ('" . $codigo . "','" . $descripcion . "','1')";
     return $sql;
 }
 
 function con_registrar_accesos_perfil($lista) {
-    $sql = "INSERT INTO tb_menu_asigna(perf_id,smen_id,men_asi_estado)
-               VALUES $lista";
+    $sql = "INSERT INTO tb_menu_asigna(perf_id,smen_id,men_asi_estado) "
+            . "VALUES $lista";
     return $sql;
 }
 
@@ -332,7 +348,7 @@ function con_editar_accesos_perfil($lista, $codigo) {
 function con_editar_accesos_perfil_todos($lista, $codigo) {
     $str_list = "";
     $sql = "UPDATE tb_menu_asigna SET men_asi_estado='0'";
-    if ($lista !== "") {
+    if (trim($lista) !== "") {
         $str_list = " AND men_asi_id NOT IN ($lista) ";
     } else {
         $str_list = "";
@@ -440,7 +456,7 @@ function con_lista_data_tabla_tmp_carga_alumnos($codigo) {
         car_dis_apo as dis_apo,
         car_cor_alu as cor_alu,
         car_estado as estado ,
-        obtenerSedeId(car_sede) as registrar_sed_id,
+        car_sede as registrar_sed_id,
 	obtenerSeccionId(car_seccion) as registrar_sec_id,
 	obtenerAlumnoId(car_dni) as actual_alu_id,
 	validarMatricula(car_dni,car_seccion,car_sede) as valida_matricula
@@ -473,7 +489,7 @@ function con_lista_data_validos_tabla_tmp_carga_alumnos($codigo) {
         car_apo_dir as apo_dir,
         car_dis_apo as dis_apo,
         car_cor_alu as cor_alu,
-	obtenerSedeId(car_sede) as registrar_sed_id,
+	car_sede as registrar_sed_id,
 	obtenerSeccionId(car_seccion) as registrar_sec_id,
 	obtenerAlumnoId(car_dni) as actual_alu_id,
 	validarMatricula(car_dni,car_seccion,car_sede) as valida_matricula,
@@ -1213,13 +1229,7 @@ function con_registrar_apoderado($cadena) {
 }
 
 function con_registrar_apoderado_historico($cadena) {
-    $sql = "INSERT INTO tb_alumno_apoderado_historico(
-        apo_id,
-        hist_fecha,
-        hist_correo,
-        hist_telefono,
-        hist_estado)
-        VALUES $cadena";
+    $sql = "INSERT INTO tb_alumno_apoderado_historico(apo_id,hist_fecha,hist_correo,hist_telefono,hist_estado) VALUES $cadena";
     return $sql;
 }
 
@@ -1236,42 +1246,13 @@ function con_modificar_alumno_datos($alumno, $sexo) {
 }
 
 function con_registrar_solicitud_estudiante($cadena) {
-    $sql = "INSERT INTO tb_solicitudes(
-        sol_codigo,
-        mat_id,
-        usu_id,
-        ent_id,
-        subca_id,
-        sol_motivo,
-        sol_fecha,
-        sed_id,
-        sol_plan_estu,
-        sol_plan_entre,
-        sol_acuerdos,
-        sol_informe,
-        sol_plan_padre,
-        sol_plan_docen,
-        sol_acuerdos_1,
-        sol_acuerdos_2,
-        apo_id,
-        sol_privacidad,
-        sol_duracion,
-        sol_estado)
-        VALUES $cadena";
+    $sql = "INSERT INTO tb_solicitudes(sol_codigo,mat_id,usu_id,ent_id,subca_id,sol_motivo,sol_fecha,sed_id,sol_plan_estu,sol_plan_entre,sol_acuerdos,sol_informe,
+sol_plan_padre,sol_plan_docen,sol_acuerdos_1,sol_acuerdos_2,apo_id,sol_privacidad,sol_duracion,sol_estado) VALUES $cadena";
     return $sql;
 }
 
 function con_registrar_solicitud_firmas($cadena) {
-    $sql = "INSERT INTO tb_solicitudes_firmas(
-        sol_id,
-        mat_id,
-        usu_id,
-        apo_id,
-        firm_imagen,
-        firm_fecha,
-        firm_tipo,
-        firm_estado)
-        VALUES $cadena";
+    $sql = "INSERT INTO tb_solicitudes_firmas(sol_id,mat_id,usu_id,apo_id,firm_imagen,firm_fecha,firm_tipo,firm_estado) VALUES $cadena";
     return $sql;
 }
 
@@ -1318,22 +1299,23 @@ function con_buscar_semaforo_docentes($sede, $fecha_ini, $fecha_fin, $semaforo, 
     $cadena_bimestre = "";
     $cadena_bimestre2 = "";
     $cantidad_semanas = "";
+    $str_docente = "";
     if ($bimestre === "" || $bimestre === "0") {
         $cadena_no_bimestre = " AND (sol_fecha>='$fecha_ini 00:00:00' AND sol_fecha<='$fecha_fin 23:59:59') OR sol_fecha IS NULL ";
         $cadena_bimestre = "";
         $cadena_bimestre2 = "";
-        $cantidad_semanas = " ROUND(DATEDIFF('$fecha_fin','$fecha_ini')/7)*2 ";
+        $cantidad_semanas = " ROUND((DATEDIFF('$fecha_fin','$fecha_ini')/7)-1)*2 ";
     } else {
         $cadena_no_bimestre = "";
         $cadena_bimestre = " INNER JOIN tb_bimestre j ON (g.sol_fecha BETWEEN j.bim_fecha_ini and j.bim_fecha_fin) OR sol_fecha is NULL ";
         $cadena_bimestre2 = " AND j.bim_id=$bimestre ";
-        $cantidad_semanas = " ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 ";
+        $cantidad_semanas = " ROUND((DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)-1)*2 ";
     }
     $sql = "SELECT * FROM ( SELECT sede,docente,grado,cantidad,cantidad_faltantes,cantidad_realizados,porcentaje, sem_id as valor,sem_color as color
 FROM (
 SELECT * FROM ( SELECT sede,docente,grado,cantidad,cantidad_faltantes,cantidad_realizados,(cantidad_realizados/cantidad)*100 as resultado,CONCAT((cantidad_realizados/cantidad)*100,' %') as porcentaje,fecha
 	FROM (
-SELECT sed_nombre as sede,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as docente,
+SELECT a.usu_id,sed_nombre as sede,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as docente,
 		CONCAT(gra_nombre,' - ',sec_nombre) as grado,mat_fech_regi as fecha , $cantidad_semanas as cantidad,
                 COUNT(g.sol_id) as cantidad_realizados,$cantidad_semanas -COUNT(g.sol_id) as cantidad_faltantes
 		FROM tb_usuario_dictado a
@@ -1360,8 +1342,11 @@ SELECT sed_nombre as sede,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as
     }
     if ($docente !== "" && $docente !== 0 && $docente !== "0") {
         $sql .= " AND a.usu_id=$docente ";
+        $str_docente = " AND p1.usu_id=$docente ";
+    } else {
+        $str_docente = "";
     }
-    $sql .= " GROUP BY a.usu_id,a.sed_id,a.sec_id) as p1 ) as a1
+    $sql .= " GROUP BY a.usu_id) as p1 WHERE 1=1 $str_docente) as a1
 		INNER JOIN tb_semaforo b ON year(a1.fecha)=b.sem_nombre AND resultado BETWEEN sem_valor_ini AND sem_valor_fin
                 ) as p2 ) as p3 WHERE 1=1  ";
     if ($semaforo !== "0") {
@@ -1371,40 +1356,47 @@ SELECT sed_nombre as sede,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as
     return $sql;
 }
 
-function con_buscar_semaforo_docentes_alerta($sede, $fecha_ini, $fecha_fin, $semaforo) {
-    $sql = "SELECT p2.sede,p2.docente,p2.grado,SUM(p2.cantidad) as cantidad,SUM(p2.cantidad_realizados) as cantidad_realizados,
-SUM(p2.cantidad_faltantes) as cantidad_faltantes,CONCAT(((SUM(p2.cantidad_realizados)/SUM(p2.cantidad))*100),' %') as porcentaje  FROM ( SELECT *
-	FROM (
-		SELECT sed_nombre as sede,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as docente,
-		CONCAT(gra_nombre,' - ',sec_nombre) as grado,mat_fech_regi as fecha ,
-                    (SELECT ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 FROM tb_bimestre WHERE DATE(NOW()) BETWEEN bim_fecha_ini AND bim_fecha_fin) as cantidad,
-                    COUNT(g.sol_id) as cantidad_realizados,
-                    (SELECT ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 FROM tb_bimestre WHERE DATE(NOW()) BETWEEN bim_fecha_ini AND bim_fecha_fin) -COUNT(g.sol_id) as cantidad_faltantes,
-                    CONCAT(((COUNT(g.sol_id)/COUNT(c.mat_id))*100),' %') as porcentaje
-		FROM tb_usuario_dictado a
-		INNER JOIN tb_usuario b ON a.usu_id=b.usu_id
-		INNER JOIN tb_matricula c ON a.sec_id=c.sec_id AND a.sed_id=c.sed_id
-		INNER JOIN tb_seccion d ON c.sec_id=d.sec_id
-		INNER JOIN tb_grado e ON d.gra_id=e.gra_id
-		INNER JOIN tb_sede f ON c.sed_id=f.sed_id
-		LEFT JOIN tb_solicitudes g ON c.mat_id=g.mat_id AND sol_estado=1
-		INNER JOIN tb_bimestre h ON (g.sol_fecha BETWEEN h.bim_fecha_ini and h.bim_fecha_fin) OR sol_fecha is NULL 
-		WHERE dic_estado=1 and mat_estado=1 AND DATE(NOW()) BETWEEN bim_fecha_ini AND bim_fecha_fin
-                GROUP BY a.usu_id,c.sed_id,c.sec_id ";
-    if ($fecha_ini !== "") {
-        $sql .= " AND mat_fech_regi>='$fecha_ini 00:00:00' ";
-    }
-    if ($fecha_fin !== "") {
-        $sql .= " AND mat_fech_regi<='$fecha_fin 23:59:59' ";
-    }
+function con_buscar_semaforo_docentes_alerta($sede) {//jesus
+    $sql = "SELECT CONCAT(((sum(p1.realizados)/sum(p1.cantidad))*100),' %') as porcentaje FROM (
+SELECT p1.usu_id,p1.docente,p1.sed_id,p1.sede,if(p1.cantidad=-1,count(p2.usu_id),p1.cantidad) as cantidad,if(p1.cantidad=-1,0,p1.cantidad-count(p2.usu_id)) as faltantes,count(p2.usu_id) as realizados,IF(p1.cantidad=-1,'100.0000 %',CONCAT(((count(p2.usu_id)/p1.cantidad)*100),' %')) as porcentaje FROM (
+SELECT a.usu_id,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as docente,a.sed_id,sed_nombre as sede,(SELECT ROUND((DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)-1)*2 FROM tb_bimestre WHERE DATE(NOW()) BETWEEN bim_fecha_ini AND bim_fecha_fin) as cantidad
+FROM tb_usuario_dictado a 
+INNER JOIN tb_usuario b ON a.usu_id=b.usu_id
+INNER JOIN tb_sede f ON a.sed_id=f.sed_id 
+WHERE dic_estado=1 ";
     if ($sede !== "0") {
-        $sql .= " and c.sed_id=$sede ";
+        $sql .= " AND a.sed_id=$sede ";
     }
-    $sql .= " ) as p1 ) as p2 WHERE 1=1  ";
-    if ($semaforo !== "0") {
-        $sql .= " and p2.valor=$semaforo ";
+    $sql .= " AND usu_estado=1
+GROUP BY a.usu_id,a.sed_id
+UNION ALL
+SELECT a.usu_id,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as docente,a.sed_id,sed_nombre as sede,-1 as cantidad
+FROM tb_usuario a
+INNER JOIN tb_sede b ON a.sed_id=b.sed_id 
+LEFT JOIN tb_usuario_dictado c ON a.usu_id=c.usu_id
+WHERE usu_estado=1";
+    if ($sede !== "0") {
+        $sql .= " AND a.sed_id=$sede ";
     }
-    $sql .= ";";
+    $sql .= " AND c.dic_id IS NULL
+GROUP BY a.usu_id,a.sed_id
+) as p1
+LEFT JOIN (
+SELECT usu_id FROM tb_solicitudes a 
+INNER JOIN tb_bimestre b1 ON DATE(NOW()) BETWEEN bim_fecha_ini AND bim_fecha_fin
+WHERE sol_estado=1 AND DATE(sol_fecha) BETWEEN bim_fecha_ini AND bim_fecha_fin ";
+    if ($sede !== "0") {
+        $sql .= " AND sed_id=$sede ";
+    }
+    $sql .= " UNION ALL
+SELECT usu_id FROM tb_sub_solicitudes b 
+INNER JOIN tb_bimestre b2 ON DATE(NOW()) BETWEEN bim_fecha_ini AND bim_fecha_fin
+WHERE ssol_estado=1 AND DATE(ssol_fecha) BETWEEN bim_fecha_ini AND bim_fecha_fin ";
+    if ($sede !== "0") {
+        $sql .= " AND sed_id=$sede ";
+    }
+    $sql .= " ) p2 ON p1.usu_id=p2.usu_id
+GROUP BY p1.usu_id,p1.sed_id) as p1";
     return $sql;
 }
 
@@ -1420,8 +1412,8 @@ function con_buscar_semaforo_docentes_grafico_barras($sede, $fecha_ini, $fecha_f
 	) as p1
 	LEFT JOIN (
 	SELECT a.sed_id as id,sed_nombre as sede,
-		CONCAT(sed_nombre) as nombre,ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 as cantidad,
-		COUNT(g.sol_id) as cantidad_realizados,ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 -COUNT(g.sol_id) as cantidad_faltantes
+		CONCAT(sed_nombre) as nombre,ROUND((DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)-1)*2 as cantidad,
+		COUNT(g.sol_id) as cantidad_realizados,ROUND((DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)-1)*2 -COUNT(g.sol_id) as cantidad_faltantes
 		FROM tb_usuario_dictado a
 		INNER JOIN tb_usuario b ON a.usu_id=b.usu_id
 		INNER JOIN tb_matricula c ON a.sec_id=c.sec_id AND a.sed_id=c.sed_id
@@ -1457,8 +1449,8 @@ function con_buscar_semaforo_docentes_grafico_barras($sede, $fecha_ini, $fecha_f
 	) as p1
 	LEFT JOIN (
 	SELECT e.niv_id as id,niv_nombre as nivel,
-		CONCAT(niv_nombre) as nombre,ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 as cantidad,
-		COUNT(g.sol_id) as cantidad_realizados,ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 -COUNT(g.sol_id) as cantidad_faltantes
+		CONCAT(niv_nombre) as nombre,ROUND((DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)-1)*2 as cantidad,
+		COUNT(g.sol_id) as cantidad_realizados,ROUND((DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)-1)*2 -COUNT(g.sol_id) as cantidad_faltantes
 		FROM tb_usuario_dictado a
 		INNER JOIN tb_usuario b ON a.usu_id=b.usu_id
 		INNER JOIN tb_matricula c ON a.sec_id=c.sec_id AND a.sed_id=c.sed_id
@@ -1499,8 +1491,8 @@ function con_buscar_semaforo_docentes_grafico_barras($sede, $fecha_ini, $fecha_f
 	) as p1
 	LEFT JOIN (
 	SELECT d.gra_id as id,gra_nombre as grado,
-		CONCAT(gra_nombre) as nombre,ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 as cantidad,
-		COUNT(g.sol_id) as cantidad_realizados,ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 -COUNT(g.sol_id) as cantidad_faltantes
+		CONCAT(gra_nombre) as nombre,ROUND((DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)-1)*2 as cantidad,
+		COUNT(g.sol_id) as cantidad_realizados,ROUND((DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)-1)*2 -COUNT(g.sol_id) as cantidad_faltantes
 		FROM tb_usuario_dictado a
 		INNER JOIN tb_usuario b ON a.usu_id=b.usu_id
 		INNER JOIN tb_matricula c ON a.sec_id=c.sec_id AND a.sed_id=c.sed_id
@@ -1548,8 +1540,8 @@ function con_buscar_semaforo_docentes_grafico_barras($sede, $fecha_ini, $fecha_f
         $sql .= " ) as p1
 	LEFT JOIN (
 	SELECT d.sec_id as id,sec_nombre as seccion,
-		CONCAT(sec_nombre) as nombre,ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 as cantidad,
-		COUNT(g.sol_id) as cantidad_realizados,ROUND(DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)*2 -COUNT(g.sol_id) as cantidad_faltantes
+		CONCAT(sec_nombre) as nombre,ROUND((DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)-1)*2 as cantidad,
+		COUNT(g.sol_id) as cantidad_realizados,ROUND((DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)-1)*2 -COUNT(g.sol_id) as cantidad_faltantes
 		FROM tb_usuario_dictado a
 		INNER JOIN tb_usuario b ON a.usu_id=b.usu_id
 		INNER JOIN tb_matricula c ON a.sec_id=c.sec_id AND a.sed_id=c.sed_id
@@ -1622,16 +1614,9 @@ function con_registrar_sub_solicitud_estudiante($cadena) {
 }
 
 function con_registrar_sub_solicitud_firmas($cadena) {
-    $sql = "INSERT INTO tb_sub_solicitudes_firmas(
-        ssol_id,
-        mat_id,
-        usu_id,
-        apo_id,
-        sfirm_imagen,
-        sfirm_fecha,
-        sfirm_tipo,
-        sfirm_estado)
-        VALUES $cadena";
+    $sql = "INSERT INTO tb_sub_solicitudes_firmas(ssol_id,mat_id,usu_id,apo_id,"
+            . "sfirm_imagen,sfirm_fecha,sfirm_tipo,sfirm_estado) "
+            . "VALUES $cadena";
     return $sql;
 }
 
@@ -1724,8 +1709,8 @@ function con_obtener_solicitud_x_codigo($tipo, $codi) {
     if ($tipo === "ent") {
         $sql = "SELECT sol_codigo as codigo,a.mat_id as matricula,a0.alu_id as aluId,CONCAT(alu_dni,' - ',alu_nombres) as alumno_busq,CONCAT(alu_nombres,' - ',alu_dni) as alumno,alu_sexo as sexo,f.cat_id as categoria,a.subca_id as subcategorgia,a.ent_id,CONCAT(gra_nombre,' - ',sec_nombre) as grado,
 a.sed_id as sedeId,sed_nombre as sede,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as usuario,usu_num_doc as dni,sol_motivo as motivo, DATE_FORMAT(sol_fecha, '%d/%m/%Y %H:%i:%s') as fecha,sol_plan_estu as plan_estudiante,sol_plan_entre as plan_entrevistador,sol_acuerdos as acuerdos,sol_informe as informe,sol_plan_padre as plan_padre,
-sol_plan_docen as plan_docente,sol_acuerdos_1 as acuerdos1, sol_acuerdos_2 as acuerdos2,apo_id as apoderado,sol_estado as estadoId,sol_privacidad as privacidad,
-CASE sol_estado WHEN 0 THEN 'Inactivo' WHEN 1 THEN 'Activo' END as estado 
+sol_plan_docen as plan_docente,sol_acuerdos_1 as acuerdos1, sol_acuerdos_2 as acuerdos2,a.apo_id as apoderado,sol_estado as estadoId,sol_privacidad as privacidad,
+CASE sol_estado WHEN 0 THEN 'Inactivo' WHEN 1 THEN 'Activo' END as estado, IF(a.apo_id is null,'',CONCAT(apo_nombres)) as apoderado_nombre,IF(apo_dni is null,'',apo_dni) as apoderado_dni
 FROM tb_solicitudes a
 INNER JOIN tb_matricula a0 ON a.mat_id=a0.mat_id
 INNER JOIN tb_alumno b ON a0.alu_id=b.alu_id
@@ -1735,12 +1720,13 @@ INNER JOIN tb_grado e ON d.gra_id=e.gra_id
 INNER JOIN tb_subcategoria f ON a.subca_id=f.subca_id
 INNER JOIN tb_categoria g ON f.cat_id=g.cat_id
 INNER JOIN tb_usuario h ON a.usu_id=h.usu_id
+LEFT JOIN tb_alumno_apoderado j ON a.apo_id=j.apo_id
 WHERE sol_id=$codi;";
     } else {
         $sql = "SELECT ssol_codigo as codigo,a.mat_id as matricula,a0.alu_id as aluId,CONCAT(alu_dni,' - ',alu_nombres) as alumno_busq,CONCAT(alu_nombres,' - ',alu_dni) as alumno,alu_sexo as sexo,f.cat_id as categoria,a.subca_id as subcategorgia,a.ent_id,CONCAT(gra_nombre,' - ',sec_nombre) as grado,
 a.sed_id as sedeId,sed_nombre as sede,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as usuario,usu_num_doc as dni,ssol_motivo as motivo, DATE_FORMAT(ssol_fecha, '%d/%m/%Y %H:%i:%s') as fecha,ssol_plan_estu as plan_estudiante,ssol_plan_entre as plan_entrevistador,ssol_acuerdos as acuerdos,ssol_informe as informe,ssol_plan_padre as plan_padre,
-ssol_plan_docen as plan_docente,ssol_acuerdos_1 as acuerdos1, ssol_acuerdos_2 as acuerdos2,apo_id as apoderado,ssol_estado as estadoId,ssol_privacidad as privacidad,
-CASE ssol_estado WHEN 0 THEN 'Inactivo' WHEN 1 THEN 'Activo' END as estado 
+ssol_plan_docen as plan_docente,ssol_acuerdos_1 as acuerdos1, ssol_acuerdos_2 as acuerdos2,a.apo_id as apoderado,ssol_estado as estadoId,ssol_privacidad as privacidad,
+CASE ssol_estado WHEN 0 THEN 'Inactivo' WHEN 1 THEN 'Activo' END as estado, IF(a.apo_id is null,'',CONCAT(apo_nombres)) as apoderado_nombre,IF(apo_dni is null,'',apo_dni) as apoderado_dni
 FROM tb_sub_solicitudes a
 INNER JOIN tb_matricula a0 ON a.mat_id=a0.mat_id
 INNER JOIN tb_alumno b ON a0.alu_id=b.alu_id
@@ -1750,6 +1736,7 @@ INNER JOIN tb_grado e ON d.gra_id=e.gra_id
 INNER JOIN tb_subcategoria f ON a.subca_id=f.subca_id
 INNER JOIN tb_categoria g ON f.cat_id=g.cat_id
 INNER JOIN tb_usuario h ON a.usu_id=h.usu_id
+LEFT JOIN tb_alumno_apoderado j ON a.apo_id=j.apo_id
 WHERE ssol_id=$codi;";
     }
     return $sql;
@@ -1768,26 +1755,24 @@ FROM tb_sub_solicitudes_firmas WHERE ssol_id=$codigo AND sfirm_tipo=$tipo AND sf
 }
 
 function con_modificar_solicitud_entrevista($codigo, $matricual, $usuario, $solicitud_tipo, $s_subcategoria, $s_motivo, $fecha, $sede, $s_planEstudiante, $s_planEntrevistador, $s_acuerdos, $s_informe, $s_planPadre, $s_planDocente, $s_acuerdosPadres, $s_acuerdosColegio, $s_apoderado, $_privacidad, $estado) {
-    $sql = "UPDATE tb_solicitudes SET 
-            mat_id='$matricual',
-            usu_id='$usuario',
-            ent_id='$solicitud_tipo',
-            subca_id='$s_subcategoria',
-            sol_motivo='$s_motivo',
-            sol_fecha=$fecha,
-            sed_id='$sede',
-            sol_plan_estu='$s_planEstudiante',
-            sol_plan_entre='$s_planEntrevistador',
-            sol_acuerdos='$s_acuerdos',
-            sol_informe='$s_informe',
-            sol_plan_padre='$s_planPadre',
-            sol_plan_docen='$s_planDocente',
-            sol_acuerdos_1='$s_acuerdosPadres',
-            sol_acuerdos_2='$s_acuerdosColegio',
-            apo_id='$s_apoderado',
-            sol_privacidad='$_privacidad',
-            sol_estado='$estado' "
-            . " WHERE sol_id='$codigo';";
+    $sql = 'UPDATE tb_solicitudes SET mat_id="' . $matricual . '",'
+            . 'ent_id="' . $solicitud_tipo . '",'
+            . 'subca_id="' . $s_subcategoria . '",'
+            . 'sol_motivo="' . $s_motivo . '",'
+//. "sol_fecha = $fecha, "
+            . 'sed_id="' . $sede . '",'
+            . 'sol_plan_estu="' . $s_planEstudiante . '",'
+            . 'sol_plan_entre="' . $s_planEntrevistador . '",'
+            . 'sol_acuerdos="' . $s_acuerdos . '",'
+            . 'sol_informe="' . $s_informe . '",'
+            . 'sol_plan_padre="' . $s_planPadre . '",'
+            . 'sol_plan_docen="' . $s_planDocente . '",'
+            . 'sol_acuerdos_1="' . $s_acuerdosPadres . '",'
+            . 'sol_acuerdos_2="' . $s_acuerdosColegio . '",'
+            . 'apo_id="' . $s_apoderado . '",'
+            . 'sol_privacidad="' . $_privacidad . '",'
+            . 'sol_estado="' . $estado . '" '
+            . ' WHERE sol_id="' . $codigo . '"';
     return $sql;
 }
 
@@ -1797,38 +1782,38 @@ function con_buscar_solicitud_entrevista_firmas($codigo, $tipo) {
 }
 
 function con_modificar_solicitud_entrevista_firmas($codigo, $tipo, $matricual, $usuario, $s_apoderado, $imagen, $fecha, $estado) {
-    $sql = "UPDATE tb_solicitudes_firmas SET 
-        mat_id='$matricual',
-        usu_id='$usuario',
-        apo_id='$s_apoderado',
-        firm_imagen='$imagen',
-        firm_fecha=$fecha,
-        firm_estado='$estado'
-         WHERE sol_id='$codigo' and firm_tipo='$tipo';";
+    $sql = "UPDATE tb_solicitudes_firmas SET "
+            . "mat_id='$matricual',"
+            . "usu_id='$usuario',"
+            . "apo_id='$s_apoderado',"
+            . "firm_imagen='$imagen',"
+            //. "firm_fecha=$fecha,"
+            . "firm_estado='$estado'"
+            . " WHERE sol_id='$codigo' and firm_tipo='$tipo';";
     return $sql;
 }
 
 function con_modificar_solicitud_sub_entrevista($codigo, $matricual, $usuario, $solicitud_tipo, $s_subcategoria, $s_motivo, $fecha, $sede, $s_planEstudiante, $s_planEntrevistador, $s_acuerdos, $s_informe, $s_planPadre, $s_planDocente, $s_acuerdosPadres, $s_acuerdosColegio, $s_apoderado, $_privacidad, $estado) {
-    $sql = "UPDATE tb_sub_solicitudes SET 
-            mat_id='$matricual',
-            usu_id='$usuario',
-            ent_id='$solicitud_tipo',
-            subca_id='$s_subcategoria',
-            ssol_motivo='$s_motivo',
-            ssol_fecha=$fecha,
-            sed_id='$sede',
-            ssol_plan_estu='$s_planEstudiante',
-            ssol_plan_entre='$s_planEntrevistador',
-            ssol_acuerdos='$s_acuerdos',
-            ssol_informe='$s_informe',
-            ssol_plan_padre='$s_planPadre',
-            ssol_plan_docen='$s_planDocente',
-            ssol_acuerdos_1='$s_acuerdosPadres',
-            ssol_acuerdos_2='$s_acuerdosColegio',
-            apo_id='$s_apoderado',
-            ssol_privacidad='$_privacidad',
-            ssol_estado='$estado' "
-            . " WHERE ssol_id='$codigo';";
+    $sql = 'UPDATE tb_sub_solicitudes SET '
+            . 'mat_id="' . $matricual . '",'
+            //. "usu_id='$usuario',"
+            . 'ent_id="' . $solicitud_tipo . '",'
+            . 'subca_id="' . $s_subcategoria . '",'
+            . 'ssol_motivo="' . $s_motivo . '",'
+            //. "ssol_fecha=$fecha,"
+            . 'sed_id="' . $sede . '",'
+            . 'ssol_plan_estu="' . $s_planEstudiante . '",'
+            . 'ssol_plan_entre="' . $s_planEntrevistador . '",'
+            . 'ssol_acuerdos="' . $s_acuerdos . '",'
+            . 'ssol_informe="' . $s_informe . '",'
+            . 'ssol_plan_padre="' . $s_planPadre . '",'
+            . 'ssol_plan_docen="' . $s_planDocente . '",'
+            . 'ssol_acuerdos_1="' . $s_acuerdosPadres . '",'
+            . 'ssol_acuerdos_2="' . $s_acuerdosColegio . '",'
+            . 'apo_id="' . $s_apoderado . '",'
+            . 'ssol_privacidad="' . $_privacidad . '",'
+            . 'ssol_estado="' . $estado . '" '
+            . ' WHERE ssol_id="' . $codigo . '";';
     return $sql;
 }
 
@@ -1838,25 +1823,17 @@ function con_buscar_solicitud_sub_entrevista_firmas($codigo, $tipo) {
 }
 
 function con_modificar_solicitud_sub_entrevista_firmas($codigo, $tipo, $matricual, $usuario, $s_apoderado, $imagen, $fecha, $estado) {
-    $sql = "UPDATE tb_sub_solicitudes_firmas SET 
-        mat_id='$matricual',
-        usu_id='$usuario',
-        apo_id='$s_apoderado',
-        sfirm_imagen='$imagen',
-        sfirm_fecha=$fecha,
-        sfirm_estado='$estado'
-         WHERE ssol_id='$codigo' and sfirm_tipo='$tipo';";
+    $sql = "UPDATE tb_sub_solicitudes_firmas SET mat_id='$matricual',usu_id='$usuario',"
+            . "apo_id='$s_apoderado',sfirm_imagen='$imagen',"
+            //. "sfirm_fecha=$fecha,"
+            . "sfirm_estado='$estado' "
+            . "WHERE ssol_id='$codigo' and sfirm_tipo='$tipo';";
     return $sql;
 }
 
 function con_registrar_sede($cadena) {
-    $sql = "INSERT INTO tb_sede(
-        sed_codigo,
-        sed_nombre,
-        sed_descripcion,
-        sed_color,
-        sed_estado)
-        VALUES $cadena";
+    $sql = "INSERT INTO tb_sede(sed_codigo,sed_nombre,sed_descripcion,sed_color,sed_estado) "
+            . "VALUES $cadena";
     return $sql;
 }
 
@@ -1955,9 +1932,18 @@ function con_insertar_intento($usuario, $int_hini, $int_hfin) {
     return $sql;
 }
 
-function con_buscar_alumnos_no_entrevistados($sede, $usuario, $fecha_ini, $fecha_fin) {
+function con_buscar_alumnos_no_entrevistados($sede, $fecha_ini, $fecha_fin, $bimestre, $nivel, $grado, $seccion, $docente) {
+    if ($bimestre === "" || $bimestre === "0") {
+        $cadena_no_bimestre = " AND sol_fecha is NULL OR sol_fecha BETWEEN '$fecha_ini 00:00:00' AND '$fecha_fin 23:59:59'";
+        $cadena_bimestre = "";
+        $cadena_bimestre2 = "";
+    } else {
+        $cadena_no_bimestre = "";
+        $cadena_bimestre = " INNER JOIN tb_bimestre i ON (h.sol_fecha BETWEEN i.bim_fecha_ini and i.bim_fecha_fin) OR sol_fecha is NULL ";
+        $cadena_bimestre2 = " AND i.bim_id=$bimestre ";
+    }
     $sql = "SELECT * FROM (
-		SELECT sed_nombre as sede,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as docente,
+		SELECT sed_nombre as sede,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as docente,d.gra_id as gradId,
 		UPPER(CONCAT(gra_nombre,' - ',sec_nombre)) as grado,alu_dni as dni,UPPER(alu_nombres) as alumno,
 		IF(h.sol_id IS NULL,'No entrevistado','Entrevistado') as tipo,
 		IF(sol_fecha IS NULL,'No entrevistado',DATE_FORMAT(DATE(sol_fecha) , '%d/%m/%Y')) as fecha,b.sed_id
@@ -1969,45 +1955,51 @@ FROM tb_usuario a
 		INNER JOIN tb_alumno f ON c.alu_id=f.alu_id
 		INNER JOIN tb_sede g ON b.sed_id=g.sed_id AND c.sed_id=g.sed_id
 		LEFT JOIN tb_solicitudes h ON c.mat_id=h.mat_id AND c.sed_id=h.sed_id
-		WHERE 1=1 AND dic_estado=1 AND c.mat_estado=1 AND f.alu_estado=1 ";
+                $cadena_bimestre 
+		WHERE 1=1 AND dic_estado=1 AND c.mat_estado=1 AND f.alu_estado=1 $cadena_bimestre2 ";
 
-    if ($usuario !== "") {
-        $sql .= " AND b.usu_id=$usuario ";
+    if ($sede !== "0") {
+        $sql .= " AND b.sed_id=$sede ";
     }
-    $sql .= " AND sol_fecha is NULL OR sol_fecha BETWEEN '$fecha_ini 00:00:00' AND '$fecha_fin 23:59:59') AS p1
-        WHERE 1=1 ";
+    if ($nivel !== "0") {
+        $sql .= " AND e.niv_id=$nivel ";
+    }
+    if ($grado !== "0") {
+        $sql .= " AND d.gra_id=$grado ";
+    }
+    if ($seccion !== "0") {
+        $sql .= " AND b.sec_id=$seccion ";
+    }
+    if ($docente !== "" && $docente !== 0 && $docente !== "0") {
+        $sql .= " AND b.usu_id=$docente ";
+    }
+    $sql .= " $cadena_no_bimestre GROUP BY c.alu_id) AS p1
+        WHERE 1=1 and tipo='No entrevistado' ";
     if ($sede !== "0") {
         $sql .= " AND p1.sed_id=$sede ";
     }
-    $sql .= " ORDER BY p1.fecha DESC, p1.sede, p1.tipo, p1.docente, p1.grado, p1.alumno";
+    $sql .= " ORDER BY p1.fecha DESC, p1.sede, p1.tipo, p1.docente, p1.gradId, p1.alumno";
     return $sql;
 }
 
 function con_buscar_alumnos_no_entrevistados_alerta($sede, $usuario) {
     $sql = "SELECT * FROM (
-		SELECT sed_nombre as sede,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as docente,
-		UPPER(CONCAT(gra_nombre,' - ',sec_nombre)) as grado,alu_dni as dni,UPPER(alu_nombres) as alumno,
-		IF(h.sol_id IS NULL,'No entrevistado','Entrevistado') as tipo,
-		IF(sol_fecha IS NULL,'No entrevistado',DATE_FORMAT(DATE(sol_fecha) , '%d/%m/%Y')) as fecha,b.sed_id
-FROM tb_usuario a
-		INNER JOIN tb_usuario_dictado b ON a.usu_id=b.usu_id
-		INNER JOIN tb_matricula c ON b.sec_id=c.sec_id AND b.sed_id=c.sed_id  
-		INNER JOIN tb_seccion d ON b.sec_id=d.sec_id AND c.sec_id=d.sec_id 
-		INNER JOIN tb_grado e ON d.gra_id=e.gra_id
-		INNER JOIN tb_alumno f ON c.alu_id=f.alu_id
-		INNER JOIN tb_sede g ON b.sed_id=g.sed_id AND c.sed_id=g.sed_id
-		LEFT JOIN tb_solicitudes h ON c.mat_id=h.mat_id AND c.sed_id=h.sed_id
-		WHERE 1=1 AND dic_estado=1 AND c.mat_estado=1 AND f.alu_estado=1 AND sol_fecha is NULL ";
-
+		SELECT p0.*,obtenerSiEntrevisto(p0.mat_id) as sol_id FROM (
+SELECT a.usu_id,a.sed_id,a.sec_id,c.mat_id,dic_estado,mat_estado
+FROM tb_usuario_dictado a 
+INNER JOIN tb_usuario b ON a.usu_id=b.usu_id 
+INNER JOIN tb_matricula c ON a.sec_id=c.sec_id AND a.sed_id=c.sed_id 
+INNER JOIN tb_seccion d ON c.sec_id=d.sec_id 
+INNER JOIN tb_grado e ON d.gra_id=e.gra_id 
+INNER JOIN tb_sede f ON c.sed_id=f.sed_id 
+WHERE dic_estado=1 ";
     if ($usuario !== "") {
-        $sql .= " AND b.usu_id=$usuario ";
+        $sql .= " AND a.usu_id=$usuario ";
     }
-    $sql .= ") AS p1
-        WHERE 1=1 ";
     if ($sede !== "0") {
-        $sql .= " AND p1.sed_id=$sede ";
+        $sql .= " AND a.sed_id=$sede ";
     }
-    $sql .= " AND p1.tipo='No entrevistado'; ";
+    $sql .= " GROUP BY c.mat_id) as p0) as p1 WHERE 1=1 AND sol_id=0;";
     return $sql;
 }
 
@@ -2039,7 +2031,7 @@ FROM tb_usuario a
             $sql .= " AND b.usu_id=$usuario ";
         }
 
-        $sql .= " ) as p1 GROUP BY sed_id ORDER BY sed_id ) as p2 ON p1.id=p2.id WHERE 1=1 ";
+        $sql .= " GROUP BY c.alu_id) as p1 GROUP BY sed_id ORDER BY sed_id ) as p2 ON p1.id=p2.id WHERE 1=1 ";
         if ($sede !== "0") {
             $sql .= " AND p1.id=$sede ";
         }
@@ -2072,7 +2064,7 @@ FROM (
         if ($sede !== "0") {
             $sql .= " AND b.sed_id=$sede ";
         }
-        $sql .= " ) as p1 GROUP BY id ORDER BY id ) as p2 ON p1.id=p2.id WHERE 1=1 ";
+        $sql .= " GROUP BY c.alu_id) as p1 GROUP BY id ORDER BY id ) as p2 ON p1.id=p2.id WHERE 1=1 ";
         if ($nivel !== "0" && $nivel !== "") {
             $sql .= " AND p1.id=$nivel ";
         }
@@ -2108,7 +2100,7 @@ FROM (
         if ($nivel !== "0" && $nivel !== "") {
             $sql .= " AND e.niv_id=$nivel ";
         }
-        $sql .= " ) as p1 GROUP BY id ORDER BY id ) as p2 ON p1.id=p2.id WHERE 1=1 ";
+        $sql .= " GROUP BY c.alu_id) as p1 GROUP BY id ORDER BY id ) as p2 ON p1.id=p2.id WHERE 1=1 ";
         if ($grado !== "") {
             $sql .= " AND p1.id=$grado ";
         }
@@ -2147,7 +2139,7 @@ FROM (
         if ($grado !== "0" && $grado !== "") {
             $sql .= " AND d.gra_id=$grado ";
         }
-        $sql .= " ) as p1 GROUP BY id ORDER BY id ) as p2 ON p1.id=p2.id WHERE 1=1 ";
+        $sql .= " GROUP BY c.alu_id) as p1 GROUP BY id ORDER BY id ) as p2 ON p1.id=p2.id WHERE 1=1 ";
         if ($seccion !== "") {
             $sql .= " AND p1.id=$seccion ";
         }
@@ -2780,7 +2772,7 @@ function con_buscar_docente($nombres, $sede, $secciones) {
     $sql = "SELECT a.usu_id as value,CONCAT(usu_num_doc,' - ',usu_paterno,' ',usu_materno,' ',usu_nombres) as text,
         usu_num_doc as dni,CONCAT(usu_num_doc,' - ',usu_paterno,' ',usu_materno,' ',usu_nombres) as nombres 
         FROM tb_usuario a 
-        LEFT JOIN tb_usuario_dictado b ON a.usu_id=b.usu_id
+        INNER JOIN tb_usuario_dictado b ON a.usu_id=b.usu_id
         WHERE 1=1  ";
     if ($secciones !== 0 && $secciones !== '' && $secciones !== '0') {
         $cadena_seccion = " AND sec_id IN ($secciones) ";
@@ -2803,5 +2795,52 @@ function con_lista_perfiles($id) {
         $sql .= " AND perf_id='$id' ";
     }
     $sql .= " AND perf_estado=1;";
+    return $sql;
+}
+
+function con_lista_auditorias($sede, $codigoUsuario, $fechaInicio, $fechaFin) {
+    $sql = "SELECT DATE_FORMAT(audi_fecha,'%d/%m/%Y') AS fecha,sed_nombre as sede,perf_nombre as perfil,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as usuario,audi_menu as menu,audi_function as funcion,
+SUBSTRING(audi_query,1,200) as consulta,audi_tipo as accion 
+FROM tb_auditoria a 
+INNER JOIN tb_usuario b ON a.usu_id=b.usu_id
+INNER JOIN tb_sede c ON b.sed_id=c.sed_id
+INNER JOIN tb_perfil d ON b.perf_id=d.perf_id
+WHERE audi_fecha BETWEEN '$fechaInicio 00:00:00' AND '$fechaFin 23:59:59' ";
+    if ($sede !== "1" && $sede !== "0") {
+        $sql .= " AND b.sed_id IN ($sede)";
+    }
+    if ($codigoUsuario !== "0") {
+        $sql .= " a.usu_id IN ($codigoUsuario)";
+    }
+    $sql .= " ORDER BY 1 DESC,2 DESC,4";
+    return $sql;
+}
+
+/* jesus */
+
+function con_usuario_datos($p_usuaId) {
+    $sql = "SELECT usu_id as id,usu_clave as clave,
+        tipo_doc_id as tipoDocId,usu_num_doc as numDoc,
+        CONCAT(usu_paterno,' ',usu_materno,' ', usu_nombres) as fullnombre,
+        usu_paterno as paterno,usu_materno as materno, usu_nombres as nombres,
+        CONCAT(usu_nombres,' ',usu_paterno,' ', usu_materno) as nombrecompleto
+        FROM tb_usuario 
+        WHERE usu_id='$p_usuaId';";
+    return $sql;
+}
+
+function con_modificar_usuario_pass($usuario) {
+    $sql = "UPDATE tb_usuario_pas SET pas_estado='0' WHERE usu_id=$usuario ";
+    return $sql;
+}
+
+function con_insertar_usuario_pass($usuario, $clave, $s_contraNueva, $nueva_contraseña) {
+    $sql = "INSERT INTO tb_usuario_pas(usu_id,pas_con_anterior,pas_con_nueva,pas_con_encriptado,pas_estado) "
+            . "  VALUES('" . $usuario . "','" . $clave . "','" . $s_contraNueva . "','" . $nueva_contraseña . "','1');";
+    return $sql;
+}
+
+function con_cambiar_pass_usuario($id, $password) {
+    $sql = "UPDATE tb_usuario SET usu_clave='$password',usu_token_clave='' WHERE usu_id='$id';";
     return $sql;
 }

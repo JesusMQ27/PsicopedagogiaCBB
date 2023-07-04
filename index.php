@@ -31,7 +31,7 @@ session_start();
                     <div class="input-group mb-3">
                         <input type="text" id="txtUsuario" class="form-control" placeholder="Usuario" onkeypress="return enterLogin(event);"
                                value="<?php
-                               if (isset($_COOKIE["login_usuario"])) {
+                               if (isset($_COOKIE["login_usuario"]) && $_COOKIE["login_usuario"] !== "") {
                                    echo $_COOKIE["login_usuario"];
                                }
                                ?>">
@@ -44,7 +44,7 @@ session_start();
                     <div class="input-group mb-3">
                         <input type="password" id="txtClave" class="form-control" placeholder="Contraseña" onkeypress="return enterLogin(event);"
                                value="<?php
-                               if (isset($_COOKIE["usuario_password"])) {
+                               if (isset($_COOKIE["usuario_password"]) && $_COOKIE["usuario_password"] !== "") {
                                    echo $_COOKIE["usuario_password"];
                                }
                                ?>"  >
@@ -58,7 +58,7 @@ session_start();
                     <div class="row">
                         <div class="col-8">
                             <div class="icheck-primary">
-                                <input type="checkbox" id="remember" name="remember" <?php if (isset($_COOKIE["login_usuario"])) { ?> checked
+                                <input type="checkbox" id="remember" name="remember" <?php if (isset($_COOKIE["login_usuario"]) && $_COOKIE["login_usuario"] !== "") { ?> checked
                                        <?php } ?> >
                                 <label for="remember">
                                     Recordar

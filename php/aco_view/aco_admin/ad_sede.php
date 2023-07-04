@@ -63,7 +63,7 @@ $lista_sedes = fnc_lista_sedes($conexion, $sedeCodi, "");
                         <?php } ?>
                     </div>
                 </div><br>
-                <table id="tableSedes" class="table table-bordered table-hover">
+                <table id="tableSedes" class="table table-bordered table-hover" style="width: 100%">
                     <thead>
                         <tr>
                             <th>Nro.</th>

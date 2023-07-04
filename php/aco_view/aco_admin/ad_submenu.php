@@ -35,7 +35,7 @@ $lista_submenus = fnc_lista_submenus($conexion, "", "");
                         <button type="submit" class="btn btn-primary btn-block" data-toggle="modal" data-target="#modal-nuevo-submenu" data-backdrop="static">Nuevo Submen&uacute;</button>
                     </div>
                 </div><br>
-                <table id="tableSubMenus" class="table table-bordered table-hover">
+                <table id="tableSubMenus" class="table table-bordered table-hover" style="width: 100%">
                     <thead>
                         <tr>
                             <th>Nro.</th>

@@ -48,6 +48,13 @@ $verifica = fnc_verificar_token_pass($conexion, $usuarioId[0], $token);
                         <p class="login-box-msg">Aqu&iacute; puedes cambiar tu contrase&ntilde;a por una nueva.</p>
                         <input type="hidden" id="hdnUser" class="form-control" value="<?php echo $usuarioId[0]; ?>">
                         <input type="hidden" id="hdnToken" class="form-control" value="<?php echo $token; ?>">
+                        <div class="mb-12">
+                            <div class="alert alert-info alert-dismissible">
+                                <span>
+                                    <i class="nav-icon fa fa-info-circle" ></i>&nbsp;<span style="font-size: 16px">Nota: Las contraseñas deben tener un mínimo 7 caracteres.</span>&nbsp;&nbsp;
+                                </span>
+                            </div>
+                        </div>
                         <div class="input-group mb-3">
                             <input type="password" id="txtNuevaContra" class="form-control" placeholder="Nueva contraseña" onkeypress="return enterCambiarContra(event);">
                             <div class="input-group-append">

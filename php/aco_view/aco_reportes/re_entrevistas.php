@@ -123,9 +123,9 @@ $lista_solicitudes = fnc_lista_solicitudes_y_subsolicitudes($conexion, $sedeCodi
                             Buscar</button>
                     </div>
                 </div><br>
-                <div class="row">
-                    <div class="col-12" id="divEntrevistas">
-                        <table id="tableEntrevistas" class="table table-bordered table-hover" style="font-size: 12px">
+                <div class="col-12">
+                    <div class="table-responsive" id="divEntrevistas">
+                        <table id="tableEntrevistas" class="table table-bordered table-hover" style="font-size: 12px;width: 100%">
                             <thead>
                                 <tr>
                                     <th>Nro.</th>

@@ -13,8 +13,10 @@ var signaturePad_edi = {};
 var signaturePad_entrevistador_edi = {};
 var intervaloRegresivo;
 var intervaloRegresivo_s;
-var timeLimit = 40; //tiempo en minutos
-var timeLimitSub = 40; //tiempo en minutos
+var timeLimit = 1; //tiempo en minutos
+var timeLimitSub = 1; //tiempo en minutos
+var estado1;
+var estado_s1;
 var tmr;
 var tmr2;
 var tmr_sub;
@@ -2637,10 +2639,10 @@ function registrar_solicitud() {
         //    mensaje += "*Ingrese la firma del estudiante<br>";
         //    canvas_1.style.border = '1px solid #dc3545';
         //}
-        if (blank2 == true) {
-            mensaje += "*Ingrese la firma del entrevistador<br>";
-            canvas_2.style.border = '1px solid #dc3545';
-        }
+        /*if (blank2 == true) {
+         mensaje += "*Ingrese la firma del entrevistador<br>";
+         canvas_2.style.border = '1px solid #dc3545';
+         }*/
     } else {
         txtMotivo = $("#txtMotivo").val();
         planEstudiante = "";
@@ -2684,10 +2686,10 @@ function registrar_solicitud() {
 //mensaje += "Ingrese la firma del padre, madre o apoderado<br>";
 //canvas.style.border = '1px solid #dc3545';
 //}
-        if (blank2 === true) {
-            mensaje += "*Ingrese la firma del entrevistador<br>";
-            canvas_2.style.border = '1px solid #dc3545';
-        }
+        /*if (blank2 === true) {
+         mensaje += "*Ingrese la firma del entrevistador<br>";
+         canvas_2.style.border = '1px solid #dc3545';
+         }*/
     }
     if (mensaje !== "") {
         Toast.fire({
@@ -3309,10 +3311,10 @@ function registrar_sub_solicitud() {
         //    mensaje += "*Ingrese la firma del estudiante<br>";
         //    canvas_1.style.border = '1px solid #dc3545';
         //}
-        if (blank2 == true) {
-            mensaje += "*Ingrese la firma del entrevistador<br>";
-            canvas_2.style.border = '1px solid #dc3545';
-        }
+        /*if (blank2 == true) {
+         mensaje += "*Ingrese la firma del entrevistador<br>";
+         canvas_2.style.border = '1px solid #dc3545';
+         }*/
     } else {
         txtMotivo = $("#txtMotivo_sub").val();
         planEstudiante = "";
@@ -3356,10 +3358,10 @@ function registrar_sub_solicitud() {
          mensaje += "Ingrese la firma del padre, madre o apoderado<br>";
          canvas.style.border = '1px solid #dc3545';
          }*/
-        if (blank2 === true) {
-            mensaje += "*Ingrese la firma del entrevistador<br>";
-            canvas_2.style.border = '1px solid #dc3545';
-        }
+        /*if (blank2 === true) {
+         mensaje += "*Ingrese la firma del entrevistador<br>";
+         canvas_2.style.border = '1px solid #dc3545';
+         }*/
     }
     if (mensaje !== "") {
         Toast.fire({
@@ -4484,19 +4486,19 @@ function editar_solicitud() {
             //        canvas_1.style.border = '1px solid #dc3545';
             //    }
             //}
-            if (ruta_img2 == false) {
-                if (blank2 == true) {
-                    mensaje += "*Ingrese la firma del entrevistador<br>";
-                    canvas_2.style.border = '1px solid #dc3545';
-                    $("#ruta_img2").css("border", "1px solid #dc3545");
-                }
-            } else {
-                if (blank2 == true) {
-                    mensaje += "*Ingrese la firma del entrevistador<br>";
-                    canvas_2.style.border = '1px solid #dc3545';
-                    $("#ruta_img2").css("border", "1px solid #dc3545");
-                }
-            }
+            /*if (ruta_img2 == false) {
+             if (blank2 == true) {
+             mensaje += "*Ingrese la firma del entrevistador<br>";
+             canvas_2.style.border = '1px solid #dc3545';
+             $("#ruta_img2").css("border", "1px solid #dc3545");
+             }
+             }*/ /*else {
+              if (blank2 == true) {
+              mensaje += "*Ingrese la firma del entrevistador<br>";
+              canvas_2.style.border = '1px solid #dc3545';
+              $("#ruta_img2").css("border", "1px solid #dc3545");
+              }
+              }*/
         } else {
             txtMotivo = $("#txtMotivo_edi").val();
             planEstudiante = "";
@@ -4540,19 +4542,19 @@ function editar_solicitud() {
              mensaje += "Ingrese la firma del padre, madre o apoderado<br>";
              canvas.style.border = '1px solid #dc3545';
              }*/
-            if (ruta_img2 == false) {
-                if (blank2 == true) {
-                    mensaje += "*Ingrese la firma del entrevistador<br>";
-                    canvas_2.style.border = '1px solid #dc3545';
-                    $("#ruta_img2").css("border", "1px solid #dc3545");
-                }
-            } else {
-                if (blank2 == true) {
-                    mensaje += "*Ingrese la firma del entrevistador<br>";
-                    canvas_2.style.border = '1px solid #dc3545';
-                    $("#ruta_img2").css("border", "1px solid #dc3545");
-                }
-            }
+            /*if (ruta_img2 == false) {
+             if (blank2 == true) {
+             mensaje += "*Ingrese la firma del entrevistador<br>";
+             canvas_2.style.border = '1px solid #dc3545';
+             $("#ruta_img2").css("border", "1px solid #dc3545");
+             }
+             }*/ /*else {
+              if (blank2 == true) {
+              mensaje += "*Ingrese la firma del entrevistador<br>";
+              canvas_2.style.border = '1px solid #dc3545';
+              $("#ruta_img2").css("border", "1px solid #dc3545");
+              }
+              }*/
         }
         if (mensaje !== "") {
             Toast.fire({
@@ -5348,6 +5350,11 @@ function buscar_alumnos_no_entrevistados() {
     var sede = $("#cbbSedes").select().val();
     var fecha_inicio = $("#fecha1").val();
     var fecha_fin = $("#fecha2").val();
+    var bimestre = $("#cbbBimestre").select().val();
+    var nivel = $("#cbbNivel").select().val();
+    var grado = $("#cbbGrado").select().val();
+    var seccion = $("#cbbSeccion").select().val();
+    var docente = $("#docen").val();
     $.ajax({
         url: "php/aco_php/controller.php",
         dataType: "html",
@@ -5356,7 +5363,12 @@ function buscar_alumnos_no_entrevistados() {
             opcion: "operacion_buscar_no_entrevistados",
             s_sede: sede,
             s_fecha_inicio: fecha_inicio,
-            s_fecha_fin: fecha_fin
+            s_fecha_fin: fecha_fin,
+            s_bimestre: bimestre,
+            s_nivel: nivel,
+            s_grado: grado,
+            s_seccion: seccion,
+            s_docente: docente
         },
         beforeSend: function (objeto) {
             $("#modal-nueva-solicitud-detalle").find('.modal-footer div label').html("");
@@ -5546,7 +5558,7 @@ function semaforo_docentes_grafico_barras_sede(sede) {
                 $("#div_Niveles").html("");
                 $("#div_Grados").html("");
                 $("#div_Secciones").html("");
-                cargar_formulario_sede_nivel_semaforo("#div_Niveles");
+                //cargar_formulario_sede_nivel_semaforo("#div_Niveles");
             } else {
                 $("#bar-chart").html('<div class="col-md-12"><span><i class="nav-icon fa fa-info-circle" style="color: red"></i> Respuesta: No se encontraron registros.</span>&nbsp;&nbsp;</div>');
                 $("#div_Niveles").html("");
@@ -5813,6 +5825,9 @@ function alumnos_no_entrevistados_grafico_barras_sede(sede) {
         success: function (datos) {
             $("#bar-chart").html("");
             $("#donut-chart").html("");
+            $("#bar-chart2").html("");
+            $("#div_Grados").html("");
+            $("#div_Secciones").html("");
             if (datos.length !== 0) {
                 var arreglo = [];
                 for (const i in datos) {
@@ -7582,6 +7597,22 @@ function limpiar_campos_semaforo() {
     $('#cbbNivel option[value=0]').attr('selected', 'selected');
     $('#cbbGrado option[value=0]').attr('selected', 'selected');
     $('#cbbSeccion option[value=0]').attr('selected', 'selected');
+    buscar_semaforo_docente();
+}
+
+function limpiar_campos_no_entrevistados() {
+    $('#cbbBimestre option[value=0]').removeAttr('selected');
+    $('#cbbNivel option[value=0]').removeAttr('selected');
+    $('#cbbGrado option[value=0]').removeAttr('selected');
+    $('#cbbSeccion option[value=0]').removeAttr('selected');
+    $("#dataDocente").html("Docente:");
+    $("#docen").val("");
+    $("#searchDocente").val("");
+    $('#cbbBimestre option[value=0]').attr('selected', 'selected');
+    $('#cbbNivel option[value=0]').attr('selected', 'selected');
+    $('#cbbGrado option[value=0]').attr('selected', 'selected');
+    $('#cbbSeccion option[value=0]').attr('selected', 'selected');
+    buscar_alumnos_no_entrevistados();
 }
 
 function alumnos_no_entrevistas_grafico_barras_niveles(nivel) {
@@ -7878,11 +7909,11 @@ function reiniciar_cronometro() {
 }
 
 function reiniciar_cronometro_2() {
-    timeLimit = 40; //tiempo en minutos
-    document.getElementById('hora').innerHTML = '';
-    document.getElementById('minuto').innerHTML = '';
-    document.getElementById('segundo').innerHTML = '';
-    clearInterval(intervaloRegresivo);
+    timeLimitSub = 40; //tiempo en minutos
+    document.getElementById('hora_s').innerHTML = '';
+    document.getElementById('minuto_s').innerHTML = '';
+    document.getElementById('segundo_s').innerHTML = '';
+    clearInterval(intervaloRegresivo_s);
     $("#fecha_s").hide();
 }
 
@@ -8103,6 +8134,200 @@ function onDone() {
         SetImagePenWidth(5);
         GetSigImageB64(SigImageCallback);
     }
+}
+
+function buscar_historial_auditoria() {
+    var sede = $("#cbbSedes").select().val();
+    var fecha_inicio = $("#fecha1").val();
+    var fecha_fin = $("#fecha2").val();
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_historial_auditoria",
+            s_sede: sede,
+            s_fecha_inicio: fecha_inicio,
+            s_fecha_fin: fecha_fin
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#tableAuditorias").DataTable().destroy();
+            $("#tableAuditorias tbody").html(datos);
+            $("#tableAuditorias").DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": true,
+                "paging": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "buttons": ["copy",
+                    {
+                        extend: 'csv',
+                        text: 'CSV',
+                        title: 'Lista de entrevitas a Alumnos'
+                    },
+                    {
+                        extend: 'excel',
+                        text: 'Excel',
+                        title: 'Lista de entrevitas a Alumnos'
+                    },
+                    {
+                        extend: 'print',
+                        text: 'Imprimir',
+                        title: 'Lista de entrevitas a Alumnos'
+                    }, "colvis"]
+                        //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+                        //"buttons": ["new", "colvis"]
+            }).buttons().container().appendTo('#tableAuditorias_wrapper .col-md-6:eq(0)');
+        }
+    });
+}
+
+function cargar_opcion_cambiar_contrasena(usuario) {
+    $.ajax({
+        url: "./php/aco_view/cc_cambiar_contrasena_usuario.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            codigo_menu: 100,
+            nombre_opcion: 'Cambiar contraseña',
+            s_usuario: usuario
+        },
+        beforeSend: function (objeto) {
+            $("#panelRegistroMatricula").append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#contenido").html(datos);
+        }
+    });
+}
+
+function enter_cambiar_contra(evt) {
+    evt = (evt) ? evt : event;
+    var charCode = (evt.which) ? evt.which : evt.keyCode;
+    if (charCode == 13) {
+        cambiar_contrasena_usuario();
+    }
+}
+
+function cambiar_contrasena_usuario() {
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiCC");
+    var usuario = $("#hdnUsuario");
+    var contraNueva = $("#txtContraNueva");
+    var contraConfirmar = $("#txtContraConfirmar");
+    var mensaje = "";
+    var cant = 0;
+    var txt = "";
+
+    $("#mensajeContrasena").html("");
+    $("#mensajeContrasena").hide();
+
+    if ($.trim(contraNueva.val()) == "") {
+        mensaje += "Ingrese la nueva contraseña<br>";
+        cant++;
+        txt = contraNueva;
+    }
+    if ($.trim(contraConfirmar.val()) == "") {
+        mensaje += "Ingrese confirmar la contraseña<br>";
+        cant++;
+        txt = contraConfirmar;
+    }
+
+    if ($.trim(contraNueva.val()) !== "" && $.trim(contraConfirmar.val()) !== "") {
+        if ($.trim(contraNueva.val().length) < 7 && $.trim(contraConfirmar.val().length) < 7) {
+            mensaje += "Las contraseñas deben tener un mínimo 7 caracteres<br>";
+            cant++;
+            txt = contraNueva;
+        } else {
+            if ($.trim(contraNueva.val()) !== $.trim(contraConfirmar.val())) {
+                mensaje += "Las contraseñas no coinciden<br>";
+                cant++;
+                txt = contraNueva;
+            }
+        }
+    }
+
+    if (mensaje != "") {
+        //mostrarMensajeLogin();
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: mensaje,
+            showConfirmButton: false
+        });
+        if (cant == 1) {
+            txt.focus();
+        }
+        ocultar_mensaje("#mensaje_contrasena");
+    } else {
+        $.ajax({
+            url: "php/aco_php/psi_cambiar_contrasena_usuario_pas.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                sm_codigo: $.trim(codSMenu.val()),
+                s_codigo: $.trim(usuario.val()),
+                s_contraNueva: $.trim(contraNueva.val()),
+                s_contraConfirmar: $.trim(contraConfirmar.val())
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+
+            },
+            success: function (datos) {
+                var resp = datos.split("***");
+                if (resp[1] === "1") {
+                    var lista_sm = resp[3].split("--");
+                    $("#modal-cambiar-contrasena-usuario").find('.modal-footer div label').html('');
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $('#modal-cambiar-contrasena-usuario').modal('hide');
+                        $('.modal-backdrop').remove();
+                        $("#btnCambiarContrasenaUsuario").attr("disabled", false);
+                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                    }, 5500);
+                } else {
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $("#btnCambiarContrasenaUsuario").attr("disabled", false);
+                    }, 5500);
+                }
+
+            }
+        });
+    }
+}
+
+function ocultar_mensaje(id) {
+    $(document).ready(function () {
+        setTimeout(function () {
+            $(id).fadeOut(3000);
+        }, 5000);
+    });
 }
 
 function SigImageCallback(str)

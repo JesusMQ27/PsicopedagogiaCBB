@@ -22,7 +22,7 @@ if ($userData[0]["sedeId"] == "1" && ($perfil == "1" || $perfil == "5")) {
     $grados = "";
 } else {
     $privacidad = "0";
-    if ($perfil === "1" || $perfil === "5") {
+    if ($perfil === "1" || $perfil === "5" || $perfil === "3") {
         $sedeCodi = $userData[0]["sedeId"];
         $usuarioCodi = "";
         $grados = "";
@@ -115,22 +115,22 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                             <input type="text" class="form-control pull-right" id="fecha2" value="<?php echo $fechas[0]["hoy"]; ?>" readonly >
                         </div>
                     </div>
-                    <div class="col-lg-1 col-md-4 col-sm-6 col-12">
+                    <div class="col-lg-2 col-md-4 col-sm-6 col-12">
                         <button class="btn btn-success" id="btnBuscarSolicitudes" style="bottom: 0px;margin-top: 30px" 
                                 onclick="buscar_entrevistas();">
                             <i class="fa fa-search"></i>
                             Buscar</button>
                     </div>
-                    <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
                         <button class="btn btn-primary" id="btnNuevoSolicitud" style="bottom: 0px;margin-top: 30px" 
                                 data-toggle='modal' data-target='#modal-nueva-solicitud' data-backdrop='static'>
                             <i class="fa fa-list-alt"></i>
                             Nueva Entrevista</button>
                     </div>
                 </div><br>
-                <div class="row">
-                    <div class="col-12" id="divSolicitudesRegistradas">
-                        <table id="tableSolicitudesRegistradas" class="table table-bordered table-hover">
+                <div class="col-12">
+                    <div class="table-responsive" id="divSolicitudesRegistradas">
+                        <table id="tableSolicitudesRegistradas" class="table table-bordered table-hover" style="width: 100%">
                             <thead>
                                 <tr>
                                     <th>Nro.</th>
@@ -553,10 +553,10 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
          document.getElementById('puntos2').classList.remove("parpadea");*/
 
         function regresiva(conteo, estado) {
-            if (conteo.getTime() > 0 && estado === 0) {
+            if (conteo.getTime() > 0 && estado1 === 0) {
                 conteo.setTime(conteo.getTime() - 1000);
             } else if (conteo.getTime() === 0) {
-                estado = 1;
+                estado1 = 1;
                 //clearInterval(intervaloRegresivo);
                 //alert("Fin");
             }
@@ -577,7 +577,7 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
             } else {
                 document.getElementById('segundo').innerHTML = conteo.getSeconds();
             }
-            if (estado === 0) {
+            if (estado1 === 0) {
                 if (conteo.getMinutes() < 5 && conteo.getSeconds() <= 59) {
                     document.getElementById('hora').style.color = "#F61406";
                     document.getElementById('minuto').style.color = "#F61406";
@@ -585,7 +585,7 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                     document.getElementById('puntos1').style.color = "#F61406";
                     document.getElementById('puntos2').style.color = "#F61406";
                 }
-            } else if (estado === 1) {
+            } else if (estado1 === 1) {
                 conteo.setTime(conteo.getTime() + 1000);
                 document.getElementById('hora').classList.add("parpadea");
                 document.getElementById('minuto').classList.add("parpadea");
@@ -613,10 +613,10 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
          document.getElementById('puntos2_s').classList.remove("parpadea");*/
 
         function regresiva_s(conteo_s, estado_s) {
-            if (conteo_s.getTime() > 0 && estado_s === 0) {
+            if (conteo_s.getTime() > 0 && estado_s1 === 0) {
                 conteo_s.setTime(conteo_s.getTime() - 1000);
             } else if (conteo_s.getTime() === 0) {
-                estado_s = 1;
+                estado_s1 = 1;
                 //clearInterval(intervaloRegresivo);
                 //alert("Fin");
             }
@@ -637,7 +637,7 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
             } else {
                 document.getElementById('segundo_s').innerHTML = conteo_s.getSeconds();
             }
-            if (estado_s === 0) {
+            if (estado_s1 === 0) {
                 if (conteo_s.getMinutes() < 5 && conteo_s.getSeconds() <= 59) {
                     document.getElementById('hora_s').style.color = "#F61406";
                     document.getElementById('minuto_s').style.color = "#F61406";
@@ -645,7 +645,7 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                     document.getElementById('puntos1_s').style.color = "#F61406";
                     document.getElementById('puntos2_s').style.color = "#F61406";
                 }
-            } else if (estado_s === 1) {
+            } else if (estado_s1 === 1) {
                 conteo_s.setTime(conteo_s.getTime() + 1000);
                 document.getElementById('hora_s').classList.add("parpadea_s");
                 document.getElementById('minuto_s').classList.add("parpadea_s");
@@ -716,7 +716,7 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
             var button = $(event.relatedTarget);
             timeLimit = 40; //tiempo en minutos
             var conteo2 = new Date(timeLimit * 60000);
-            var estado2 = 0;
+            estado1 = 0;
             document.getElementById('hora').classList.remove("parpadea");
             document.getElementById('minuto').classList.remove("parpadea");
             document.getElementById('segundo').classList.remove("parpadea");
@@ -728,8 +728,7 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
             setTimeout(function () {
                 $("#fecha").show();
             }, 1000);
-            clearInterval(intervaloRegresivo);
-            intervaloRegresivo = setInterval(regresiva, 1000, conteo2, estado2);
+            intervaloRegresivo = setInterval(regresiva, 1000, conteo2, estado1);
             mostrar_nueva_solicitud(modal);
         });
         $('#modal-editar-apoderado').on('show.bs.modal', function (event) {
@@ -746,7 +745,7 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
             var entrevista = button.data('entrevista');
             timeLimitSub = 40; //tiempo en minutos
             var conteo_s = new Date(timeLimitSub * 60000);
-            var estado_s = 0;
+            estado_s1 = 0;
             document.getElementById('hora_s').classList.remove("parpadea_s");
             document.getElementById('minuto_s').classList.remove("parpadea_s");
             document.getElementById('segundo_s').classList.remove("parpadea_s");
@@ -758,8 +757,8 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
             setTimeout(function () {
                 $("#fecha_s").show();
             }, 1000);
-            clearInterval(intervaloRegresivo_s);
-            intervaloRegresivo_s = setInterval(regresiva_s, 1000, conteo_s, estado_s);
+            //clearInterval(intervaloRegresivo_s);
+            intervaloRegresivo_s = setInterval(regresiva_s, 1000, conteo_s, estado_s1);
             mostrar_nueva_sub_solicitud(modal, entrevista);
         });
         $('#modal-editar-apoderado-sub').on('show.bs.modal', function (event) {

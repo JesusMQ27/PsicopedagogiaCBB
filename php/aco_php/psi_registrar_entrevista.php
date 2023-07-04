@@ -40,13 +40,51 @@ $arreglo_matricula = explode("*", $s_matricu);
 $s_matricula = $arreglo_matricula[0];
 $s_alumno = $arreglo_matricula[1];
 try {
-    fnc_modificar_alumno_datos($conexion, $s_alumno, $s_sexo);
+    $str_submenu = "";
+    $str_menu_id = "";
+    $str_menu_nombre = "";
+    $submenu = fnc_consultar_submenu($conexion, $sm_codigo);
+    if (count($submenu) > 0) {
+        $str_submenu = $submenu[0]["ruta"];
+        $str_menu_id = $submenu[0]["id"];
+        $str_menu_nombre = $submenu[0]["nombre"];
+    } else {
+        $str_submenu = "";
+        $str_menu_id = "";
+        $str_menu_nombre = "";
+    }
+
+    $s_motivo = str_replace('"', "", $s_motivo);
+    $s_planEstudiante = str_replace('"', "", $s_planEstudiante);
+    $s_planEntrevistador = str_replace('"', "", $s_planEntrevistador);
+    $s_acuerdos = str_replace('"', "", $s_acuerdos);
+    $s_informe = str_replace('"', "", $s_informe);
+    $s_planPadre = str_replace('"', "", $s_planPadre);
+    $s_planDocente = str_replace('"', "", $s_planDocente);
+    $s_acuerdosPadres = str_replace('"', "", $s_acuerdosPadres);
+    $s_acuerdosColegio = str_replace('"', "", $s_acuerdosColegio);
+    $s_apoderado = str_replace('"', "", $s_apoderado);
+
+    $modicar_datos = fnc_modificar_alumno_datos($conexion, $s_alumno, $s_sexo);
+    if ($modicar_datos) {
+        if (count($submenu) > 0) {
+            $sql_auditoria = fnc_modificar_alumno_datos_auditoria($s_alumno, $s_sexo);
+            $sql = '"' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "psi_registrar_entrevista.php" . '", "' . "fnc_modificar_alumno_datos" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_alumno" . '","' . $psi_usuario . '",NOW(),"1"';
+            fnc_registrar_auditoria($conexion, $sql);
+        }
+    }
     $sol_codigo = "ent_" . $s_docAlumno . "_" . fnc_generate_random_string(6);
-    $cadena = "('" . $sol_codigo . "','" . $s_matricula . "','" . $codigo_usuario . "','" . $s_solicitud_tipo . "','" . $s_subcategoria .
-            "','" . $s_motivo . "',NOW(),'" . $s_sede . "','" . $s_planEstudiante . "','" . $s_planEntrevistador . "','"
-            . $s_acuerdos . "','" . $s_informe . "','" . $s_planPadre . "','" . $s_planDocente . "','" . $s_acuerdosPadres . "','" . $s_acuerdosColegio . "','" . $s_apoderado . "','" . $s_privacidad . "','" . $s_hora_total . "','1')";
+    $cadena = '("' . $sol_codigo . '","' . $s_matricula . '","' . $codigo_usuario . '","' . $s_solicitud_tipo . '","' . $s_subcategoria .
+            '","' . $s_motivo . '",NOW(),"' . $s_sede . '","' . $s_planEstudiante . '","' . $s_planEntrevistador . '","'
+            . $s_acuerdos . '","' . $s_informe . '","' . $s_planPadre . '","' . $s_planDocente . '","' . $s_acuerdosPadres . '","' . $s_acuerdosColegio . '","' . $s_apoderado . '","' . $s_privacidad . '","' . $s_hora_total . '","1")';
     $solicitud_id = fnc_registrar_solicitud_estudiante($conexion, $cadena);
     if ($solicitud_id) {
+        if (count($submenu) > 0) {
+            $sql_auditoria = fnc_registrar_solicitud_estudiante_auditoria($cadena);
+            $sql_auditoria = str_replace("'", "", $sql_auditoria);
+            $sql = "'" . $str_menu_id . "', '" . $str_menu_nombre . "', '" . 'psi_registrar_entrevista.php' . "', '" . 'fnc_registrar_solicitud_estudiante' . "','" . $sql_auditoria . "','" . 'INSERT' . "','" . 'tb_solicitudes' . "','" . $psi_usuario . "',NOW(),'1'";
+            fnc_registrar_auditoria($conexion, $sql);
+        }
         if ($s_img1_1 !== "") {
             if (strpos($s_img1, 'data:image/png;base64') === 0) {
                 $s_img1 = str_replace('data:image/png;base64,', '', $s_img1);
@@ -60,7 +98,12 @@ try {
                 if (file_put_contents($file, $data)) {
                     $cadena_imag1 = "('" . $solicitud_id . "','" . $s_matricula . "','" . $psi_usuario . "','" . $s_apoderado .
                             "','" . $file . "',NOW(),'1','1')";
-                    fnc_registrar_solicitud_firmas($conexion, $cadena_imag1);
+                    $insertar_firma1 = fnc_registrar_solicitud_firmas($conexion, $cadena_imag1);
+                    if (count($submenu) > 0 && $insertar_firma1) {
+                        $sql_auditoria = fnc_registrar_solicitud_firmas_auditoria($cadena_imag1);
+                        $sql = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "psi_registrar_entrevista.php" . '", "' . "fnc_registrar_solicitud_firmas" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_solicitudes_firmas" . '","' . $psi_usuario . '",NOW(),"1"';
+                        fnc_registrar_auditoria($conexion, $sql);
+                    }
                 } else {
                     echo "***0***Error al registrar la imagen del entrevistado.***<br/>";
                     exit();
@@ -77,25 +120,17 @@ try {
             if (file_put_contents($file2, $data2)) {
                 $cadena_imag2 = "('" . $solicitud_id . "','" . $s_matricula . "','" . $psi_usuario . "','" . $s_apoderado .
                         "','" . $file2 . "',NOW(),'2','1')";
-                fnc_registrar_solicitud_firmas($conexion, $cadena_imag2);
+                $insertar_firma2 = fnc_registrar_solicitud_firmas($conexion, $cadena_imag2);
+                if (count($submenu) > 0 && $insertar_firma2) {
+                    $sql_auditoria = fnc_registrar_solicitud_firmas_auditoria($cadena_imag2);
+                    $sql = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "psi_registrar_entrevista.php" . '", "' . "fnc_registrar_solicitud_firmas" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_solicitudes_firmas" . '","' . $psi_usuario . '",NOW(),"1"';
+                    fnc_registrar_auditoria($conexion, $sql);
+                }
             } else {
                 echo "***0***Error al registrar la imagen del entrevistador.***<br/>";
                 exit();
             }
         }
-    }
-    $str_submenu = "";
-    $str_menu_id = "";
-    $str_menu_nombre = "";
-    $submenu = fnc_consultar_submenu($conexion, $sm_codigo);
-    if (count($submenu) > 0) {
-        $str_submenu = $submenu[0]["ruta"];
-        $str_menu_id = $submenu[0]["id"];
-        $str_menu_nombre = $submenu[0]["nombre"];
-    } else {
-        $str_submenu = "";
-        $str_menu_id = "";
-        $str_menu_nombre = "";
     }
     echo "***1***Solicitud de Entrevista registrada correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
 } catch (Exception $exc) {

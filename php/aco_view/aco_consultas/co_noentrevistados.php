@@ -14,21 +14,26 @@ $fechas = fnc_fechas_rango($conexion);
 $sedeCodi = "";
 $usuarioCodi = "";
 $privacidad = "";
+$disabled = "";
 if ($userData[0]["sedeId"] == "1" && ($perfilId === "1" || $perfilId === "5")) {
     $sedeCodi = "0";
-    $usuarioCodi = "";
+    $usuarioCodi = "0";
     $privacidad = "0,1";
+    $disabled = "";
 } else {
     $privacidad = "0";
     if ($perfilId === "1") {
         $sedeCodi = $userData[0]["sedeId"];
-        $usuarioCodi = "";
+        $usuarioCodi = "0";
+        $disabled = "";
     } elseif ($perfilId === "2") {
         $sedeCodi = $userData[0]["sedeId"];
         $usuarioCodi = $codigo_user;
+        $disabled = " disabled ";
     } else {
         $sedeCodi = $userData[0]["sedeId"];
-        $usuarioCodi = "";
+        $usuarioCodi = "0";
+        $disabled = "";
     }
 }
 
@@ -157,7 +162,7 @@ $lista_niveles = fnc_lista_niveles($conexion, '', '1');
                             <label id="dataDocente" >Docente:</label>
                             <input type="hidden" id="docen" value=""/>
                         </div>
-                        <input type="text" id="searchDocente" class="typeahead form-control" style="size:12px;text-transform: uppercase;" value="" autocomplete="off">
+                        <input type="text" id="searchDocente" class="typeahead form-control" style="size:12px;text-transform: uppercase;" value="" autocomplete="off" <?php echo $disabled; ?>>
                     </div>
                     <div class="col-lg-2 col-md-4 col-sm-6 col-12">
                         <button class="btn btn-success" id="btnNuevoSolicitud" style="bottom: 0px;margin-top: 30px" 
@@ -171,9 +176,9 @@ $lista_niveles = fnc_lista_niveles($conexion, '', '1');
                             Limpiar</button>
                     </div>
                 </div><br>
-                <div class="row">
-                    <div class="col-12" id="divSolicitudesRegistradas">
-                        <table id="tableNoEntrevistados" class="table table-bordered table-hover">
+                <div class="col-12">
+                    <div class="table-responsive" id="divSolicitudesRegistradas">
+                        <table id="tableNoEntrevistados" class="table table-bordered table-hover" style="width: 100%">
                             <thead>
                                 <tr>
                                     <th>Nro.</th>
@@ -188,7 +193,7 @@ $lista_niveles = fnc_lista_niveles($conexion, '', '1');
                             </thead>
                             <tbody>
                                 <?php
-                                $lista = fnc_buscar_alumnos_no_entrevistados($conexion, $sedeCodi, $usuarioCodi, $fechas[0]["date_ayer"], $fechas[0]["date_hoy"]);
+                                $lista = fnc_buscar_alumnos_no_entrevistados($conexion, $sedeCodi, $fechas[0]["date_ayer"], $fechas[0]["date_hoy"], "0", "0", "0", "0", $usuarioCodi);
                                 $html = "";
                                 $aux = 1;
                                 if (count($lista) > 0) {
@@ -302,6 +307,38 @@ $lista_niveles = fnc_lista_niveles($conexion, '', '1');
                     //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
                     //"buttons": ["new", "colvis"]
         }).buttons().container().appendTo('#tableNoEntrevistados_wrapper .col-md-6:eq(0)');
+
+        var array = [];
+        $('input#searchDocente').typeahead({
+            hint: true,
+            highlight: true,
+            minLength: 4,
+            source: function (query, result) {
+                $.ajax({
+                    url: 'php/aco_php/buscar_docente.php',
+                    method: 'POST',
+                    data: {
+                        query: query,
+                        s_sede: $("#cbbSedes").select().val(),
+                        s_seccion: $("#cbbSeccion").select().val()
+                    },
+                    dataType: "json",
+                    success: function (data) {
+                        //result(getOptionsFromJson(data));
+                        array = [];
+                        result($.map(data, function (item) {
+                            array.push({'value': item.value, 'label': item.label});
+                            return item.label;
+                        }));
+                    },
+                });
+            },
+            updater: function (item) {
+                const found = array.find(el => el.label === item);
+                $("#docen").val(found.value);
+                $("#dataDocente").html('Docente: ' + item + '');
+            }
+        });
     });
 
 </script>

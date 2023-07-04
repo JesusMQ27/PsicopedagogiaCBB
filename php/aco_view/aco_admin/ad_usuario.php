@@ -44,7 +44,7 @@ $lista_usuarios = fnc_lista_usuarios($conexion, "", $sedeCodigo);
 
                     </div>
                 </div><br>
-                <table id="tableUsuarios" class="table table-bordered table-hover">
+                <table id="tableUsuarios" class="table table-bordered table-hover" style="width: 100%">
                     <thead>
                         <tr>
                             <th>Nro.</th>

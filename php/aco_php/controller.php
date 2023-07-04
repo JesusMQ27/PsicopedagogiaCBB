@@ -379,6 +379,9 @@ function operacion_editar_usuario() {
                     }
                     try {
                         fnc_editar_usuario($conexion, $u_codiUsuIdEdi, $u_tipoUsuarioEdi, $u_tipoDocEdi, $u_numDocEdi, strtoupper($u_paternoEdi), strtoupper($u_maternoEdi), strtoupper($u_nombresEdi), strtolower($u_correoEdi), $u_telefonoEdi, $u_sedeEdi, $u_sexoEdi, $u_estadoEdi);
+                        $sql_auditoria = fnc_editar_usuario_auditoria($u_codiUsuIdEdi, $u_tipoUsuarioEdi, $u_tipoDocEdi, $u_numDocEdi, strtoupper($u_paternoEdi), strtoupper($u_maternoEdi), strtoupper($u_nombresEdi), strtolower($u_correoEdi), $u_telefonoEdi, $u_sedeEdi, $u_sexoEdi, $u_estadoEdi);
+                        $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "operacion_editar_usuario" . '", "' . "fnc_editar_usuario" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_usuario" . '","' . p_usuario . '",NOW(),"1"';
+                        fnc_registrar_auditoria($conexion, $sql_insert);
                         echo "***1***Usuario editado correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
                     } catch (Exception $exc) {
                         echo "***0***Error al editar usuario.***<br/>";
@@ -427,6 +430,9 @@ function operacion_eliminar_usuario() {
             $str_menu_id = "";
             $str_menu_nombre = "";
         }
+        $sql_auditoria = fnc_eliminar_usuario_auditoria($u_codiUsuIdEli);
+        $sql = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "operacion_eliminar_usuario" . '", "' . "fnc_eliminar_usuario" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_usuario" . '","' . p_usuario . '",NOW(),"1"';
+        fnc_registrar_auditoria($conexion, $sql);
         echo "***1***Usuario eliminado correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
     } catch (Exception $exc) {
         echo "***0***Error al eliminar usuario.***<br/>";
@@ -518,6 +524,14 @@ function proceso_registro_nuevo_menu() {
             $str_menu_id = "";
             $str_menu_nombre = "";
         }
+
+        if (count($submenu) > 0) {
+            $sql_auditoria = fnc_registrar_menu_auditoria($m_codigo, strtoupper($m_descripcion), $m_imagen, "aco_" . $m_carpeta);
+            $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_registro_nuevo_menu" . '", "' . "fnc_registrar_menu" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_menu" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+            fnc_registrar_auditoria($conexion, $sql_insert);
+        }
+
+
         echo "***1***Menú registrado correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
     } else {
         echo "***0***Error al registrar menú.***<br/>";
@@ -625,7 +639,7 @@ function proceso_editar_menu() {
         $strCodigo = "";
     }
     try {
-        fnc_editar_menu($conexion, $m_codigoEdi, $strCodigo, strtoupper($m_descripcion), $m_imagen, $nombre_carpeta, $m_estadoMe);
+        $editar = fnc_editar_menu($conexion, $m_codigoEdi, $strCodigo, strtoupper($m_descripcion), $m_imagen, $nombre_carpeta, $m_estadoMe);
         $str_submenu = "";
         $str_menu_id = "";
         $str_menu_nombre = "";
@@ -638,6 +652,14 @@ function proceso_editar_menu() {
             $str_submenu = "";
             $str_menu_id = "";
             $str_menu_nombre = "";
+        }
+
+        if ($editar) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_editar_menu_auditoria($m_codigoEdi, $strCodigo, strtoupper($m_descripcion), $m_imagen, $nombre_carpeta, $m_estadoMe);
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_menu" . '", "' . "fnc_editar_menu" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_menu" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
         }
         echo "***1***Menú editado correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
     } catch (Exception $exc) {
@@ -665,7 +687,7 @@ function operacion_eliminar_menu() {
     $sm_codigoEdi = strip_tags(trim($_POST["sm_codigo"]));
     $u_codiMenuIdEli = strip_tags(trim($_POST["u_codiMenuIdEli"]));
     try {
-        fnc_eliminar_menu($conexion, $u_codiMenuIdEli);
+        $eliminar = fnc_eliminar_menu($conexion, $u_codiMenuIdEli);
         $str_submenu = "";
         $str_menu_id = "";
         $str_menu_nombre = "";
@@ -678,6 +700,13 @@ function operacion_eliminar_menu() {
             $str_submenu = "";
             $str_menu_id = "";
             $str_menu_nombre = "";
+        }
+        if ($eliminar) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_eliminar_menu_auditoria($u_codiMenuIdEli);
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "operacion_eliminar_menu" . '", "' . "fnc_eliminar_menu" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_menu" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
         }
         echo "***1***Menú eliminado correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
     } catch (Exception $exc) {
@@ -773,6 +802,12 @@ function proceso_registro_nuevo_submenu() {
             $str_submenu = "";
             $str_menu_id = "";
             $str_menu_nombre = "";
+        }
+
+        if (count($submenu) > 0) {
+            $sql_auditoria = fnc_registrar_submenu_auditoria($str_orden, $m_codigo, ucwords(strtolower($s_descripcion)), $s_menu, $s_imagen, $strUrl);
+            $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_registro_nuevo_submenu" . '", "' . "fnc_registrar_submenu" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_submenu" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+            fnc_registrar_auditoria($conexion, $sql_insert);
         }
         echo "***1***Submenú registrado correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
     } else {
@@ -912,7 +947,7 @@ function proceso_editar_submenu() {
         $strCodigo = "";
     }
     try {
-        fnc_editar_submenu($conexion, $s_codisubmenu, "", $strCodigo, ucwords(strtolower($s_descripcion)), $s_menu, $s_imagen, $strUrl, $s_estado);
+        $editar = fnc_editar_submenu($conexion, $s_codisubmenu, "", $strCodigo, ucwords(strtolower($s_descripcion)), $s_menu, $s_imagen, $strUrl, $s_estado);
         $str_submenu = "";
         $str_menu_id = "";
         $str_menu_nombre = "";
@@ -925,6 +960,14 @@ function proceso_editar_submenu() {
             $str_submenu = "";
             $str_menu_id = "";
             $str_menu_nombre = "";
+        }
+
+        if ($editar) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_editar_submenu_auditoria($s_codisubmenu, "", $strCodigo, ucwords(strtolower($s_descripcion)), $s_menu, $s_imagen, $strUrl, $s_estado);
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_submenu" . '", "' . "fnc_editar_submenu" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_submenu" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
         }
         echo "***1***Submenú editado correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
     } catch (Exception $ex) {
@@ -952,7 +995,7 @@ function operacion_eliminar_submenu() {
     $sm_codigoEdi = strip_tags(trim($_POST["sm_codigo"]));
     $u_codiSubmenuIdEli = strip_tags(trim($_POST["u_codiSubmenuIdEli"]));
     try {
-        fnc_eliminar_submenu($conexion, $u_codiSubmenuIdEli);
+        $eliminar = fnc_eliminar_submenu($conexion, $u_codiSubmenuIdEli);
         $str_submenu = "";
         $str_menu_id = "";
         $str_menu_nombre = "";
@@ -965,6 +1008,14 @@ function operacion_eliminar_submenu() {
             $str_submenu = "";
             $str_menu_id = "";
             $str_menu_nombre = "";
+        }
+
+        if ($eliminar) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_eliminar_submenu_auditoria($u_codiSubmenuIdEli);
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "operacion_eliminar_submenu" . '", "' . "fnc_eliminar_submenu" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_submenu" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
         }
         echo "***1***Submenú eliminado correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
     } catch (Exception $exc) {
@@ -1036,6 +1087,12 @@ function proceso_nuevo_perfil() {
         $lastInsertPerfil = fnc_registrar_perfil($conexion, $str_codigo, ucfirst($per_descripcion));
         if ($lastInsertPerfil !== "0") {
             $str_inserts = "";
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_registrar_perfil_auditoria($str_codigo, ucfirst($per_descripcion));
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_nuevo_perfil" . '", "' . "fnc_registrar_perfil" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_perfil" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
+
             if ($per_lista !== "") {
                 $lista_submenu_perfil = explode("*", $per_lista);
                 if (count($lista_submenu_perfil) > 0) {
@@ -1044,7 +1101,14 @@ function proceso_nuevo_perfil() {
                     }
                     $str_lista_insert = substr($str_inserts, 0, -1);
                     if ($str_lista_insert !== "") {
-                        fnc_registrar_accesos_perfil($conexion, $str_lista_insert);
+                        $registrar_accesos = fnc_registrar_accesos_perfil($conexion, $str_lista_insert);
+                        if ($registrar_accesos) {
+                            if (count($submenu) > 0) {
+                                $sql_auditoria = fnc_registrar_accesos_perfil_auditoria($str_lista_insert);
+                                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_nuevo_perfil" . '", "' . "fnc_registrar_accesos_perfil" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_menu_asigna" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                                fnc_registrar_auditoria($conexion, $sql_insert);
+                            }
+                        }
                     }
                 }
             }
@@ -1151,7 +1215,7 @@ function proceso_editar_perfil() {
     $perf_estado = strip_tags(trim($_POST["perf_estado"]));
     $perf_lista = strip_tags(trim($_POST["perf_lista"]));
     try {
-        fnc_editar_perfil($conexion, $perf_codigo, $perf_descripcion, $perf_estado);
+        $editar = fnc_editar_perfil($conexion, $perf_codigo, $perf_descripcion, $perf_estado);
         $str_submenu = "";
         $str_menu_id = "";
         $str_menu_nombre = "";
@@ -1167,6 +1231,13 @@ function proceso_editar_perfil() {
         }
         $str_inserts = "";
         $str_updates = "";
+        if ($editar) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_editar_perfil_auditoria($perf_codigo, $perf_descripcion, $perf_estado);
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_perfil" . '", "' . "fnc_editar_perfil" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_perfil" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
+        }
         if ($perf_lista !== "") {
             $lista_submenu_perfil = explode("*", $perf_lista);
             if (count($lista_submenu_perfil) > 0) {
@@ -1184,19 +1255,81 @@ function proceso_editar_perfil() {
                 $str_updates = substr($str_updates, 0, -1);
                 if (trim($str_inserts) === "") {
                     if (trim($str_updates) !== "") {
-                        fnc_editar_accesos_perfil($conexion, $str_updates, $perf_codigo);
-                        fnc_editar_accesos_perfil_todos($conexion, $str_updates, $perf_codigo);
+                        $editar_accesos_perfil = fnc_editar_accesos_perfil($conexion, $str_updates, $perf_codigo);
+                        if ($editar_accesos_perfil) {
+                            if (count($submenu) > 0) {
+                                $sql_auditoria = fnc_editar_accesos_perfil_auditoria($str_updates, $perf_codigo);
+                                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_perfil" . '", "' . "fnc_editar_accesos_perfil" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_menu_asigna" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                                fnc_registrar_auditoria($conexion, $sql_insert);
+                            }
+                        }
+                        $editar_accesos_todos = fnc_editar_accesos_perfil_todos($conexion, $str_updates, $perf_codigo);
+                        if ($editar_accesos_todos) {
+                            if (count($submenu) > 0) {
+                                $sql_auditoria = fnc_editar_accesos_perfil_todos_auditoria($str_updates, $perf_codigo);
+                                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_perfil" . '", "' . "fnc_editar_accesos_perfil_todos" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_menu_asigna" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                                fnc_registrar_auditoria($conexion, $sql_insert);
+                            }
+                        }
                     } else {
-                        fnc_editar_accesos_perfil_todos($conexion, $str_updates, $perf_codigo);
+                        $editar_accesos_todos = fnc_editar_accesos_perfil_todos($conexion, $str_updates, $perf_codigo);
+                        if ($editar_accesos_todos) {
+                            if (count($submenu) > 0) {
+                                $sql_auditoria = fnc_editar_accesos_perfil_todos_auditoria($str_updates, $perf_codigo);
+                                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_perfil" . '", "' . "fnc_editar_accesos_perfil_todos" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_menu_asigna" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                                fnc_registrar_auditoria($conexion, $sql_insert);
+                            }
+                        }
                     }
                 }
                 if (trim($str_inserts) !== "") {
-                    fnc_registrar_accesos_perfil($conexion, $str_inserts);
+                    if (trim($str_updates) !== "") {
+                        $editar_accesos_perfil = fnc_editar_accesos_perfil($conexion, $str_updates, $perf_codigo);
+                        if ($editar_accesos_perfil) {
+                            if (count($submenu) > 0) {
+                                $sql_auditoria = fnc_editar_accesos_perfil_auditoria($str_updates, $perf_codigo);
+                                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_perfil" . '", "' . "fnc_editar_accesos_perfil" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_menu_asigna" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                                fnc_registrar_auditoria($conexion, $sql_insert);
+                            }
+                        }
+                        $editar_accesos_todos = fnc_editar_accesos_perfil_todos($conexion, $str_updates, $perf_codigo);
+                        if ($editar_accesos_todos) {
+                            if (count($submenu) > 0) {
+                                $sql_auditoria = fnc_editar_accesos_perfil_todos_auditoria($str_updates, $perf_codigo);
+                                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_perfil" . '", "' . "fnc_editar_accesos_perfil_todos" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_menu_asigna" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                                fnc_registrar_auditoria($conexion, $sql_insert);
+                            }
+                        }
+                    } else {
+                        $editar_accesos_todos = fnc_editar_accesos_perfil_todos($conexion, $str_updates, $perf_codigo);
+                        if ($editar_accesos_todos) {
+                            if (count($submenu) > 0) {
+                                $sql_auditoria = fnc_editar_accesos_perfil_todos_auditoria($str_updates, $perf_codigo);
+                                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_perfil" . '", "' . "fnc_editar_accesos_perfil_todos" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_menu_asigna" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                                fnc_registrar_auditoria($conexion, $sql_insert);
+                            }
+                        }
+                        $registrar_accesos = fnc_registrar_accesos_perfil($conexion, $str_inserts);
+                        if ($registrar_accesos) {
+                            if (count($submenu) > 0) {
+                                $sql_auditoria = fnc_registrar_accesos_perfil_auditoria($str_inserts);
+                                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_perfil" . '", "' . "fnc_registrar_accesos_perfil" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_menu_asigna" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                                fnc_registrar_auditoria($conexion, $sql_insert);
+                            }
+                        }
+                    }
                 }
             }
         } else {
             //Aqui se cambia de estado a todos
-            fnc_editar_accesos_perfil_todos($conexion, "", $perf_codigo);
+            $editar_accesos_todos = fnc_editar_accesos_perfil_todos($conexion, "", $perf_codigo);
+            if ($editar_accesos_todos) {
+                if (count($submenu) > 0) {
+                    $sql_auditoria = fnc_editar_accesos_perfil_todos_auditoria("", $perf_codigo);
+                    $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_perfil" . '", "' . "fnc_editar_accesos_perfil_todos" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_menu_asigna" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                    fnc_registrar_auditoria($conexion, $sql_insert);
+                }
+            }
         }
         echo "***1***Perfil editado correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
     } catch (Exception $ex) {
@@ -1224,7 +1357,7 @@ function operacion_eliminar_perfil() {
     $sm_codigoEdi = strip_tags(trim($_POST["sm_codigo"]));
     $u_codiPerfilIdEli = strip_tags(trim($_POST["u_codiPerfilIdEli"]));
     try {
-        fnc_eliminar_perfil($conexion, $u_codiPerfilIdEli);
+        $eliminar = fnc_eliminar_perfil($conexion, $u_codiPerfilIdEli);
         $str_submenu = "";
         $str_menu_id = "";
         $str_menu_nombre = "";
@@ -1237,6 +1370,13 @@ function operacion_eliminar_perfil() {
             $str_submenu = "";
             $str_menu_id = "";
             $str_menu_nombre = "";
+        }
+        if ($eliminar) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_eliminar_perfil_auditoria($u_codiPerfilIdEli);
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "operacion_eliminar_perfil" . '", "' . "fnc_eliminar_perfil" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_perfil" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
         }
         echo "***1***Perfil eliminado correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
     } catch (Exception $exc) {
@@ -1273,20 +1413,20 @@ function load_modal_carga_alumnos() {
             . "<th>Estado</th>"
             . "</thead><tbody>";
     foreach ($lista as $value) {
-        if ($value["actual_alu_id"] == 0) {
+        if ($value["actual_alu_id"] == "0") {
             $color = "";
-            $salida_alu = "Alumno no existe";
+            $salida_alu = "Alumno no existe*";
             $salida_sede = "";
             $salida_secc = "";
             if (trim($value["grado"]) === "") {
-                $salida_secc = "--El grado esta vacio--";
+                $salida_secc = "El grado esta vacio*";
             }
             if (trim($value["seccion"]) === "") {
-                $salida_secc .= "La seccion esta vacia";
+                $salida_secc .= "La seccion esta vacia*";
             }
             $count1++;
         } else {
-            if ($value["actual_alu_id"] !== 0) {
+            if ($value["actual_alu_id"] !== "0") {
                 $salida_alu = 'Alumno ya existe*';
             }
             if ($value["registrar_sed_id"] !== 0) {
@@ -1362,7 +1502,7 @@ function formulario_confirmacion_carga_alumnos() {
     <?php
 }
 
-function operacion_registrar_carga_alumnos() {
+function operacion_registrar_carga_alumnos() {//jesucito
     $con = new DB(1111);
     $conexion = $con->connect();
     $sm_codigoEdi = strip_tags(trim($_POST["sm_codigo"]));
@@ -1486,7 +1626,7 @@ function formulario_eliminar_detalle_grupo() {
     <?php
 }
 
-function operacion_eliminar_detalle_grupo() {
+function operacion_eliminar_detalle_grupo() {//jesucito
     $con = new DB(1111);
     $conexion = $con->connect();
     $sm_codigoEdi = strip_tags(trim($_POST["sm_codigo"]));
@@ -1531,7 +1671,7 @@ function formulario_activar_detalle_grupo() {
     <?php
 }
 
-function operacion_activar_detalle_grupo() {
+function operacion_activar_detalle_grupo() {//jesucito
     $con = new DB(1111);
     $conexion = $con->connect();
     $sm_codigoEdi = strip_tags(trim($_POST["sm_codigo"]));
@@ -1713,7 +1853,7 @@ function formulario_eliminar_detalle_grupo_usuario() {
     <?php
 }
 
-function operacion_eliminar_detalle_grupo_usuario() {
+function operacion_eliminar_detalle_grupo_usuario() {//jesucito
     $con = new DB(1111);
     $conexion = $con->connect();
     $sm_codigoEdi = strip_tags(trim($_POST["sm_codigo"]));
@@ -1758,7 +1898,7 @@ function formulario_activar_detalle_grupo_usuario() {
     <?php
 }
 
-function operacion_activar_detalle_grupo_usuario() {
+function operacion_activar_detalle_grupo_usuario() {//jesucito
     $con = new DB(1111);
     $conexion = $con->connect();
     $sm_codigoEdi = strip_tags(trim($_POST["sm_codigo"]));
@@ -2372,7 +2512,7 @@ function formulario_nuevo_apoderado() {
     echo $html;
 }
 
-function operacion_registrar_apoderado() {
+function operacion_registrar_apoderado() {//jesucito
     $con = new DB(1111);
     $conexion = $con->connect();
     $codigo = strip_tags(trim($_POST["a_txtAlumnoCodiN"]));
@@ -2425,7 +2565,7 @@ function operacion_registrar_apoderado() {
     echo $html;
 }
 
-function operacion_editar_apoderado() {
+function operacion_editar_apoderado() {//jesucito
     $con = new DB(1111);
     $conexion = $con->connect();
     $alumnoCod = strip_tags(trim($_POST["a_txtAlumnCodigo"]));
@@ -2527,7 +2667,7 @@ function formulario_eliminar_solicitud() {
     echo $html;
 }
 
-function operacion_eliminar_solicitud() {
+function operacion_eliminar_solicitud() {//jesucito
     $con = new DB(1111);
     $conexion = $con->connect();
     $sm_codigoEdi = strip_tags(trim($_POST["sm_codigo"]));
@@ -2590,6 +2730,30 @@ function operacion_buscar_semaforo_docentes() {
     $s_docente = strip_tags(trim($_POST["s_docente"]));
     $fechaInicio = convertirFecha($fecha1);
     $fechaFin = convertirFecha($fecha2);
+    $perfil = p_perfil;
+    $sedeCodigo = $s_sede;
+    $sedeCodi = "";
+    $usuarioCodi = "0";
+    $privacidad = "";
+    if ($sedeCodigo == "1" && ($perfil === "1" || $perfil === "5")) {
+        $sedeCodi = "0";
+        $usuarioCodi = "0";
+        $privacidad = "0,1";
+    } else {
+        $privacidad = "0";
+        if ($perfil === "1") {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = "0";
+        } elseif ($perfil === "2") {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = p_usuario;
+            $s_docente = $usuarioCodi;
+        } else {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = "0";
+        }
+    }
+
     $lista = fnc_buscar_semaforo_docentes($conexion, $s_sede, $fechaInicio, $fechaFin, $s_semaforo, $s_bimestre, $s_nivel, $s_grado, $s_seccion, $s_docente);
     $html = "";
     $aux = 1;
@@ -2606,7 +2770,7 @@ function operacion_buscar_semaforo_docentes() {
                     . "<td>$aux</td>"
                     . "<td>" . $value["sede"] . "</td>"
                     . "<td >" . $value["docente"] . "</td>"
-                    . "<td>" . $value["grado"] . "</td>"
+                    //. "<td>" . $value["grado"] . "</td>"
                     . "<td style='text-align:center'>" . $value["cantidad"] . "</td>"
                     . "<td style='text-align:center'>" . $value["cantidad_faltantes"] . "</td>"
                     . "<td style='text-align:center'>" . $value["cantidad_realizados"] . "</td>"
@@ -3103,7 +3267,7 @@ function formulario_editar_apoderado_sub() {
     echo $html;
 }
 
-function operacion_editar_apoderado_sub() {
+function operacion_editar_apoderado_sub() {//jesucito
     $con = new DB(1111);
     $conexion = $con->connect();
     $alumnoCod = strip_tags(trim($_POST["a_txtAlumnCodigo_sub"]));
@@ -3240,7 +3404,7 @@ function formulario_nuevo_apoderado_sub() {
     echo $html;
 }
 
-function operacion_registrar_apoderado_sub() {
+function operacion_registrar_apoderado_sub() {//jesucito
     $con = new DB(1111);
     $conexion = $con->connect();
     $codigo = strip_tags(trim($_POST["a_txtAlumnoCodiN_sub"]));
@@ -3790,7 +3954,7 @@ function formulario_carga_solicitudes() {
             $imagen2 = "";
             if (count($imagen_soli2) > 0) {
                 if ($imagen_soli2[0]["id"] !== "") {
-                    $imagen_codi2 = $imagen_soli[0]["id"];
+                    $imagen_codi2 = $imagen_soli2[0]["id"];
                     $imagen2 = "./php/" . str_replace("../", "", $imagen_soli2[0]["imagen"]);
                 } else {
                     $imagen_codi2 = "";
@@ -4063,7 +4227,7 @@ function formulario_editar_apoderado_edi() {
     echo $html;
 }
 
-function operacion_editar_apoderado_edi() {
+function operacion_editar_apoderado_edi() {//jesucito
     $con = new DB(1111);
     $conexion = $con->connect();
     $alumnoCod = strip_tags(trim($_POST["a_txtAlumnCodigo_edi"]));
@@ -4118,7 +4282,7 @@ function operacion_editar_apoderado_edi() {
     echo $html;
 }
 
-function operacion_registrar_apoderado_edi() {
+function operacion_registrar_apoderado_edi() {//jesucito
     $con = new DB(1111);
     $conexion = $con->connect();
     $codigo = strip_tags(trim($_POST["a_txtAlumnoCodiN_edi"]));
@@ -4643,7 +4807,7 @@ function formulario_registro_nueva_sede() {
     <?php
 }
 
-function proceso_registro_nueva_sede() {
+function proceso_registro_nueva_sede() {//jesucito
     $con = new DB(1111);
     $conexion = $con->connect();
     $sm_codigoMenu = strip_tags(trim($_POST["sm_codigo"]));
@@ -4667,6 +4831,12 @@ function proceso_registro_nueva_sede() {
             $str_menu_id = "";
             $str_menu_nombre = "";
         }
+        if (count($submenu) > 0) {
+            $sql_auditoria = fnc_registrar_sede_auditoria($cadena);
+            $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_registro_nueva_sede" . '", "' . "fnc_registrar_sede" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_sede" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+            fnc_registrar_auditoria($conexion, $sql_insert);
+        }
+
         echo "***1***Sede registrado correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
     } else {
         echo "***0***Error al registrar la sede.***<br/>";
@@ -4761,7 +4931,7 @@ function proceso_editar_sede() {
     $m_imagen = strip_tags(trim($_POST["m_imagenEdi"]));
     $m_estado = strip_tags(trim($_POST["m_estadoMeEdi"]));
     try {
-        fnc_editar_sede($conexion, $m_codigoEdi, strtoupper($m_nombreEdi), $m_descripcion, $m_imagen, $m_estado);
+        $editar = fnc_editar_sede($conexion, $m_codigoEdi, strtoupper($m_nombreEdi), $m_descripcion, $m_imagen, $m_estado);
         $str_submenu = "";
         $str_menu_id = "";
         $str_menu_nombre = "";
@@ -4774,6 +4944,13 @@ function proceso_editar_sede() {
             $str_submenu = "";
             $str_menu_id = "";
             $str_menu_nombre = "";
+        }
+        if ($editar) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_editar_sede_auditoria($m_codigoEdi, strtoupper($m_nombreEdi), $m_descripcion, $m_imagen, $m_estado);
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_sede" . '", "' . "fnc_editar_sede" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_sede" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
         }
         echo "***1***Sede editada correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
     } catch (Exception $exc) {
@@ -4801,7 +4978,7 @@ function operacion_eliminar_sede() {
     $sm_codigoEdi = strip_tags(trim($_POST["sm_codigo"]));
     $u_codiSedeIdEli = strip_tags(trim($_POST["u_codiSedeIdEli"]));
     try {
-        fnc_eliminar_sede($conexion, $u_codiSedeIdEli);
+        $eliminar = fnc_eliminar_sede($conexion, $u_codiSedeIdEli);
         $str_submenu = "";
         $str_menu_id = "";
         $str_menu_nombre = "";
@@ -4814,6 +4991,13 @@ function operacion_eliminar_sede() {
             $str_submenu = "";
             $str_menu_id = "";
             $str_menu_nombre = "";
+        }
+        if ($eliminar) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_editar_sede_auditoria($u_codiSedeIdEli);
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "operacion_eliminar_sede" . '", "' . "fnc_eliminar_sede" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_sede" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
         }
         echo "***1***Sede eliminada correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
     } catch (Exception $exc) {
@@ -4853,7 +5037,7 @@ function operacion_modificar_matriculas_por_sede() {
         if ($u_anio == $anio[0]["anio"]) {
             echo "***0***No puede modificar las matrículas a inactivas de un año actual - " . $anio[0]["anio"] . ".***<br/>";
         } else {
-            fnc_eliminar_matriculas_sede($conexion, $u_codiSedeIdEli, $u_anio);
+            $eliminar = fnc_eliminar_matriculas_sede($conexion, $u_codiSedeIdEli, $u_anio);
             $str_submenu = "";
             $str_menu_id = "";
             $str_menu_nombre = "";
@@ -4866,6 +5050,13 @@ function operacion_modificar_matriculas_por_sede() {
                 $str_submenu = "";
                 $str_menu_id = "";
                 $str_menu_nombre = "";
+            }
+            if ($eliminar) {
+                if (count($submenu) > 0) {
+                    $sql_auditoria = fnc_eliminar_matriculas_sede_auditoria($u_codiSedeIdEli, $u_anio);
+                    $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "operacion_modificar_matriculas_por_sede" . '", "' . "fnc_eliminar_matriculas_sede" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_matricula" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                    fnc_registrar_auditoria($conexion, $sql_insert);
+                }
             }
             echo "***1***Matrículas del " . $u_anio . " modificadas correctamente a estados inactivos." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
         }
@@ -4976,7 +5167,7 @@ function mostrar_busqueda_entrevistas() {
         $grados = "";
     } else {
         $privacidad = "0";
-        if ($perfil === "1" || $perfil === "5") {
+        if ($perfil === "1" || $perfil === "5" || $perfil === "3") {
             $sedeCodi = $sedeCodigo;
             $usuarioCodi = "";
             $grados = "";
@@ -5049,28 +5240,33 @@ function operacion_buscar_no_entrevistados() {
     $s_fecha2 = strip_tags(trim($_POST["s_fecha_fin"]));
     $perfil = p_perfil;
     $sedeCodigo = $s_sede;
-
+    $s_bimestre = strip_tags(trim($_POST["s_bimestre"]));
+    $s_nivel = strip_tags(trim($_POST["s_nivel"]));
+    $s_grado = strip_tags(trim($_POST["s_grado"]));
+    $s_seccion = strip_tags(trim($_POST["s_seccion"]));
+    $s_docente = strip_tags(trim($_POST["s_docente"]));
     $sedeCodi = "";
-    $usuarioCodi = "";
+    $usuarioCodi = "0";
     $privacidad = "";
     if ($sedeCodigo == "1" && ($perfil === "1" || $perfil === "5")) {
         $sedeCodi = "0";
-        $usuarioCodi = "";
+        $usuarioCodi = "0";
         $privacidad = "0,1";
     } else {
         $privacidad = "0";
         if ($perfil === "1") {
             $sedeCodi = $sedeCodigo;
-            $usuarioCodi = "";
+            $usuarioCodi = "0";
         } elseif ($perfil === "2") {
             $sedeCodi = $sedeCodigo;
             $usuarioCodi = p_usuario;
+            $s_docente = $usuarioCodi;
         } else {
             $sedeCodi = $sedeCodigo;
-            $usuarioCodi = "";
+            $usuarioCodi = "0";
         }
     }
-    $lista_no_entrevistados = fnc_buscar_alumnos_no_entrevistados($conexion, $sedeCodi, $usuarioCodi, convertirFecha($s_fecha1), convertirFecha($s_fecha2));
+    $lista_no_entrevistados = fnc_buscar_alumnos_no_entrevistados($conexion, $sedeCodi, convertirFecha($s_fecha1), convertirFecha($s_fecha2), $s_bimestre, $s_nivel, $s_grado, $s_seccion, $s_docente);
     $html = "";
     $num = 1;
     $aux = 1;
@@ -6129,10 +6325,6 @@ function proceso_registrar_bimestres() {
     $m_codigo = substr($s_anio, 0, 4) . "_" . fnc_generate_random_string(6);
     $anio_bimestre_id = fnc_registrar_anio_bimestres($conexion, $m_codigo, $s_anio, "1");
     if ($anio_bimestre_id) {
-        fnc_registrar_bimestre($conexion, $anio_bimestre_id, "PrimerBi" . "_" . fnc_generate_random_string(6), "PRIMER BIMESTRE", convertirFecha($s_fecha11), convertirFecha($s_fecha12), "1", "1");
-        fnc_registrar_bimestre($conexion, $anio_bimestre_id, "SegundoBi" . "_" . fnc_generate_random_string(6), "SEGUNDO BIMESTRE", convertirFecha($s_fecha21), convertirFecha($s_fecha22), "2", "1");
-        fnc_registrar_bimestre($conexion, $anio_bimestre_id, "TercerBi" . "_" . fnc_generate_random_string(6), "TERCER BIMESTRE", convertirFecha($s_fecha31), convertirFecha($s_fecha32), "3", "1");
-        fnc_registrar_bimestre($conexion, $anio_bimestre_id, "CuartoBi" . "_" . fnc_generate_random_string(6), "CUARTO BIMESTRE", convertirFecha($s_fecha41), convertirFecha($s_fecha42), "4", "1");
         $str_submenu = "";
         $str_menu_id = "";
         $str_menu_nombre = "";
@@ -6145,6 +6337,44 @@ function proceso_registrar_bimestres() {
             $str_submenu = "";
             $str_menu_id = "";
             $str_menu_nombre = "";
+        }
+
+        if (count($submenu) > 0) {
+            $sql_auditoria = fnc_registrar_anio_bimestres_auditoria($m_codigo, $s_anio, "1");
+            $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_registrar_bimestres" . '", "' . "fnc_registrar_anio_bimestres" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_anio_bimestre" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+            fnc_registrar_auditoria($conexion, $sql_insert);
+        }
+        $registrar_bimestre_1 = fnc_registrar_bimestre($conexion, $anio_bimestre_id, "PrimerBi" . "_" . fnc_generate_random_string(6), "PRIMER BIMESTRE", convertirFecha($s_fecha11), convertirFecha($s_fecha12), "1", "1");
+        if ($registrar_bimestre_1) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_registrar_bimestre_auditoria($anio_bimestre_id, "PrimerBi" . "_" . fnc_generate_random_string(6), "PRIMER BIMESTRE", convertirFecha($s_fecha11), convertirFecha($s_fecha12), "1", "1");
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_registrar_bimestres" . '", "' . "fnc_registrar_bimestre" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_bimestre" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
+        }
+        $registrar_bimestre_2 = fnc_registrar_bimestre($conexion, $anio_bimestre_id, "SegundoBi" . "_" . fnc_generate_random_string(6), "SEGUNDO BIMESTRE", convertirFecha($s_fecha21), convertirFecha($s_fecha22), "2", "1");
+        if ($registrar_bimestre_2) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_registrar_bimestre_auditoria($anio_bimestre_id, "SegundoBi" . "_" . fnc_generate_random_string(6), "SEGUNDO BIMESTRE", convertirFecha($s_fecha21), convertirFecha($s_fecha22), "2", "1");
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_registrar_bimestres" . '", "' . "fnc_registrar_bimestre" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_bimestre" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
+        }
+        $registrar_bimestre_3 = fnc_registrar_bimestre($conexion, $anio_bimestre_id, "TercerBi" . "_" . fnc_generate_random_string(6), "TERCER BIMESTRE", convertirFecha($s_fecha31), convertirFecha($s_fecha32), "3", "1");
+        if ($registrar_bimestre_3) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_registrar_bimestre_auditoria($anio_bimestre_id, "TercerBi" . "_" . fnc_generate_random_string(6), "TERCER BIMESTRE", convertirFecha($s_fecha31), convertirFecha($s_fecha32), "3", "1");
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_registrar_bimestres" . '", "' . "fnc_registrar_bimestre" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_bimestre" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
+        }
+        $registrar_bimestre_4 = fnc_registrar_bimestre($conexion, $anio_bimestre_id, "CuartoBi" . "_" . fnc_generate_random_string(6), "CUARTO BIMESTRE", convertirFecha($s_fecha41), convertirFecha($s_fecha42), "4", "1");
+        if ($registrar_bimestre_4) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_registrar_bimestre_auditoria($anio_bimestre_id, "CuartoBi" . "_" . fnc_generate_random_string(6), "CUARTO BIMESTRE", convertirFecha($s_fecha41), convertirFecha($s_fecha42), "4", "1");
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_registrar_bimestres" . '", "' . "fnc_registrar_bimestre" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_bimestre" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
         }
         echo "***1***Bimestres del " . $s_anio . " registrados correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
     } else {
@@ -6293,11 +6523,6 @@ function proceso_editar_bimestres() {
     $s_fecha42 = strip_tags(trim($_POST["s_fecha42"]));
     $m_codigo = substr($s_anio, 0, 4) . "_" . fnc_generate_random_string(6);
     if ($s_codi_edi) {
-        fnc_editar_anio_bimestres($conexion, $s_codi_edi, $m_codigo, $s_anio, "1");
-        fnc_editar_bimestres_x_anio($conexion, $s_codi_edi, "1", convertirFecha($s_fecha11), convertirFecha($s_fecha12), "1");
-        fnc_editar_bimestres_x_anio($conexion, $s_codi_edi, "2", convertirFecha($s_fecha21), convertirFecha($s_fecha22), "1");
-        fnc_editar_bimestres_x_anio($conexion, $s_codi_edi, "3", convertirFecha($s_fecha31), convertirFecha($s_fecha32), "1");
-        fnc_editar_bimestres_x_anio($conexion, $s_codi_edi, "4", convertirFecha($s_fecha41), convertirFecha($s_fecha42), "1");
         $str_submenu = "";
         $str_menu_id = "";
         $str_menu_nombre = "";
@@ -6311,6 +6536,47 @@ function proceso_editar_bimestres() {
             $str_menu_id = "";
             $str_menu_nombre = "";
         }
+        $editar_anios = fnc_editar_anio_bimestres($conexion, $s_codi_edi, $m_codigo, $s_anio, "1");
+        if ($editar_anios) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_editar_anio_bimestres_auditoria($s_codi_edi, $m_codigo, $s_anio, "1");
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_bimestres" . '", "' . "fnc_editar_anio_bimestres" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_anio_bimestre" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
+        }
+        $editar_bimestre_1 = fnc_editar_bimestres_x_anio($conexion, $s_codi_edi, "1", convertirFecha($s_fecha11), convertirFecha($s_fecha12), "1");
+        if ($editar_bimestre_1) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_editar_bimestres_x_anio_auditoria($s_codi_edi, "1", convertirFecha($s_fecha11), convertirFecha($s_fecha12), "1");
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_bimestres" . '", "' . "fnc_editar_bimestres_x_anio" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_bimestre" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
+        }
+        $editar_bimestre_2 = fnc_editar_bimestres_x_anio($conexion, $s_codi_edi, "2", convertirFecha($s_fecha21), convertirFecha($s_fecha22), "1");
+        if ($editar_bimestre_2) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_editar_bimestres_x_anio_auditoria($s_codi_edi, "2", convertirFecha($s_fecha21), convertirFecha($s_fecha22), "1");
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_bimestres" . '", "' . "fnc_editar_bimestres_x_anio" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_bimestre" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
+        }
+        $editar_bimestre_3 = fnc_editar_bimestres_x_anio($conexion, $s_codi_edi, "3", convertirFecha($s_fecha31), convertirFecha($s_fecha32), "1");
+        if ($editar_bimestre_3) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_editar_bimestres_x_anio_auditoria($s_codi_edi, "3", convertirFecha($s_fecha31), convertirFecha($s_fecha32), "1");
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_bimestres" . '", "' . "fnc_editar_bimestres_x_anio" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_bimestre" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
+        }
+        $editar_bimestre_4 = fnc_editar_bimestres_x_anio($conexion, $s_codi_edi, "4", convertirFecha($s_fecha41), convertirFecha($s_fecha42), "1");
+        if ($editar_bimestre_4) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_editar_bimestres_x_anio_auditoria($s_codi_edi, "4", convertirFecha($s_fecha41), convertirFecha($s_fecha42), "1");
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_bimestres" . '", "' . "fnc_editar_bimestres_x_anio" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_bimestre" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
+        }
+
         echo "***1***Bimestres del " . $s_anio . " editados correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
     } else {
         echo "***0***Error al editar los Bimestres del " . $s_anio . ".***<br/>";
@@ -6418,9 +6684,6 @@ function proceso_registrar_semaforo() {
     $m_codigo = substr($s_anio, 0, 4) . "_" . fnc_generate_random_string(6);
     $anio_semaforo_id = fnc_registrar_anio_semaforo($conexion, $m_codigo, $s_anio, "1");
     if ($anio_semaforo_id) {
-        fnc_registrar_semaforo($conexion, $anio_semaforo_id, $m_codigo, $s_anio, $s_valor11, $s_valor12, "Rojo", "1", "1");
-        fnc_registrar_semaforo($conexion, $anio_semaforo_id, $m_codigo, $s_anio, $s_valor21, $s_valor22, "Ambar", "2", "1");
-        fnc_registrar_semaforo($conexion, $anio_semaforo_id, $m_codigo, $s_anio, $s_valor31, $s_valor32, "Verde", "3", "1");
         $str_submenu = "";
         $str_menu_id = "";
         $str_menu_nombre = "";
@@ -6433,6 +6696,37 @@ function proceso_registrar_semaforo() {
             $str_submenu = "";
             $str_menu_id = "";
             $str_menu_nombre = "";
+        }
+
+        if (count($submenu) > 0) {
+            $sql_auditoria = fnc_registrar_anio_semaforo_auditoria($m_codigo, $s_anio, "1");
+            $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_registrar_semaforo" . '", "' . "fnc_registrar_anio_semaforo" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_anio_semaforo" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+            fnc_registrar_auditoria($conexion, $sql_insert);
+        }
+
+        $registro_semaforo1 = fnc_registrar_semaforo($conexion, $anio_semaforo_id, $m_codigo, $s_anio, $s_valor11, $s_valor12, "Rojo", "1", "1");
+        if ($registro_semaforo1) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_registrar_semaforo_auditoria($anio_semaforo_id, $m_codigo, $s_anio, $s_valor11, $s_valor12, "Rojo", "1", "1");
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_registrar_semaforo" . '", "' . "fnc_registrar_semaforo" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_semaforo" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
+        }
+        $registro_semaforo2 = fnc_registrar_semaforo($conexion, $anio_semaforo_id, $m_codigo, $s_anio, $s_valor21, $s_valor22, "Ambar", "2", "1");
+        if ($registro_semaforo2) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_registrar_semaforo_auditoria($anio_semaforo_id, $m_codigo, $s_anio, $s_valor21, $s_valor22, "Ambar", "2", "1");
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_registrar_semaforo" . '", "' . "fnc_registrar_semaforo" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_semaforo" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
+        }
+        $registro_semaforo3 = fnc_registrar_semaforo($conexion, $anio_semaforo_id, $m_codigo, $s_anio, $s_valor31, $s_valor32, "Verde", "3", "1");
+        if ($registro_semaforo3) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_registrar_semaforo_auditoria($anio_semaforo_id, $m_codigo, $s_anio, $s_valor31, $s_valor32, "Verde", "3", "1");
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_registrar_semaforo" . '", "' . "fnc_registrar_semaforo" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_semaforo" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
         }
         echo "***1***Semaforo del " . $s_anio . " registrado correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
     } else {
@@ -6560,10 +6854,6 @@ function proceso_editar_semaforo() {
     $s_valor32 = strip_tags(trim($_POST["s_valor32"]));
     $m_codigo = substr($s_anio, 0, 4) . "_" . fnc_generate_random_string(6);
     if ($s_codi_edi) {
-        fnc_editar_anio_bimestres($conexion, $s_codi_edi, $m_codigo, $s_anio, "1");
-        fnc_editar_semaforo_x_anio($conexion, $s_codi_edi, "1", $s_valor11, $s_valor12, "1");
-        fnc_editar_semaforo_x_anio($conexion, $s_codi_edi, "2", $s_valor21, $s_valor22, "1");
-        fnc_editar_semaforo_x_anio($conexion, $s_codi_edi, "3", $s_valor31, $s_valor32, "1");
         $str_submenu = "";
         $str_menu_id = "";
         $str_menu_nombre = "";
@@ -6576,6 +6866,38 @@ function proceso_editar_semaforo() {
             $str_submenu = "";
             $str_menu_id = "";
             $str_menu_nombre = "";
+        }
+        $editar_anio = fnc_editar_anio_bimestres($conexion, $s_codi_edi, $m_codigo, $s_anio, "1");
+        if ($editar_anio) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_editar_anio_bimestres_auditoria($s_codi_edi, $m_codigo, $s_anio, "1");
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_semaforo" . '", "' . "fnc_editar_anio_bimestres" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_anio_bimestre" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
+        }
+        $editar_semaforo_1 = fnc_editar_semaforo_x_anio($conexion, $s_codi_edi, "1", $s_valor11, $s_valor12, "1");
+        if ($editar_semaforo_1) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_editar_semaforo_x_anio_auditoria($s_codi_edi, "1", $s_valor11, $s_valor12, "1");
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_semaforo" . '", "' . "fnc_editar_semaforo_x_anio" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_semaforo" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
+        }
+        $editar_semaforo_2 = fnc_editar_semaforo_x_anio($conexion, $s_codi_edi, "2", $s_valor21, $s_valor22, "1");
+        if ($editar_semaforo_2) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_editar_semaforo_x_anio_auditoria($s_codi_edi, "2", $s_valor21, $s_valor22, "1");
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_semaforo" . '", "' . "fnc_editar_semaforo_x_anio" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_semaforo" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
+        }
+        $editar_semaforo_3 = fnc_editar_semaforo_x_anio($conexion, $s_codi_edi, "3", $s_valor31, $s_valor32, "1");
+        if ($editar_semaforo_3) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_editar_semaforo_x_anio_auditoria($s_codi_edi, "3", $s_valor31, $s_valor32, "1");
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_semaforo" . '", "' . "fnc_editar_semaforo_x_anio" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_semaforo" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
         }
         echo "***1***Semaforo del " . $s_anio . " editados correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
     } else {
@@ -6757,4 +7079,69 @@ function formulario_alumnos_no_entrevistas_grafico_barras_secciones() {
 
     //returns data as JSON format
     echo json_encode($data);
+}
+
+function operacion_historial_auditoria() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_sede = strip_tags(trim($_POST["s_sede"]));
+    $s_fecha1 = strip_tags(trim($_POST["s_fecha_inicio"]));
+    $s_fecha2 = strip_tags(trim($_POST["s_fecha_fin"]));
+    $perfil = p_perfil;
+    $sedeCodigo = $s_sede;
+
+    $sedeCodi = "";
+    $usuarioCodi = "";
+    $privacidad = "";
+    $grados = "";
+    if ($sedeCodigo == "1" && ($perfil === "1" || $perfil === "5")) {
+        $sedeCodi = "0";
+        $usuarioCodi = "0";
+        $privacidad = "0,1";
+        $grados = "";
+    } else {
+        $privacidad = "0";
+        if ($perfil === "1") {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = "0";
+            $grados = "";
+        } elseif ($perfil === "2") {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = p_usuario;
+            $lista_grados = fnc_secciones_por_usuario($conexion, $usuarioCodi);
+            if (count($lista_grados) > 0) {
+                $grados = $lista_grados[0]["seccion"];
+            } else {
+                $grados = "";
+            }
+        } else {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = "0";
+            $grados = "";
+        }
+    }
+
+    $lista_auditoria = fnc_lista_auditorias($conexion, $sedeCodi, $usuarioCodi, convertirFecha($s_fecha1), convertirFecha($s_fecha2));
+    $html = "";
+    $num = 1;
+    $aux = 1;
+    if (count($lista_auditoria) > 0) {
+        foreach ($lista_auditoria as $lista) {
+            $html .= "<tr>
+                    <td>" . $num . "</td>
+                    <td>" . $lista["fecha"] . "</td>
+                    <td>" . $lista["sede"] . "</td>
+                    <td >" . $lista["perfil"] . "</td>
+                    <td>" . $lista["usuario"] . "</td>
+                    <td>" . $lista["menu"] . "</td>
+                    <td>" . $lista["funcion"] . "</td>
+                    <td>" . $lista["consulta"] . "</td>";
+            $html .= "<td>" . $lista["accion"] . "</td>" .
+                    "</tr>";
+            $num++;
+        }
+    } else {
+        $html = "";
+    }
+    echo $html;
 }

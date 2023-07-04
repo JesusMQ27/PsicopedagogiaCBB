@@ -63,7 +63,7 @@ $lista_anios = fnc_lista_anio_bimestres($conexion, "", "1");
                         <?php } ?>
                     </div>
                 </div><br>
-                <table id="tableAnios" class="table table-bordered table-hover">
+                <table id="tableAnios" class="table table-bordered table-hover" style="width: 100%">
                     <thead>
                         <tr>
                             <th>Nro.</th>

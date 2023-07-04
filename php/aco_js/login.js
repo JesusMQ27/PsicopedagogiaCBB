@@ -42,6 +42,11 @@ function AccederSistema() {
         }
         ocultarMensaje("#mensaje");
     } else {
+        if (remember == true) {
+            remember = "1";
+        } else {
+            remember = "0";
+        }
         $.ajax({
             url: "php/aco_php/psi_verificar.php",
             dataType: "html",
@@ -172,7 +177,7 @@ function CambiarContrasena() {
 
     if ($.trim(nuevaContra.val()) !== "" && $.trim(confirContra.val()) !== "") {
         if ($.trim(nuevaContra.val().length) < 7 && $.trim(confirContra.val().length) < 7) {
-            mensaje += "Las contraseñas deben tener más de 6 caracteres<br>";
+            mensaje += "Las contraseñas deben tener un mínimo 7 caracteres<br>";
             cant++;
             txt = nuevaContra;
         } else {
@@ -219,8 +224,8 @@ function CambiarContrasena() {
                     $("#hdnToken").val("");
                     $("#txtNuevaContra").val("");
                     $("#txtConfirContra").val("");
-                    $("#txtNuevaContra").attr('disabled','disabled');
-                    $("#txtConfirContra").attr('disabled','disabled');
+                    $("#txtNuevaContra").attr('disabled', 'disabled');
+                    $("#txtConfirContra").attr('disabled', 'disabled');
                     $(document).ready(function () {
                         setTimeout(function () {
                             location.reload();

@@ -35,7 +35,7 @@ $lista_perfiles = fnc_lista_tipo_usuarios($conexion, "", "");
                         <button type="submit" class="btn btn-primary btn-block" data-toggle="modal" data-target="#modal-nuevo-perfil" data-backdrop="static">Nuevo perfil</button>
                     </div>
                 </div><br>
-                <table id="tablePerfiles" class="table table-bordered table-hover">
+                <table id="tablePerfiles" class="table table-bordered table-hover" style="width: 100%">
                     <thead>
                         <tr>
                             <th>Nro.</th>

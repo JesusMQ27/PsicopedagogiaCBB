@@ -19,6 +19,7 @@ $userData = fnc_datos_usuario($conexion, $codigo_user);
 $perfilCodi = $userData[0]["perfil"];
 $perfil = $userData[0]["perfil_nombre"];
 $sede = $userData[0]["sedeId"];
+$sede_nombre = $userData[0]["sede"];
 $sedeCodi = "";
 $usuarioCodi = "";
 $privacidad = "";
@@ -41,7 +42,7 @@ if ($sede == "1" && ($perfilCodi == "1" || $perfilCodi == "5")) {
     }
 }
 $lista_solicitudes = fnc_lista_solicitudes_alerta($conexion, $sedeCodi, $usuarioCodi, "", "", $privacidad);
-$semaforo = fnc_buscar_semaforo_docentes_alerta($conexion, $sedeCodi, "", "", "0");
+$semaforo = fnc_buscar_semaforo_docentes_alerta($conexion, $sedeCodi); //jesus
 $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion, $sedeCodi, $usuarioCodi);
 ?>
 <html lang="en">
@@ -128,7 +129,7 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                         </div>
                     </li>
 
-                    <!-- 
+                    <!-- form-control form-control-sidebar
                     <li class="nav-item dropdown">
                         <a class="nav-link" data-toggle="dropdown" href="#">
                             <i class="far fa-comments"></i>
@@ -234,17 +235,18 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                     <!-- Sidebar user panel (optional) -->
                     <div class="user-panel mt-3 pb-3 mb-3 d-flex">
                         <div class="image" style="padding-left: 0px;display: flex;align-items: center;">
-                            <img src="php/aco_img/CBB_escudo.png" style="width: 70px;height: 80px" class="" alt="User Image">
+                            <img src="php/aco_img/CBB_escudo.png" class="img-circle elevation-2" style="width: 50px;height: 50px" class="" alt="User Image">
                         </div>
                         <div class="info" style="font-size: 14.5px">
                             <a href="javascript:void(0)" class="d-block"><?php echo $userSession["usu_nombres"]; ?></a>
                             <a href="javascript:void(0)" class="d-block"><?php echo $userSession["apellidos"]; ?></a>
                             <a href="javascript:void(0)" class="d-block"><?php echo $perfil; ?></a>
+                            <a href="javascript:void(0)" class="d-block"><?php echo "SEDE " . $sede_nombre; ?></a>
                         </div>
                     </div>
 
                     <!-- SidebarSearch Form -->
-                    <div class="form-inline">
+                    <!--<div class="form-inline">
                         <div class="input-group" data-widget="sidebar-search">
                             <input class="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search">
                             <div class="input-group-append">
@@ -253,7 +255,7 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                                 </button>
                             </div>
                         </div>
-                    </div>
+                    </div>-->
 
                     <!-- Sidebar Menu -->
                     <nav class="mt-2">
@@ -286,6 +288,12 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                             }
                             echo $html_menu;
                             ?>
+                            <li class="nav-item">
+                                <a href='#' onclick='cargar_opcion_cambiar_contrasena(<?php echo $userSession["id"]; ?>)' class="nav-link">
+                                    <i class="nav-icon far fa-user text-white"></i>
+                                    <p class="text">Cambiar contrase&ntilde;a</p>
+                                </a>
+                            </li>
                             <li class="nav-item">
                                 <a href="php/salir.php" class="nav-link">
                                     <i class="nav-icon far fa-circle text-danger"></i>
@@ -344,8 +352,12 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                                     <div class="inner">
                                         <h3><?php
                                             $str_porcentaje = "";
-                                            if (count($semaforo)) {
-                                                $str_porcentaje = $semaforo[0]["porcentaje"];
+                                            if (count($semaforo) > 0) {
+                                                if ($semaforo[0]["porcentaje"] === null) {
+                                                    $str_porcentaje = "0.0000 %";
+                                                } else {
+                                                    $str_porcentaje = $semaforo[0]["porcentaje"];
+                                                }
                                             } else {
                                                 $str_porcentaje = "0.0000 %";
                                             }

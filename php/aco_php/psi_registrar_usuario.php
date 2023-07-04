@@ -62,6 +62,9 @@ if (count($valicant_ndoc) > 0) {
                 $u_clave = hash("sha256", md5($clave));
                 $registrar_usuario = fnc_registrar_nuevo_usuario($conexion, $u_tipoUsuario, $u_tipoDoc, $u_numDoc, strtoupper($u_paterno), strtoupper($u_materno), strtoupper($u_nombres), strtolower($u_correo), $u_clave, $u_telefono, $u_sede, $u_sexo, $u_token);
                 if ($registrar_usuario) {
+                    $sql_auditoria = fnc_registrar_nuevo_usuario_auditoria($u_tipoUsuario, $u_tipoDoc, $u_numDoc, strtoupper($u_paterno), strtoupper($u_materno), strtoupper($u_nombres), strtolower($u_correo), $u_clave, $u_telefono, $u_sede, $u_sexo, $u_token);
+                    $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "psi_registrar_usuario.php" . '", "' . "fnc_registrar_nuevo_usuario" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_usuario" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                    fnc_registrar_auditoria($conexion, $sql_insert);
                     $url_inicio = fnc_obtener_url_sistema();
 
                     $str_mensaje_correo = "Hola " . $u_nombres . " " . $u_paterno . " " . $u_materno . " <br/><br/>Tu registro en el Sistema Integral de Acompañamiento al Estudiante - SIAE ha sido exitoso.<br/><br/>"
