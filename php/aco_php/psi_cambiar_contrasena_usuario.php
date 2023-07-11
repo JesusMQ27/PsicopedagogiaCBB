@@ -20,7 +20,7 @@ $conexion = $con->connect();
 
 $sm_codigo = strip_tags(trim($_POST["sm_codigo"]));
 $u_hdnCodiUsua = strip_tags(trim($_POST["u_hdnCodiUsuaCam"]));
-$usuario_dta = fnc_lista_usuarios($conexion, $u_hdnCodiUsua,"");
+$usuario_dta = fnc_lista_usuarios($conexion, $u_hdnCodiUsua, "");
 if (count($usuario_dta) > 0) {
     $u_numDocumento = $usuario_dta[0]["numDoc"];
     $clave = fnc_generate_random_string(3) . $u_numDocumento . fnc_generate_random_string(5);
@@ -43,6 +43,10 @@ if (count($usuario_dta) > 0) {
     }
     $cambiar_contra = fnc_cambiar_contrasena_usuario($conexion, $u_hdnCodiUsua, $usuario_dta[0]["token"], $u_clave);
     if ($cambiar_contra) {
+        $sql_auditoria = fnc_cambiar_contrasena_usuario_auditoria($u_hdnCodiUsua, $usuario_dta[0]["token"], $u_clave);
+        $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "psi_cambiar_contrasena_usuario.php" . '", "' . "fnc_cambiar_contrasena_usuario" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_usuario" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+        fnc_registrar_auditoria($conexion, $sql_insert);
+        
         $url_inicio = fnc_obtener_url_sistema();
         $str_mensaje_correo = "Hola " . $u_nombreCompleto . " <br/><br/>Se ha realizado un reiniciado de tu contraseña para el acceso al Sistema Integral de Acompañamiento al Estudiante - SIAE.<br/><br/>"
                 . "Ahora puedes iniciar sesión con las siguientes credenciales:<br/><br/>"
@@ -65,8 +69,6 @@ if (count($usuario_dta) > 0) {
         $mail->Port = 465; //SMTP port
         $mail->SMTPSecure = "ssl";
 
-        // $mail->Username = 'salvaro@ich.edu.pe';
-        //$mail->Password = "995131543";
         $mail->Subject = utf8_decode("Reinicio de contraseña - Sistema de acompañamiento al estudiante - SIAE");
         $mail->setFrom("soporteSistemaSIAE@cbb.edu.pe");
         $mail->Body = utf8_decode($str_mensaje_correo);
@@ -77,6 +79,7 @@ if (count($usuario_dta) > 0) {
         $value = 0;
         if ($exito == 1) {
             //echo "Enviado:<br>";
+
             $value = 1;
             $resp_mensaje = "***1***Se ha enviado un correo electrónico a la dirección " . $u_correo . " con las credenciales de " . $u_nombreCompleto . "" . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
         } else {

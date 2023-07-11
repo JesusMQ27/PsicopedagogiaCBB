@@ -24,28 +24,42 @@ $s_contraNueva = strip_tags(trim($_POST["s_contraNueva"]));
 $s_contraConfirmar = strip_tags(trim($_POST["s_contraConfirmar"]));
 $usuario_data = fnc_usuario_datos($conexion, $s_usuario);
 if (count($usuario_data) > 0) {
-    fnc_modificar_usuario_pass($conexion, $s_usuario);
+    $str_submenu = "";
+    $str_menu_id = "";
+    $str_menu_nombre = "";
+    $submenu = fnc_consultar_submenu($conexion, $sm_codigo);
+    if (count($submenu) > 0) {
+        $str_submenu = $submenu[0]["ruta"];
+        $str_menu_id = $submenu[0]["id"];
+        $str_menu_nombre = $submenu[0]["nombre"];
+    } else {
+        $str_submenu = "";
+        $str_menu_id = "";
+        $str_menu_nombre = "";
+    }
+
+    $modificar_pass = fnc_modificar_usuario_pass($conexion, $s_usuario);
+    if ($modificar_pass) {
+        $sql_auditoria = fnc_modificar_usuario_pass_auditoria($s_usuario);
+        $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "psi_cambiar_contrasena_usuario_pas.php" . '", "' . "fnc_modificar_usuario_pass" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_usuario_pas" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+        fnc_registrar_auditoria($conexion, $sql_insert);
+    }
     $nueva_contraseña = hash("sha256", md5($s_contraNueva));
     $insertar = fnc_insertar_usuario_pass($conexion, $s_usuario, $usuario_data[0]["clave"], $s_contraNueva, $nueva_contraseña);
     if ($insertar) {
-        $u_numDocumento = $usuario_dta[0]["numDoc"];
+        $sql_auditoria = fnc_insertar_usuario_pass_auditoria($s_usuario, $usuario_data[0]["clave"], $s_contraNueva, $nueva_contraseña);
+        $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "psi_cambiar_contrasena_usuario_pas.php" . '", "' . "fnc_insertar_usuario_pass" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_usuario_pas" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+        fnc_registrar_auditoria($conexion, $sql_insert);
+        $u_numDocumento = $usuario_data[0]["numDoc"];
         $clave = $s_contraNueva;
         $u_clave = $nueva_contraseña;
         $u_correo = $usuario_data[0]["correo"];
         $u_nombreCompleto = $usuario_data[0]["nombrecompleto"];
-
-        $str_submenu = "";
-        $str_menu_id = "";
-        $str_menu_nombre = "";
-        $submenu = fnc_consultar_submenu($conexion, $sm_codigo);
-        if (count($submenu) > 0) {
-            $str_submenu = $submenu[0]["ruta"];
-            $str_menu_id = $submenu[0]["id"];
-            $str_menu_nombre = $submenu[0]["nombre"];
-        } else {
-            $str_submenu = "";
-            $str_menu_id = "";
-            $str_menu_nombre = "";
+        $cambiar_pass = fnc_cambiar_pass_usuario($conexion, $s_usuario, $nueva_contraseña);
+        if ($cambiar_pass) {
+            $sql_auditoria = fnc_cambiar_pass_usuario_auditoria($s_usuario, $nueva_contraseña);
+            $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "psi_cambiar_contrasena_usuario_pas.php" . '", "' . "fnc_cambiar_pass_usuario" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_usuario" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+            fnc_registrar_auditoria($conexion, $sql_insert);
         }
         $url_inicio = fnc_obtener_url_sistema();
         $str_mensaje_correo = "Hola " . $u_nombreCompleto . " <br/><br/>Se ha realizado el cambio de tu contraseña para el acceso al Sistema Integral de Acompañamiento al Estudiante - SIAE.<br/><br/>"
@@ -69,10 +83,8 @@ if (count($usuario_data) > 0) {
         $mail->Port = 465; //SMTP port
         $mail->SMTPSecure = "ssl";
 
-        // $mail->Username = 'salvaro@ich.edu.pe';
-        //$mail->Password = "995131543";
         $mail->Subject = utf8_decode("Cambio de contraseña - Sistema de acompañamiento al estudiante - SIAE");
-        $mail->setFrom("soporteSistemaSIAE@cbb.edu.pe");
+        //$mail->setFrom("soporteSistemaSIAE@cbb.edu.pe");
         $mail->Body = utf8_decode($str_mensaje_correo);
         $mail->addAttachment('../aco_img/CBB.png');
         $mail->addAddress($u_correo);

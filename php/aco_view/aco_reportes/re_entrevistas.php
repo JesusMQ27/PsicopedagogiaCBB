@@ -36,6 +36,11 @@ if ($userData[0]["sedeId"] == "1" && ($perfil == "1" || $perfil == "5")) {
         } else {
             $grados = "";
         }
+    } elseif ($perfil === "9") {//Legal
+        $sedeCodi = "0";
+        $usuarioCodi = "";
+        $grados = "";
+        $privacidad = "1";
     } else {
         $sedeCodi = $userData[0]["sedeId"];
         $usuarioCodi = "";
@@ -137,7 +142,7 @@ $lista_solicitudes = fnc_lista_solicitudes_y_subsolicitudes($conexion, $sedeCodi
                                     <th>Alumno</th>
                                     <th>Tipo de entrevista</th>
                                     <?php
-                                    if ($perfil == "1" || $perfil == "5") {
+                                    if ($perfil == "1" || $perfil == "5" || $perfil == "9") {
                                         ?>
                                         <th>Privacidad</th>
                                         <?php
@@ -148,7 +153,7 @@ $lista_solicitudes = fnc_lista_solicitudes_y_subsolicitudes($conexion, $sedeCodi
                                     <th>Subcategoria</th>
                                     <th>Duraci&oacute;n</th>
                                     <th>Estado</th>
-
+                                    <th>Ver</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -156,6 +161,7 @@ $lista_solicitudes = fnc_lista_solicitudes_y_subsolicitudes($conexion, $sedeCodi
                                 $html = "";
                                 $num = 1;
                                 foreach ($lista_solicitudes as $lista) {
+                                    $solicitudCod = fnc_generate_random_string(6) . "*" . $lista["tipoId"] . "*" . fnc_generate_random_string(6);
                                     $html .= "<tr>
                                         <td>" . $num . "</td>
                                         <td>" . $lista["tipo"] . "</td>
@@ -165,7 +171,7 @@ $lista_solicitudes = fnc_lista_solicitudes_y_subsolicitudes($conexion, $sedeCodi
                                         <td>" . $lista["nroDocumento"] . "</td>
                                         <td width='200px'>" . $lista["alumno"] . "</td>
                                         <td>" . $lista["entrevista"] . "</td>";
-                                    if ($perfil == "1" || $perfil == "5") {
+                                    if ($perfil == "1" || $perfil == "5" || $perfil == "9") {
                                         $html .= "<td>" . $lista["privacidad"] . "</td>";
                                     }
                                     $html .= "<td width='200px'>" . $lista["usuario"] . "</td>" .
@@ -173,6 +179,7 @@ $lista_solicitudes = fnc_lista_solicitudes_y_subsolicitudes($conexion, $sedeCodi
                                             "<td>" . $lista["subcategoria"] . "</td>" .
                                             "<td>" . $lista["duracion"] . "</td>" .
                                             "<td>" . $lista["estado"] . "</td>" .
+                                            "<td><i class='nav-icon fas fa-info-circle celeste' title='Detalle' data-toggle='modal' data-target='#modal-detalle-solicitudes-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "' ></i></td>" .
                                             "</tr>";
                                     $num++;
                                 }
@@ -186,7 +193,32 @@ $lista_solicitudes = fnc_lista_solicitudes_y_subsolicitudes($conexion, $sedeCodi
         </div>
     </div>
 </section>
-
+<div class="modal fade" id="modal-detalle-solicitudes-alumno" role="dialog" aria-hidden="true" aria-labelledby="modal-detalle-solicitudes-alumno">
+    <div class="modal-dialog" style="max-width: 80%;
+         ">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Detalle de solicitud </h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                <div style="float: right">
+                    <label></label>
+                    <!--<button type="button" id="btnImprimirSolicitud" class="btn btn-primary swalDefaultError" 
+                            onclick="return imprimir_ficha_entrevista();"
+                            >Imprimir</button>-->
+                </div>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
 <script>
     $(function () {
         $("#fecha1").daterangepicker({
@@ -270,6 +302,13 @@ $lista_solicitudes = fnc_lista_solicitudes_y_subsolicitudes($conexion, $sedeCodi
                     //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
                     //"buttons": ["new", "colvis"]
         }).buttons().container().appendTo('#tableEntrevistas_wrapper .col-md-6:eq(0)');
+        
+        $('#modal-detalle-solicitudes-alumno').on('show.bs.modal', function (event) {
+            var modal = $(this);
+            var button = $(event.relatedTarget);
+            var solicitud = button.data('solicitud');
+            mostrar_detalle_solicitud_alumno(modal, solicitud);
+        });
     });
 
 </script>

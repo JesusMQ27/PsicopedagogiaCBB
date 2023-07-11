@@ -145,9 +145,9 @@ function registrar_usuario() {
     } else {
         if (valida_correo(correo)) {
             var array_correo = correo.val().split("@");
-            if ($.trim(array_correo[1]) !== "cbb.edu.pe") {
-                mensaje += "Ingrese correo electrónico institucional (@cbb.edu.pe)<br>";
-            }
+            /*if ($.trim(array_correo[1]) !== "cbb.edu.pe" && $.trim(array_correo[1]) !== "ich.edu.pe") {
+             mensaje += "Ingrese correo electrónico institucional (@cbb.edu.pe o ich.edu.pe)<br>";
+             }*/
         } else {
             mensaje += "Ingrese un correo electrónico válido<br>";
         }
@@ -289,8 +289,8 @@ function editar_usuario() {
     } else {
         if (valida_correo(correo)) {
             var array_correo = correo.val().split("@");
-            if ($.trim(array_correo[1]) !== "cbb.edu.pe") {
-                mensaje += "Ingrese correo electrónico institucional (@cbb.edu.pe)<br>";
+            if ($.trim(array_correo[1]) !== "cbb.edu.pe" && $.trim(array_correo[1]) !== "ich.edu.pe") {
+                mensaje += "Ingrese correo electrónico institucional (@cbb.edu.pe o ich.edu.pe)<br>";
             }
         } else {
             mensaje += "Ingrese un correo electrónico válido<br>";
@@ -2923,8 +2923,8 @@ function imprimir_ficha_entrevista() {
 function buscar_semaforo_docente() {
     $("#btnRegistrarSolicitud").attr("disabled", true);
     var sede = $("#cbbSedes").select().val();
-    var fecha_inicio = $("#fecha1").val();
-    var fecha_fin = $("#fecha2").val();
+    //var fecha_inicio = $("#fecha1").val();
+    //var fecha_fin = $("#fecha2").val();
     var semaforo = $("#cbbSemaforo").select().val();
     var bimestre = $("#cbbBimestre").select().val();
     var nivel = $("#cbbNivel").select().val();
@@ -2941,8 +2941,8 @@ function buscar_semaforo_docente() {
         data: {
             opcion: "operacion_buscar_semaforo_docentes",
             s_sede: sede,
-            s_fecha_inicio: fecha_inicio,
-            s_fecha_fin: fecha_fin,
+            //s_fecha_inicio: fecha_inicio,
+            //s_fecha_fin: fecha_fin,
             s_semaforo: semaforo,
             s_bimestre: bimestre,
             s_nivel: nivel,
@@ -7556,6 +7556,7 @@ function cargar_selector_grado(nivel) {
         },
         success: function (datos) {
             $("#cbbGrado").html(datos);
+            $("#cbbSeccion").html('<option value="0">-- Todos --</option>');//marita
         }
     });
 }
@@ -8170,21 +8171,62 @@ function buscar_historial_auditoria() {
                     {
                         extend: 'csv',
                         text: 'CSV',
-                        title: 'Lista de entrevitas a Alumnos'
+                        title: 'Lista de auditoria del sistema'//marita
                     },
                     {
                         extend: 'excel',
                         text: 'Excel',
-                        title: 'Lista de entrevitas a Alumnos'
+                        title: 'Lista de auditoria del sistema'//marita
                     },
                     {
                         extend: 'print',
                         text: 'Imprimir',
-                        title: 'Lista de entrevitas a Alumnos'
+                        title: 'Lista de auditoria del sistema'//marita
                     }, "colvis"]
                         //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
                         //"buttons": ["new", "colvis"]
             }).buttons().container().appendTo('#tableAuditorias_wrapper .col-md-6:eq(0)');
+        }
+    });
+}
+
+
+function mostrar_detalle_solicitud_alumno(modal, solicitud) {
+    var arreglo = solicitud.split("*");
+    var codigo = arreglo[1];
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_carga_solicitudes_detalla",
+            sol_cod: codigo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $(modal).find(".modal-body").html(datos);
+        }
+    });
+}
+
+function mostrar_tabla_mis_aulas(usuario) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "mostrar_tabla_mis_aulas",
+            codigo: usuario
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#contenido_alertas").html(datos);
         }
     });
 }
@@ -8211,6 +8253,7 @@ function cargar_opcion_cambiar_contrasena(usuario) {
     });
 }
 
+
 function enter_cambiar_contra(evt) {
     evt = (evt) ? evt : event;
     var charCode = (evt.which) ? evt.which : evt.keyCode;
@@ -8219,7 +8262,9 @@ function enter_cambiar_contra(evt) {
     }
 }
 
+
 function cambiar_contrasena_usuario() {
+    $("#btnCambiarContrasenaUsuario").attr("disabled", true);
     var Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
@@ -8261,7 +8306,6 @@ function cambiar_contrasena_usuario() {
             }
         }
     }
-
     if (mensaje != "") {
         //mostrarMensajeLogin();
         Toast.fire({
@@ -8291,8 +8335,6 @@ function cambiar_contrasena_usuario() {
             success: function (datos) {
                 var resp = datos.split("***");
                 if (resp[1] === "1") {
-                    var lista_sm = resp[3].split("--");
-                    $("#modal-cambiar-contrasena-usuario").find('.modal-footer div label').html('');
                     Toast.fire({
                         position: 'top-end',
                         icon: 'success',
@@ -8300,10 +8342,8 @@ function cambiar_contrasena_usuario() {
                         showConfirmButton: false
                     });
                     setTimeout(function () {
-                        $('#modal-cambiar-contrasena-usuario').modal('hide');
-                        $('.modal-backdrop').remove();
+                        location.href = "php/salir.php";
                         $("#btnCambiarContrasenaUsuario").attr("disabled", false);
-                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
                     }, 5500);
                 } else {
                     Toast.fire({
@@ -8321,6 +8361,218 @@ function cambiar_contrasena_usuario() {
         });
     }
 }
+
+/*marita*/
+function buscar_cantidad_entrevistas_subentrevistas() {
+    var sede = $("#cbbSedes").select().val();
+    var bimestre = $("#cbbBimestre").val();
+    var nivel = $("#cbbNivel").val();
+    var grado = $("#cbbGrado").val();
+    var seccion = $("#cbbSeccion").val();
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_cantidad_entrevistas_subentrevitas",
+            s_sede: sede,
+            s_bimestre: bimestre,
+            s_nivel: nivel,
+            s_grado: grado,
+            s_seccion: seccion
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#tableCantidadEntrevistas").DataTable().destroy();
+            $("#tableCantidadEntrevistas tbody").html(datos);
+            $("#tableCantidadEntrevistas").DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": true,
+                "paging": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "buttons": ["copy",
+                    {
+                        extend: 'csv',
+                        text: 'CSV',
+                        title: 'Lista de auditoria del sistema'//marita
+                    },
+                    {
+                        extend: 'excel',
+                        text: 'Excel',
+                        title: 'Lista de auditoria del sistema'//marita
+                    },
+                    {
+                        extend: 'print',
+                        text: 'Imprimir',
+                        title: 'Lista de auditoria del sistema'//marita
+                    }, "colvis"]
+                        //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+                        //"buttons": ["new", "colvis"]
+            }).buttons().container().appendTo('#tableCantidadEntrevistas_wrapper .col-md-6:eq(0)');
+        }
+    });
+}
+
+function limpiar_campos_cantidad_entrevistas_subentrevistas() {
+    //$('#cbbBimestre option[value=0]').removeAttr('selected');
+    $('#cbbNivel option[value=0]').removeAttr('selected');
+    $('#cbbGrado option[value=0]').removeAttr('selected');
+    $('#cbbSeccion option[value=0]').removeAttr('selected');
+    //$('#cbbBimestre option[value=0]').attr('selected', 'selected');
+    $('#cbbNivel option[value=0]').attr('selected', 'selected');
+    $('#cbbGrado option[value=0]').attr('selected', 'selected');
+    $('#cbbSeccion option[value=0]').attr('selected', 'selected');
+    buscar_cantidad_entrevistas_subentrevistas();
+}
+
+function cargar_rango_fechas(bimestre) {
+    var str_bimestre = bimestre.value;
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_rango_fechas",
+            s_bimestre: str_bimestre
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            var data = $.trim(datos);
+            if (data !== "*") {
+                var arreglo = data.split("*");
+                var fecha1 = arreglo[0];
+                var fecha2 = arreglo[1];
+                var array_fecha = fecha1.split("/");
+                var day = parseInt(array_fecha[0]);
+                var month = parseInt(array_fecha[1]) - 1;
+                var year = parseInt(array_fecha[2]);
+                var array_fecha2 = fecha2.split("/");
+                var day2 = parseInt(array_fecha2[0]);
+                var month2 = parseInt(array_fecha2[1]) - 1;
+                var year2 = parseInt(array_fecha2[2]);
+                $("#fecha1").val(fecha1);
+                $("#fecha2").val(fecha2);
+                $("#fecha1").daterangepicker({
+                    autoApply: true,
+                    showButtonPanel: false,
+                    singleDatePicker: true,
+                    showDropdowns: true,
+                    linkedCalendar: false,
+                    autoUpdateInput: false,
+                    showCustomRangeLabel: false,
+                    minDate: new Date(year, month, day),
+                    maxDate: new Date(year2, month2, day2),
+                    locale: {
+                        format: "DD/MM/YYYY"
+                    }
+                }).on('apply.daterangepicker', function (ev, start) {
+                    $("#fecha1").val(start.endDate.format('DD/MM/YYYY'));
+                });
+                $("#fecha2").daterangepicker({
+                    autoApply: true,
+                    singleDatePicker: true,
+                    showDropdowns: true,
+                    linkedCalendar: false,
+                    autoUpdateInput: false,
+                    showCustomRangeLabel: false,
+                    maxDate: new Date(year2, month2, day2),
+                    minDate: new Date(year, month, day),
+                    starDate: new Date(year, month, day),
+                    locale: {
+                        format: "DD/MM/YYYY"
+                    }
+                }).on('apply.daterangepicker', function (ev, start) {
+                    $("#fecha2").val(start.endDate.format('DD/MM/YYYY'));
+                });
+            }
+        }
+    });
+}
+
+function buscar_reporte_semanal() {
+    var sede = $("#cbbSedes").select().val();
+    var bimestre = $("#cbbBimestre").val();
+    var fecha_ini = $("#fecha1").val();
+    var fecha_fin = $("#fecha2").val();
+    var nivel = $("#cbbNivel").val();
+    var grado = $("#cbbGrado").val();
+    var seccion = $("#cbbSeccion").val();
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_reporte_semanal",
+            s_sede: sede,
+            s_bimestre: bimestre,
+            s_fecha_ini: fecha_ini,
+            s_fecha_fin: fecha_fin,
+            s_nivel: nivel,
+            s_grado: grado,
+            s_seccion: seccion
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#tableCantidadEntrevistas").DataTable().destroy();
+            $("#tableCantidadEntrevistas tbody").html(datos);
+            $("#tableCantidadEntrevistas").DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": true,
+                "paging": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "buttons": ["copy",
+                    {
+                        extend: 'csv',
+                        text: 'CSV',
+                        title: 'Lista de auditoria del sistema'//marita
+                    },
+                    {
+                        extend: 'excel',
+                        text: 'Excel',
+                        title: 'Lista de auditoria del sistema'//marita
+                    },
+                    {
+                        extend: 'print',
+                        text: 'Imprimir',
+                        title: 'Lista de auditoria del sistema'//marita
+                    }, "colvis"]
+                        //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+                        //"buttons": ["new", "colvis"]
+            }).buttons().container().appendTo('#tableCantidadEntrevistas_wrapper .col-md-6:eq(0)');
+        }
+    });
+}
+
+function limpiar_reporte_semanal() {
+    //$('#cbbBimestre option[value=0]').removeAttr('selected');
+    $('#cbbNivel option[value=0]').removeAttr('selected');
+    $('#cbbGrado option[value=0]').removeAttr('selected');
+    $('#cbbSeccion option[value=0]').removeAttr('selected');
+    //$('#cbbBimestre option[value=0]').attr('selected', 'selected');
+    $('#cbbNivel option[value=0]').attr('selected', 'selected');
+    $('#cbbGrado option[value=0]').attr('selected', 'selected');
+    $('#cbbSeccion option[value=0]').attr('selected', 'selected');
+    buscar_reporte_semanal();
+}
+/*marita*/
 
 function ocultar_mensaje(id) {
     $(document).ready(function () {

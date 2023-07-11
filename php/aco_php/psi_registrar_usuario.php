@@ -67,6 +67,12 @@ if (count($valicant_ndoc) > 0) {
                     fnc_registrar_auditoria($conexion, $sql_insert);
                     $url_inicio = fnc_obtener_url_sistema();
 
+                    $insertar = fnc_insertar_usuario_pass($conexion, $registrar_usuario, "", $clave, $u_clave);
+                    if ($insertar) {
+                        $sql_auditoria = fnc_insertar_usuario_pass_auditoria($registrar_usuario, "", $clave, $u_clave);
+                        $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "psi_cambiar_contrasena_usuario_pas.php" . '", "' . "fnc_insertar_usuario_pass" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_usuario_pas" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                        fnc_registrar_auditoria($conexion, $sql_insert);
+                    }
                     $str_mensaje_correo = "Hola " . $u_nombres . " " . $u_paterno . " " . $u_materno . " <br/><br/>Tu registro en el Sistema Integral de Acompañamiento al Estudiante - SIAE ha sido exitoso.<br/><br/>"
                             . "Ahora puedes iniciar sesión con las siguientes credenciales:<br/><br/>"
                             . "Nombre de usuario: " . $u_numDoc . "<br/>"
@@ -87,8 +93,6 @@ if (count($valicant_ndoc) > 0) {
                     $mail->Port = 465; //SMTP port
                     $mail->SMTPSecure = "ssl";
 
-                    // $mail->Username = 'salvaro@ich.edu.pe';
-                    //$mail->Password = "995131543";
                     $mail->Subject = utf8_decode("Registro de usuario - Sistema de acompañamiento al estudiante - SIAE");
                     $mail->setFrom("soporteSistemaSIAE@cbb.edu.pe");
                     $mail->Body = utf8_decode($str_mensaje_correo);
@@ -117,3 +121,4 @@ if (count($valicant_ndoc) > 0) {
 } else {
     echo "***0***Error al verificar dígitos del número de documento.***<br/>";
 }
+    

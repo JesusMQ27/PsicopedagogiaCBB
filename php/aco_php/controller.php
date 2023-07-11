@@ -22,7 +22,7 @@ if (isset($_POST['opcion'])) {
 function formulario_registro_nuevo_usuario() {
     $con = new DB(1111);
     $conexion = $con->connect();
-    $l_tipo_usuarios = fnc_lista_tipo_usuarios($conexion, "", "");
+    $l_tipo_usuarios = fnc_lista_tipo_usuarios($conexion, "", "1");
     $l_tipo_documentos = fnc_lista_tipo_documentos($conexion, "");
     $str_sede = "";
     if (p_sede === "1") {
@@ -1298,6 +1298,16 @@ function proceso_editar_perfil() {
                                 $sql_auditoria = fnc_editar_accesos_perfil_todos_auditoria($str_updates, $perf_codigo);
                                 $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_perfil" . '", "' . "fnc_editar_accesos_perfil_todos" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_menu_asigna" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
                                 fnc_registrar_auditoria($conexion, $sql_insert);
+                            }
+                        }
+                        if ($str_inserts !== "") {
+                            $registrar_accesos = fnc_registrar_accesos_perfil($conexion, $str_inserts);
+                            if ($registrar_accesos) {
+                                if (count($submenu) > 0) {
+                                    $sql_auditoria = fnc_registrar_accesos_perfil_auditoria($str_inserts);
+                                    $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_perfil" . '", "' . "fnc_registrar_accesos_perfil" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_menu_asigna" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                                    fnc_registrar_auditoria($conexion, $sql_insert);
+                                }
                             }
                         }
                     } else {
@@ -2720,16 +2730,12 @@ function operacion_buscar_semaforo_docentes() {
     $con = new DB(1111);
     $conexion = $con->connect();
     $s_sede = strip_tags(trim($_POST["s_sede"]));
-    $fecha1 = strip_tags(trim($_POST["s_fecha_inicio"]));
-    $fecha2 = strip_tags(trim($_POST["s_fecha_fin"]));
     $s_semaforo = strip_tags(trim($_POST["s_semaforo"]));
     $s_bimestre = strip_tags(trim($_POST["s_bimestre"]));
     $s_nivel = strip_tags(trim($_POST["s_nivel"]));
     $s_grado = strip_tags(trim($_POST["s_grado"]));
     $s_seccion = strip_tags(trim($_POST["s_seccion"]));
     $s_docente = strip_tags(trim($_POST["s_docente"]));
-    $fechaInicio = convertirFecha($fecha1);
-    $fechaFin = convertirFecha($fecha2);
     $perfil = p_perfil;
     $sedeCodigo = $s_sede;
     $sedeCodi = "";
@@ -2753,8 +2759,7 @@ function operacion_buscar_semaforo_docentes() {
             $usuarioCodi = "0";
         }
     }
-
-    $lista = fnc_buscar_semaforo_docentes($conexion, $s_sede, $fechaInicio, $fechaFin, $s_semaforo, $s_bimestre, $s_nivel, $s_grado, $s_seccion, $s_docente);
+    $lista = fnc_buscar_semaforo_docentes($conexion, $s_sede, $s_semaforo, $s_bimestre, $s_nivel, $s_grado, $s_seccion, $s_docente);
     $html = "";
     $aux = 1;
     if (count($lista) > 0) {
@@ -2769,6 +2774,7 @@ function operacion_buscar_semaforo_docentes() {
             $html .= "<tr >"
                     . "<td>$aux</td>"
                     . "<td>" . $value["sede"] . "</td>"
+                    . "<td>" . $value["perfil"] . "</td>"
                     . "<td >" . $value["docente"] . "</td>"
                     //. "<td>" . $value["grado"] . "</td>"
                     . "<td style='text-align:center'>" . $value["cantidad"] . "</td>"
@@ -4354,8 +4360,7 @@ function formulario_carga_solicitudes_detalla() {
         $lista_subcategorias = fnc_lista_subcategorias($conexion, $lista_solicitud[0]["categoria"], "");
         $html = '<div class = "row space-div">
             <div class = "col-md-2" style = "margin-bottom: 0px;">
-            <label > C & oacute;
-            digo de ' . $entre_sub . ': </label>
+            <label > C&oacute;digo de ' . $entre_sub . ': </label>
             </div>
             <div class = "col-md-10">
             <label>' . $lista_solicitud[0]["codigo"] . '</label>
@@ -5181,6 +5186,11 @@ function mostrar_busqueda_entrevistas() {
             } else {
                 $grados = "";
             }
+        } elseif ($perfil === "9") {//Legal
+            $sedeCodi = "0";
+            $usuarioCodi = "";
+            $grados = "";
+            $privacidad = "1";
         } else {
             $sedeCodi = $sedeCodigo;
             $usuarioCodi = "";
@@ -5207,22 +5217,28 @@ function mostrar_busqueda_entrevistas() {
                     <td>" . $lista["nroDocumento"] . "</td>
                     <td style='width:250px'>" . $lista["alumno"] . "</td>
                     <td>" . $lista["entrevista"] . "</td>";
-            if ($perfil == "1" || $perfil == "5") {
+            if ($perfil == "1" || $perfil == "5" || $perfil == "9") {
                 $html .= "<td>" . $lista["privacidad"] . "</td>";
             }
             $html .= "
                     <td>" . $str_motivo . "</td>
                     <td>" . $lista["estado"] . "</td>
-                    <td align='center' style='width:100px'>"
-                    . "<i class='nav-icon fas fa-plus green' title='Nueva Subentrevista' data-toggle='modal' data-target='#modal-subentrevista' data-backdrop='static' data-entrevista='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
-                    . "<i class='nav-icon fas fa-file-pdf rojo' title='Descargar' data-toggle='modal' data-target='#modal-descargar' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
-                    . "<i class='nav-icon fas fa-info-circle celeste' title='Detalle' data-toggle='modal' data-target='#modal-detalle-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "' data-grupo_nombre='" . $lista["id"] . "'></i>&nbsp;&nbsp;&nbsp;"
-                    . "<i class='nav-icon fas fa-edit naranja' title='Editar' data-toggle='modal' data-target='#modal-editar-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;";
+                    <td align='center' style='width:100px'>";
+            if ($perfil !== "9") {
+                $html .= "<i class='nav-icon fas fa-plus green' title='Nueva Subentrevista' data-toggle='modal' data-target='#modal-subentrevista' data-backdrop='static' data-entrevista='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;";
+            }
+            $html .= "<i class='nav-icon fas fa-file-pdf rojo' title='Descargar' data-toggle='modal' data-target='#modal-descargar' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
+                    . "<i class='nav-icon fas fa-info-circle celeste' title='Detalle' data-toggle='modal' data-target='#modal-detalle-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "' data-grupo_nombre='" . $lista["id"] . "'></i>&nbsp;&nbsp;&nbsp;";
+            if ($perfil !== "9") {
+                $html .= "<i class='nav-icon fas fa-edit naranja' title='Editar' data-toggle='modal' data-target='#modal-editar-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;";
+            }
             if ($perfil === "1" || $perfil === "5") {
                 $html .= "<i class='nav-icon fas fa-trash rojo' title='Eliminar' data-toggle='modal' data-target='#modal-eliminar-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;";
             }
-            $html .= "<i class='nav-icon fas fa-paper-plane azul' title='Enviar al correo' data-toggle='modal' data-target='#modal-enviar-solicitud' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;" .
-                    "</td>"
+            if ($perfil !== "9") {
+                $html .= "<i class='nav-icon fas fa-paper-plane azul' title='Enviar al correo' data-toggle='modal' data-target='#modal-enviar-solicitud' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;";
+            }
+            $html .= "</td>"
                     . "</tr>";
             $num++;
         }
@@ -5323,6 +5339,11 @@ function operacion_entrevistas_alumnos() {
             } else {
                 $grados = "";
             }
+        } elseif ($perfil === "9") {//Legal
+            $sedeCodi = "0";
+            $usuarioCodi = "";
+            $grados = "";
+            $privacidad = "1";
         } else {
             $sedeCodi = $sedeCodigo;
             $usuarioCodi = "";
@@ -5336,6 +5357,7 @@ function operacion_entrevistas_alumnos() {
     $aux = 1;
     if (count($lista_entrevistas) > 0) {
         foreach ($lista_entrevistas as $lista) {
+            $solicitudCod = fnc_generate_random_string(6) . "*" . $lista["tipoId"] . "*" . fnc_generate_random_string(6);
             $html .= "<tr>
                                         <td>" . $num . "</td>
                                         <td>" . $lista["tipo"] . "</td>
@@ -5345,7 +5367,7 @@ function operacion_entrevistas_alumnos() {
                                         <td>" . $lista["nroDocumento"] . "</td>
                                         <td width='200px'>" . $lista["alumno"] . "</td>
                                         <td>" . $lista["entrevista"] . "</td>";
-            if ($perfil == "1" || $perfil == "5") {
+            if ($perfil == "1" || $perfil == "5" || $perfil == "9") {
                 $html .= "<td>" . $lista["privacidad"] . "</td>";
             }
             $html .= "<td width='200px'>" . $lista["usuario"] . "</td>" .
@@ -5353,6 +5375,7 @@ function operacion_entrevistas_alumnos() {
                     "<td>" . $lista["subcategoria"] . "</td>" .
                     "<td>" . $lista["duracion"] . "</td>" .
                     "<td>" . $lista["estado"] . "</td>" .
+                    "<td><i class='nav-icon fas fa-info-circle celeste' title='Detalle' data-toggle='modal' data-target='#modal-detalle-solicitudes-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "' ></i></td>" .
                     "</tr>";
             $num++;
         }
@@ -5533,176 +5556,7 @@ function formulario_docentes_grafico_barras_sede() {
     $conexion = $con->connect();
     $s_sede = strip_tags(trim($_POST["s_sede"]));
     $data = array();
-    $lista = fnc_buscar_semaforo_docentes_grafico_barras($conexion, $s_sede, "", "", "", "", "");
-    if (count($lista) > 0) {
-        foreach ($lista as $value) {
-            $data[] = array
-                (
-                'y' => $value["nombre"],
-                'a' => $value["cantidad"],
-                'b' => $value["cantidad_faltantes"],
-                'c' => $value["cantidad_realizados"]
-            );
-        }
-    } else {
-        $data = array();
-    }
-
-    //returns data as JSON format
-    echo json_encode($data);
-}
-
-function formulario_sede_nivel_semaforo() {
-    $con = new DB(1111);
-    $conexion = $con->connect();
-    $s_sede = strip_tags(trim($_POST["s_sede"]));
-    $html = "";
-    $lista_niveles = fnc_lista_niveles($conexion, "", "1");
-    if (count($lista_niveles) > 0) {
-        $html .= '<div class="row ">
-                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
-                        <div class="form-group" style="margin-bottom: 0px;">
-                            <label> Nivel: </label>
-                        </div>
-                        <select id="cbbNivel" data-show-content="true" class="form-control" style="width: 100%" onchange="semaforo_docentes_grafico_barras_niveles(this)">';
-        if (count($lista_niveles) > 0) {
-            $html .= '<option value="">-- Seleccione --</option>';
-            $html .= '<option value="0">TODOS</option>';
-            foreach ($lista_niveles as $nivel) {
-                $html .= "<option value='" . $nivel["codigo"] . "' >" . $nivel["nombre"] . "</option>";
-            }
-        }
-        $html .= '</select>
-                    </div>
-                </div><br>
-                <div class="col-md-12">
-                    <div id="bar-chart2"></div>
-                </div>';
-    }
-    echo $html;
-}
-
-function formulario_docentes_grafico_barras_nivel() {
-    $con = new DB(1111);
-    $conexion = $con->connect();
-    $s_sede = strip_tags(trim($_POST["s_sede"]));
-    $s_nivel = strip_tags(trim($_POST["s_nivel"]));
-    $data = array();
-    $lista = fnc_buscar_semaforo_docentes_grafico_barras($conexion, $s_sede, "", "", $s_nivel, "", "");
-    if (count($lista) > 0) {
-        foreach ($lista as $value) {
-            $data[] = array
-                (
-                'y' => $value["nombre"],
-                'a' => $value["cantidad"],
-                'b' => $value["cantidad_faltantes"],
-                'c' => $value["cantidad_realizados"]
-            );
-        }
-    } else {
-        $data = array();
-    }
-
-    //returns data as JSON format
-    echo json_encode($data);
-}
-
-function formulario_nivel_grado_semaforo() {
-    $con = new DB(1111);
-    $conexion = $con->connect();
-    $s_sede = strip_tags(trim($_POST["s_sede"]));
-    $s_nivel = strip_tags(trim($_POST["s_nivel"]));
-    $html = "";
-    $lista_grados = fnc_lista_grados_x_nivel($conexion, $s_nivel);
-    if (count($lista_grados) > 0) {
-        $html .= '<div class="row ">
-                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
-                        <div class="form-group" style="margin-bottom: 0px;">
-                            <label> Grado: </label>
-                        </div>
-                        <select id="cbbGrado" data-show-content="true" class="form-control" style="width: 100%" onchange="semaforo_docentes_grafico_barras_grados(this)">';
-        if (count($lista_grados) > 0) {
-            $html .= '<option value="">-- Seleccione --</option>';
-            foreach ($lista_grados as $grado) {
-                $html .= "<option value='" . $grado["codigo"] . "' >" . $grado["nombre"] . "</option>";
-            }
-        }
-        $html .= '</select>
-                    </div>
-                </div><br>
-                <div class="col-md-12">
-                    <div id="bar-chart3"></div>
-                </div>';
-    }
-    echo $html;
-}
-
-function formulario_docentes_grafico_barras_grado() {
-    $con = new DB(1111);
-    $conexion = $con->connect();
-    $s_sede = strip_tags(trim($_POST["s_sede"]));
-    $s_nivel = strip_tags(trim($_POST["s_nivel"]));
-    $s_grado = strip_tags(trim($_POST["s_grado"]));
-    $data = array();
-    $lista = fnc_buscar_semaforo_docentes_grafico_barras($conexion, $s_sede, "", "", $s_nivel, $s_grado, "");
-    if (count($lista) > 0) {
-        foreach ($lista as $value) {
-            $data[] = array
-                (
-                'y' => $value["nombre"],
-                'a' => $value["cantidad"],
-                'b' => $value["cantidad_faltantes"],
-                'c' => $value["cantidad_realizados"]
-            );
-        }
-    } else {
-        $data = array();
-    }
-
-    //returns data as JSON format
-    echo json_encode($data);
-}
-
-function formulario_grado_seccion_semaforo() {
-    $con = new DB(1111);
-    $conexion = $con->connect();
-    $s_sede = strip_tags(trim($_POST["s_sede"]));
-    $s_nivel = strip_tags(trim($_POST["s_nivel"]));
-    $s_grado = strip_tags(trim($_POST["s_grado"]));
-    $html = "";
-    $lista_secciones = fnc_lista_secciones_grados($conexion, $s_nivel, $s_grado);
-    if (count($lista_secciones) > 0) {
-        $html .= '<div class="row ">
-                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
-                        <div class="form-group" style="margin-bottom: 0px;">
-                            <label> Secci&oacute;n: </label>
-                        </div>
-                        <select id="cbbSeccion" data-show-content="true" class="form-control" style="width: 100%" onchange="semaforo_docentes_grafico_barras_secciones(this)">';
-        if (count($lista_secciones) > 0) {
-            $html .= '<option value="">-- Seleccione --</option>';
-            foreach ($lista_secciones as $seccion) {
-                $html .= "<option value='" . $seccion["codigo"] . "' >" . $seccion["nombre"] . "</option>";
-            }
-        }
-        $html .= '</select>
-                    </div>
-                </div><br>
-                <div class="col-md-12">
-                    <div id="bar-chart4"></div>
-                </div>';
-    }
-    echo $html;
-}
-
-function formulario_docentes_grafico_barras_secciones() {
-    $con = new DB(1111);
-    $conexion = $con->connect();
-    $s_sede = strip_tags(trim($_POST["s_sede"]));
-    $s_nivel = strip_tags(trim($_POST["s_nivel"]));
-    $s_grado = strip_tags(trim($_POST["s_grado"]));
-    $s_seccion = strip_tags(trim($_POST["s_seccion"]));
-    $data = array();
-    $lista = fnc_buscar_semaforo_docentes_grafico_barras($conexion, $s_sede, "", "", $s_nivel, $s_grado, $s_seccion);
+    $lista = fnc_buscar_semaforo_docentes_grafico_barras($conexion, $s_sede);
     if (count($lista) > 0) {
         foreach ($lista as $value) {
             $data[] = array
@@ -7138,6 +6992,178 @@ function operacion_historial_auditoria() {
                     <td>" . $lista["consulta"] . "</td>";
             $html .= "<td>" . $lista["accion"] . "</td>" .
                     "</tr>";
+            $num++;
+        }
+    } else {
+        $html = "";
+    }
+    echo $html;
+}
+
+function mostrar_tabla_mis_aulas() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_usuario = strip_tags(trim($_POST["codigo"]));
+    $lista = fnc_mis_aulas_asignadas($conexion, $s_usuario);
+    $aux = 1;
+    $html = "<div class='card card-primary'>
+            <div class='card-header'>
+                <h3 class='card-title'>Mis aulas asignadas</h3>
+            </div>
+            <div class='card-body'>
+              <div class='row'>
+                <div class='col-md-12 table-responsive' id='divTablaMisAulas'>"
+            . "<table id='tableMisAulas' class='table table-bordered' style='font-size: 13px;width:100% '>"
+            . "<thead>"
+            . "<th>Nro.</th>"
+            . "<th>Sede</th>"
+            . "<th>Nivel</th>"
+            . "<th>Grado</th>"
+            . "<th>Secci&oacute;n</th>"
+            . "</thead><tbody>";
+    if (count($lista) > 0) {
+        foreach ($lista as $value) {
+            $html .= "<tr>"
+                    . "<td>$aux</td>"
+                    . "<td>" . $value["sede"] . "</td>"
+                    . "<td>" . $value["nivel"] . "</td>"
+                    . "<td>" . $value["grado"] . "</td>"
+                    . "<td>" . $value["seccion"] . "</td>"
+                    . "</tr>";
+            $aux++;
+        }
+    } else {
+        $html .= "<tr><td colspan='5'>No hay datos disponibles en la tabla</td></tr>";
+    }
+    $html .= "</div>
+            </div>
+        </div>";
+    echo $html;
+}
+
+//marita
+function operacion_cantidad_entrevistas_subentrevitas() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_sede = strip_tags(trim($_POST["s_sede"]));
+    $s_bimestre = strip_tags(trim($_POST["s_bimestre"]));
+    $s_nivel = strip_tags(trim($_POST["s_nivel"]));
+    $s_grado = strip_tags(trim($_POST["s_grado"]));
+    $s_seccion = strip_tags(trim($_POST["s_seccion"]));
+    $perfil = p_perfil;
+    $sedeCodigo = $s_sede;
+
+    $sedeCodi = "";
+    $usuarioCodi = "";
+    $privacidad = "";
+    if ($sedeCodigo == "1" && ($perfil === "1" || $perfil === "5")) {
+        $sedeCodi = "0";
+        $usuarioCodi = "0";
+        $privacidad = "0,1";
+    } else {
+        $privacidad = "0";
+        if ($perfil === "1") {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = "0";
+        } elseif ($perfil === "2") {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = p_usuario;
+        } else {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = "0";
+        }
+    }
+
+    $lista_cantidad_entrevistas = fnc_lista_cantidad_entrevistas($conexion, $sedeCodi, $s_bimestre, $s_nivel, $s_grado, $s_seccion);
+    $html = "";
+    $num = 1;
+    $aux = 1;
+    if (count($lista_cantidad_entrevistas) > 0) {
+        foreach ($lista_cantidad_entrevistas as $lista) {
+            $html .= "<tr>
+                <td>" . $num . "</td>
+                <td>" . $lista["categoria"] . "</td>
+                <td >" . $lista["subcategoria"] . "</td>
+                <td style='text-align:center'>" . $lista["cantidad_entrevista"] . "</td>
+                <td style='text-align:center'>" . $lista["cantidad_subentrevista"] . "</td>
+                <td style='text-align:center'>" . $lista["total"] . "</td>
+                <td style='text-align:center'>" . $lista["porcentaje"] . "</td>"
+                    . "</tr>";
+            $num++;
+        }
+    } else {
+        $html = "";
+    }
+    echo $html;
+}
+
+function formulario_rango_fechas() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_bimestre = strip_tags(trim($_POST["s_bimestre"]));
+    $lista = fnc_lista_rango_fechas_bimestre($conexion, $s_bimestre);
+    $f_ini = "";
+    $f_fin = "";
+    if (count($lista) > 0) {
+        $f_ini = $lista[0]["inicio"];
+        $f_fin = $lista[0]["fin"];
+    } else {
+        $f_ini = "";
+        $f_fin = "";
+    }
+    echo $f_ini . "*" . $f_fin;
+}
+
+function operacion_reporte_semanal() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_sede = strip_tags(trim($_POST["s_sede"]));
+    $s_bimestre = strip_tags(trim($_POST["s_bimestre"]));
+    $s_fecha_ini = strip_tags(trim($_POST["s_fecha_ini"]));
+    $s_fecha_fin = strip_tags(trim($_POST["s_fecha_fin"]));
+    $s_nivel = strip_tags(trim($_POST["s_nivel"]));
+    $s_grado = strip_tags(trim($_POST["s_grado"]));
+    $s_seccion = strip_tags(trim($_POST["s_seccion"]));
+    $perfil = p_perfil;
+    $sedeCodigo = $s_sede;
+
+    $sedeCodi = "";
+    $usuarioCodi = "";
+    $privacidad = "";
+    if ($sedeCodigo == "1" && ($perfil === "1" || $perfil === "5")) {
+        $sedeCodi = "0";
+        $usuarioCodi = "0";
+        $privacidad = "0,1";
+    } else {
+        $privacidad = "0";
+        if ($perfil === "1") {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = "0";
+        } elseif ($perfil === "2") {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = p_usuario;
+        } else {
+            $sedeCodi = $sedeCodigo;
+            $usuarioCodi = "0";
+        }
+    }
+    $fecha_ini = fnc_fecha_a_YY_MM_DD($s_fecha_ini);
+    $fecha_fin = fnc_fecha_a_YY_MM_DD($s_fecha_fin);
+    $lista_reporte_semanal = fnc_lista_reporte_semanal($conexion, $sedeCodi, $s_bimestre, $fecha_ini, $fecha_fin, $s_nivel, $s_grado, $s_seccion);
+    $html = "";
+    $num = 1;
+    $aux = 1;
+    if (count($lista_reporte_semanal) > 0) {
+        foreach ($lista_reporte_semanal as $lista) {
+            $html .= "<tr>
+                <td>" . $num . "</td>
+                <td>" . $lista["nivel"] . "</td>
+                <td >" . $lista["grado"] . "</td>
+                <td >" . $lista["seccion"] . "</td>
+                <td style='text-align:center'>" . $lista["cantidad_entrevistas"] . "</td>
+                <td style='text-align:center'>" . $lista["cantidad_subentrevistas"] . "</td>
+                <td style='text-align:center'>" . $lista["total"] . "</td>"
+                    . "</tr>";
             $num++;
         }
     } else {

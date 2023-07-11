@@ -36,6 +36,11 @@ if ($userData[0]["sedeId"] == "1" && ($perfilId === "1" || $perfilId === "5")) {
         } else {
             $grados = "";
         }
+    } elseif ($perfilId === "9") {//Legal
+        $sedeCodi = "0";
+        $usuarioCodi = "";
+        $grados = "";
+        $privacidad = "1";
     } else {
         $sedeCodi = $userData[0]["sedeId"];
         $usuarioCodi = "";

@@ -6,7 +6,7 @@ $con = new DB(1111);
 $conexion = $con->connect();
 
 session_start();
-if (!isset($_SESSION["psi_user"])) {
+if (!isset($_SESSION["psi_user"]) || $_SESSION["psi_user"] == "") {
     header("Location: index.php");
     session_destroy();
     ob_clean();
@@ -36,14 +36,21 @@ if ($sede == "1" && ($perfilCodi == "1" || $perfilCodi == "5")) {
     } elseif ($perfilCodi === "2") {
         $sedeCodi = $sede;
         $usuarioCodi = "";
+    } elseif ($perfilCodi === "9") {//Legal
+        $sedeCodi = "0";
+        $usuarioCodi = "";
+        $privacidad = "0,1";
     } else {
         $sedeCodi = $sede;
         $usuarioCodi = "";
     }
 }
 $lista_solicitudes = fnc_lista_solicitudes_alerta($conexion, $sedeCodi, $usuarioCodi, "", "", $privacidad);
-$semaforo = fnc_buscar_semaforo_docentes_alerta($conexion, $sedeCodi); //jesus
+$semaforo = fnc_buscar_semaforo_docentes_alerta($conexion, $sedeCodi);
 $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion, $sedeCodi, $usuarioCodi);
+if ($perfilCodi === "2") {
+    $aulas_asignadas = fnc_mis_aulas_asignadas($conexion, $codigo_user);
+}
 ?>
 <html lang="en">
     <head>
@@ -364,7 +371,11 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                                             echo $str_porcentaje;
                                             ?></h3>
                                         <p>Semaforo docentes del bimestre actual</p>
-                                        <label><a href="#" style="color: white;" onclick="mostrar_modulo_x_alerta(8);">Ir al m&oacute;dulo</a></label>
+                                        <?php if ($perfilCodi !== "9") { ?>
+                                            <label><a href="#" style="color: white;" onclick="mostrar_modulo_x_alerta(8);">Ir al m&oacute;dulo</a></label>
+                                        <?php } else { ?>
+                                            <label style="color: white;color: transparent;">a</label>
+                                        <?php } ?>
                                     </div>
                                     <div class="icon">
                                         <i class="fas fa-chart-pie"></i>
@@ -381,7 +392,11 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                                     <div class="inner">
                                         <h3><?php echo count($alumnos_no_entrevistados); ?></h3>
                                         <p>Mis alumnos no entrevistados por sede</p>
-                                        <label><a href="#" style="color: black;" onclick="mostrar_modulo_x_alerta(9);">Ir al m&oacute;dulo</a></label>
+                                        <?php if ($perfilCodi !== "9") { ?>
+                                            <label><a href="#" style="color: black;" onclick="mostrar_modulo_x_alerta(9);">Ir al m&oacute;dulo</a></label>
+                                        <?php } else { ?>
+                                            <label style="color: white;color: transparent;">a</label>
+                                        <?php } ?>
                                     </div>
                                     <div class="icon">
                                         <i class="fas fa-table"></i>
@@ -391,6 +406,24 @@ $alumnos_no_entrevistados = fnc_buscar_alumnos_no_entrevistados_alerta($conexion
                                     </a>
                                 </div>
                             </div>
+                            <?php if ($perfilCodi === "2") { ?>
+                                <div class="col-lg-3 col-6">
+                                    <!-- small card -->
+                                    <div class="small-box bg-primary">
+                                        <div class="inner">
+                                            <h3><?php echo count($aulas_asignadas); ?></h3>
+                                            <p>Mis aulas asignadas</p>
+                                            <label style="color: white;color: transparent;">a</label>
+                                        </div>
+                                        <div class="icon">
+                                            <i class="fas fa-building"></i>
+                                        </div>
+                                        <a href="#" onclick="mostrar_tabla_mis_aulas(<?php echo $codigo_user; ?>)" class="small-box-footer">
+                                            Ver m&aacute;s <i class="fas fa-arrow-circle-right"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            <?php } ?>
                             <div class="col-lg-3 col-6" style="text-align: center;"></div>
                             <!-- ./col -->
                             <!-- ./col -->

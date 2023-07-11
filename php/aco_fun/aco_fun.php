@@ -149,10 +149,20 @@ function fnc_cambiar_pass($conexion, $id, $token, $password) {
     return $stmt;
 }
 
+function fnc_cambiar_pass_auditoria($id, $token, $password) {
+    $sql = con_cambiar_pass($id, $token, $password);
+    return $sql;
+}
+
 function fnc_cambiar_contrasena_usuario($conexion, $id, $token, $password) {
     $sql = con_cambiar_contrasena_usuario($id, $token, $password);
     $stmt = $conexion->exec($sql);
     return $stmt;
+}
+
+function fnc_cambiar_contrasena_usuario_auditoria($id, $token, $password) {
+    $sql = con_cambiar_contrasena_usuario($id, $token, $password);
+    return $sql;
 }
 
 function fnc_lista_tipo_usuarios($conexion, $id, $estado) {
@@ -218,7 +228,7 @@ function fnc_validar_exite_correo($conexion, $correo) {
 function fnc_registrar_nuevo_usuario($conexion, $tipo_usuario, $tipo_doc, $num_doc, $paterno, $materno, $nombres, $correo, $clave, $telefono, $sede, $sexo, $token) {
     $sql = con_registrar_nuevo_usuario($tipo_usuario, $tipo_doc, $num_doc, $paterno, $materno, $nombres, $correo, $clave, $telefono, $sede, $sexo, $token);
     $stmt = $conexion->exec($sql);
-    return $stmt;
+    return $conexion->lastInsertId();
 }
 
 function fnc_registrar_nuevo_usuario_auditoria($tipo_usuario, $tipo_doc, $num_doc, $paterno, $materno, $nombres, $correo, $clave, $telefono, $sede, $sexo, $token) {
@@ -593,16 +603,31 @@ function fnc_registrar_grupo_usuario($conexion, $cadena) {
     return $conexion->lastInsertId();
 }
 
+function fnc_registrar_grupo_usuario_auditoria($cadena) {
+    $sql = con_registrar_grupo_usuario($cadena);
+    return $sql;
+}
+
 function fnc_registrar_data_tmp_a_usuario($conexion, $cadena) {
     $sql = con_registrar_data_tmp_a_usuario($cadena);
     $stmt = $conexion->exec($sql);
     return $conexion->lastInsertId();
 }
 
+function fnc_registrar_data_tmp_a_usuario_auditoria($cadena) {
+    $sql = con_registrar_data_tmp_a_usuario($cadena);
+    return $sql;
+}
+
 function fnc_registrar_usuario_dictado($conexion, $cadena) {
     $sql = con_registrar_usuario_dictado($cadena);
     $stmt = $conexion->exec($sql);
     return $stmt;
+}
+
+function fnc_registrar_usuario_dictado_auditoria($cadena) {
+    $sql = con_registrar_usuario_dictado($cadena);
+    return $sql;
 }
 
 function func_lista_grupo_detalle_usuarios($conexion, $codigo) {
@@ -907,9 +932,9 @@ function convertirFecha($fecha) {
     return $rfecha;
 }
 
-function fnc_buscar_semaforo_docentes($conexion, $sede, $fecha_ini, $fecha_fin, $semaforo, $bimestre, $nivel, $grado, $seccion, $docente) {
+function fnc_buscar_semaforo_docentes($conexion, $sede, $semaforo, $bimestre, $nivel, $grado, $seccion, $docente) {
     $arreglo = array();
-    $sql = con_buscar_semaforo_docentes($sede, $fecha_ini, $fecha_fin, $semaforo, $bimestre, $nivel, $grado, $seccion, $docente);
+    $sql = con_buscar_semaforo_docentes($sede, $semaforo, $bimestre, $nivel, $grado, $seccion, $docente);
     $stmt = $conexion->query($sql);
     foreach ($stmt as $data) {
         array_push($arreglo, $data);
@@ -927,9 +952,9 @@ function fnc_buscar_semaforo_docentes_alerta($conexion, $sede) {
     return $arreglo;
 }
 
-function fnc_buscar_semaforo_docentes_grafico_barras($conexion, $sede, $fecha_ini, $fecha_fin, $nivel, $grado, $seccion) {
+function fnc_buscar_semaforo_docentes_grafico_barras($conexion, $sede) {
     $arreglo = array();
-    $sql = con_buscar_semaforo_docentes_grafico_barras($sede, $fecha_ini, $fecha_fin, $nivel, $grado, $seccion);
+    $sql = con_buscar_semaforo_docentes_grafico_barras($sede);
     $stmt = $conexion->query($sql);
     foreach ($stmt as $data) {
         array_push($arreglo, $data);
@@ -993,6 +1018,11 @@ function fnc_listar_todas_solicitudes_x_entrevista($conexion, $codi, $entre, $su
             } else {
                 $grados = "";
             }
+        } elseif ($perfil === "9") {//Legal
+            $sedeCodi = "0";
+            $usuarioCodi = "";
+            $grados = "";
+            $privacidad = "1";
         } else {
             $sedeCodi = $sede;
             $usuarioCodi = "";
@@ -1571,6 +1601,16 @@ function fnc_lista_auditorias($conexion, $sede, $codigoUsuario, $fechaInicio, $f
     return $arreglo;
 }
 
+function fnc_mis_aulas_asignadas($conexion, $usuario) {
+    $arreglo = array();
+    $sql = con_mis_aulas_asignadas($usuario);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
 /* jesus */
 
 function fnc_usuario_datos($conexion, $p_usuaId) {
@@ -1589,16 +1629,62 @@ function fnc_modificar_usuario_pass($conexion, $usuario) {
     return $stmt;
 }
 
+function fnc_modificar_usuario_pass_auditoria($usuario) {
+    $sql = con_modificar_usuario_pass($usuario);
+    return $sql;
+}
+
 function fnc_insertar_usuario_pass($conexion, $usuario, $clave, $s_contraNueva, $nueva_contraseña) {
     $sql = con_insertar_usuario_pass($usuario, $clave, $s_contraNueva, $nueva_contraseña);
     $stmt = $conexion->exec($sql);
     return $stmt;
 }
 
+function fnc_insertar_usuario_pass_auditoria($usuario, $clave, $s_contraNueva, $nueva_contraseña) {
+    $sql = con_insertar_usuario_pass($usuario, $clave, $s_contraNueva, $nueva_contraseña);
+    return $sql;
+}
+
 function fnc_cambiar_pass_usuario($conexion, $usuario, $password) {
     $sql = con_cambiar_pass_usuario($usuario, $password);
     $stmt = $conexion->exec($sql);
     return $stmt;
+}
+
+function fnc_cambiar_pass_usuario_auditoria($usuario, $password) {
+    $sql = con_cambiar_pass_usuario($usuario, $password);
+    return $sql;
+}
+
+//marita
+function fnc_lista_cantidad_entrevistas($conexion, $sede, $bimestre, $nivel, $grado, $seccion) {
+    $arreglo = array();
+    $sql = con_lista_cantidad_entrevistas($sede, $bimestre, $nivel, $grado, $seccion);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_rango_fechas_bimestre($conexion, $bimestre) {
+    $arreglo = array();
+    $sql = con_lista_rango_fechas_bimestre($bimestre);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_reporte_semanal($conexion, $sede, $bimestre, $fecha_inicio, $fecha_final, $nivel, $grado, $seccion) {
+    $arreglo = array();
+    $sql = con_lista_reporte_semanal($sede, $bimestre, $fecha_inicio, $fecha_final, $nivel, $grado, $seccion);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
 }
 
 ?>

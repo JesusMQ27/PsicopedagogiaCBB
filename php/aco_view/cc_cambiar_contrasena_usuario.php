@@ -55,9 +55,14 @@ $s_usuario = strip_tags(trim($_POST["s_usuario"]));
                             </div>
                         </div>
                     </div>
+                    <div class="input-group mb-3">
+                        <label for="chkShowPassword">
+                            <input id="chkShowPassword" type="checkbox" onclick="mostrarClaves(this)" />
+                            Mostrar contrase&ntilde;as</label>
+                    </div>
                     <div class="row">
                         <div class="col-12">
-                            <button type="submit" class="btn btn-primary btn-block" onclick="cambiar_contrasena_usuario()">Modificar contrase&ntilde;a</button>
+                            <button type="submit" id="btnCambiarContrasenaUsuario" class="btn btn-primary btn-block" onclick="cambiar_contrasena_usuario()">Modificar contrase&ntilde;a</button>
                         </div>
                         <!-- /.col -->
                     </div>
@@ -67,3 +72,15 @@ $s_usuario = strip_tags(trim($_POST["s_usuario"]));
     </div>
 </section>
 
+<script type="text/javascript">
+    function mostrarClaves(chkShowPassword) {
+        if (chkShowPassword.checked) {
+            $('input[id=txtContraNueva]').attr('type', 'text');
+            $('input[id=txtContraConfirmar]').attr('type', 'text');
+        } else {
+            $('input[id=txtContraNueva]').attr('type', 'password');
+            $('input[id=txtContraConfirmar]').attr('type', 'password');
+        }
+    }
+
+</script>

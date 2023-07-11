@@ -28,11 +28,27 @@ try {
     $arreglo_usuarios = array();
     $usuario_array = array();
     $lista = func_lista_data_tabla_tmp_carga_usuarios_correos($conexion, $u_codPerson);
+    $str_submenu = "";
+    $str_menu_id = "";
+    $str_menu_nombre = "";
+    $submenu = fnc_consultar_submenu($conexion, $sm_codigoEdi);
+    if (count($submenu) > 0) {
+        $str_submenu = $submenu[0]["ruta"];
+        $str_menu_id = $submenu[0]["id"];
+        $str_menu_nombre = $submenu[0]["nombre"];
+    } else {
+        $str_submenu = "";
+        $str_menu_id = "";
+        $str_menu_nombre = "";
+    }
     if (count($lista) > 0) {
         $str_codigo = "Grupo" . "_" . fnc_generate_random_string(7);
         $cadenaInsertGrupo = "('" . $str_codigo . "','" . $u_codPerson . "',NOW(),'1')";
         $grupo_creado = fnc_registrar_grupo_usuario($conexion, $cadenaInsertGrupo);
         if ($grupo_creado) {
+            $sql_auditoria = fnc_registrar_grupo_usuario_auditoria($conexion, $cadenaInsertGrupo);
+            $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "psi_registrar_usuarios.php" . '", "' . "fnc_registrar_grupo_usuario" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_grupo_usuarios" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+            fnc_registrar_auditoria($conexion, $sql_insert);
             foreach ($lista as $value) {
                 $u_token = fnc_generate_token();
                 $clave = fnc_generate_random_string(3) . $value["dni"] . fnc_generate_random_string(5);
@@ -46,12 +62,23 @@ try {
                         $value["correo"] . "/";
                 if ($value["actual_usu_id"] == 0) {
                     $usuCodigo = fnc_registrar_data_tmp_a_usuario($conexion, $cadenaInsertUsuario);
+                    if ($usuCodigo) {
+                        $sql_auditoria = fnc_registrar_data_tmp_a_usuario_auditoria($cadenaInsertGrupo);
+                        $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "psi_registrar_usuarios.php" . '", "' . "fnc_registrar_data_tmp_a_usuario" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_usuario" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                        fnc_registrar_auditoria($conexion, $sql_insert);
+                    }
+                    
                     if ($usuCodigo && trim($value["seccion"]) !== "") {
                         $arreglo_secciones = explode("-", $value["codigo_seccion"]);
                         for ($i = 0; $i < count($arreglo_secciones); $i++) {
                             $cadenaInsertDictado = "('" . $usuCodigo . "','" . $value["registrar_nivel_id"] . "','" . $value["registrar_plana_id"] . "','" .
                                     $value["fecha_ingreso"] . "','" . $grupo_creado . "','" . $value["codigo_sede"] . "','" . $arreglo_secciones[$i] . "',NOW(),'1')";
-                            fnc_registrar_usuario_dictado($conexion, $cadenaInsertDictado);
+                            $dictado = fnc_registrar_usuario_dictado($conexion, $cadenaInsertDictado);
+                            if ($dictado) {
+                                $sql_auditoria = fnc_registrar_usuario_dictado_auditoria($cadenaInsertDictado);
+                                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "psi_registrar_usuarios.php" . '", "' . "fnc_registrar_usuario_dictado" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_usuario_dictado" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                                fnc_registrar_auditoria($conexion, $sql_insert);
+                            }
                         }
                     }
                 } else {
@@ -60,7 +87,12 @@ try {
                         for ($i = 0; $i < count($arreglo_secciones); $i++) {
                             $cadenaInsertDictado = "('" . $value["actual_usu_id"] . "','" . $value["registrar_nivel_id"] . "','" . $value["registrar_plana_id"] . "','" .
                                     $value["fecha_ingreso"] . "','" . $grupo_creado . "','" . $value["codigo_sede"] . "','" . $arreglo_secciones[$i] . "',NOW(),'1')";
-                            fnc_registrar_usuario_dictado($conexion, $cadenaInsertDictado);
+                            $dictado = fnc_registrar_usuario_dictado($conexion, $cadenaInsertDictado);
+                            if ($dictado) {
+                                $sql_auditoria = fnc_registrar_usuario_dictado_auditoria($cadenaInsertDictado);
+                                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "psi_registrar_usuarios.php" . '", "' . "fnc_registrar_usuario_dictado" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_usuario_dictado" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                                fnc_registrar_auditoria($conexion, $sql_insert);
+                            }
                         }
                     }
                 }
@@ -84,8 +116,6 @@ try {
             $mail->Port = 465; //SMTP port
             $mail->SMTPSecure = "ssl";
 
-            // $mail->Username = 'salvaro@ich.edu.pe';
-            //$mail->Password = "995131543";
             $mail->Subject = utf8_decode("Registro de usuario - Sistema de acompañamiento al estudiante - SIAE");
             $mail->setFrom("soporteSistemaSIAE@cbb.edu.pe");
             $mail->addAttachment('../aco_img/CBB.png');
@@ -113,19 +143,7 @@ try {
             $mail->smtpClose();
         }
     }
-    $str_submenu = "";
-    $str_menu_id = "";
-    $str_menu_nombre = "";
-    $submenu = fnc_consultar_submenu($conexion, $sm_codigoEdi);
-    if (count($submenu) > 0) {
-        $str_submenu = $submenu[0]["ruta"];
-        $str_menu_id = $submenu[0]["id"];
-        $str_menu_nombre = $submenu[0]["nombre"];
-    } else {
-        $str_submenu = "";
-        $str_menu_id = "";
-        $str_menu_nombre = "";
-    }
+
     if ($valueCount == count($arreglo_usuarios)) {
         //echo "Enviado:<br>";
         echo "***1***Usuarios cargados correctamente y se envió sus credenciales a sus correos respectivos." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";

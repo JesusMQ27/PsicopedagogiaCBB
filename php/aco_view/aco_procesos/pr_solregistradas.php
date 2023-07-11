@@ -36,6 +36,11 @@ if ($userData[0]["sedeId"] == "1" && ($perfil == "1" || $perfil == "5")) {
         } else {
             $grados = "";
         }
+    } elseif ($perfil === "9") {//Legal
+        $sedeCodi = "0";
+        $usuarioCodi = "";
+        $grados = "";
+        $privacidad = "1";
     } else {
         $sedeCodi = $userData[0]["sedeId"];
         $usuarioCodi = "";
@@ -121,12 +126,18 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                             <i class="fa fa-search"></i>
                             Buscar</button>
                     </div>
-                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
-                        <button class="btn btn-primary" id="btnNuevoSolicitud" style="bottom: 0px;margin-top: 30px" 
-                                data-toggle='modal' data-target='#modal-nueva-solicitud' data-backdrop='static'>
-                            <i class="fa fa-list-alt"></i>
-                            Nueva Entrevista</button>
-                    </div>
+                    <?php
+                    if ($perfil !== "9") {
+                        ?>
+                        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                            <button class="btn btn-primary" id="btnNuevoSolicitud" style="bottom: 0px;margin-top: 30px" 
+                                    data-toggle='modal' data-target='#modal-nueva-solicitud' data-backdrop='static'>
+                                <i class="fa fa-list-alt"></i>
+                                Nueva Entrevista</button>
+                        </div>
+                        <?php
+                    }
+                    ?>
                 </div><br>
                 <div class="col-12">
                     <div class="table-responsive" id="divSolicitudesRegistradas">
@@ -141,7 +152,7 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                                     <th>Alumno</th>
                                     <th>Tipo de entrevista</th>
                                     <?php
-                                    if ($perfil == "1" || $perfil == "5") {
+                                    if ($perfil == "1" || $perfil == "5" || $perfil == "9") {
                                         ?>
                                         <th>Privacidad</th>
                                         <?php
@@ -171,21 +182,27 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                                         <td>" . $lista["nroDocumento"] . "</td>
                                         <td style='width:250px'>" . $lista["alumno"] . "</td>
                                         <td>" . $lista["entrevista"] . "</td>";
-                                    if ($perfil == "1" || $perfil == "5") {
+                                    if ($perfil == "1" || $perfil == "5" || $perfil == "9") {
                                         $html .= "<td>" . $lista["privacidad"] . "</td>";
                                     }
                                     $html .= "<td style='width:100px'>" . $str_motivo . "</td>";
                                     $html .= "<td>" . $lista["estado"] . "</td>
-                                        <td align='center' style='width:150px'>"
-                                            . "<i class='nav-icon fas fa-plus green' title='Nueva Subentrevista' data-toggle='modal' data-target='#modal-subentrevista' data-backdrop='static' data-entrevista='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
-                                            . "<i class='nav-icon fas fa-file-pdf rojo' title='Descargar' data-toggle='modal' data-target='#modal-descargar' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
-                                            . "<i class='nav-icon fas fa-info-circle celeste' title='Detalle' data-toggle='modal' data-target='#modal-detalle-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "' data-grupo_nombre='" . $lista["id"] . "'></i>&nbsp;&nbsp;&nbsp;"
-                                            . "<i class='nav-icon fas fa-edit naranja' title='Editar' data-toggle='modal' data-target='#modal-editar-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;";
+                                        <td align='center' style='width:150px'>";
+                                    if ($perfil !== "9") {
+                                        $html .= "<i class='nav-icon fas fa-plus green' title='Nueva Subentrevista' data-toggle='modal' data-target='#modal-subentrevista' data-backdrop='static' data-entrevista='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;";
+                                    }
+                                    $html .= "<i class='nav-icon fas fa-file-pdf rojo' title='Descargar' data-toggle='modal' data-target='#modal-descargar' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
+                                            . "<i class='nav-icon fas fa-info-circle celeste' title='Detalle' data-toggle='modal' data-target='#modal-detalle-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "' data-grupo_nombre='" . $lista["id"] . "'></i>&nbsp;&nbsp;&nbsp;";
+                                    if ($perfil !== "9") {
+                                        $html .= "<i class='nav-icon fas fa-edit naranja' title='Editar' data-toggle='modal' data-target='#modal-editar-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;";
+                                    }
                                     if ($perfil === "1" || $perfil === "5") {
                                         $html .= "<i class='nav-icon fas fa-trash rojo' title='Eliminar' data-toggle='modal' data-target='#modal-eliminar-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;";
                                     }
-                                    $html .= "<i class='nav-icon fas fa-paper-plane azul' title='Enviar al correo' data-toggle='modal' data-target='#modal-enviar-solicitud' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;" .
-                                            "</td>"
+                                    if ($perfil !== "9") {
+                                        $html .= "<i class='nav-icon fas fa-paper-plane azul' title='Enviar al correo' data-toggle='modal' data-target='#modal-enviar-solicitud' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;";
+                                    }
+                                    $html .= "</td>"
                                             . "</tr>";
                                     $num++;
                                 }
