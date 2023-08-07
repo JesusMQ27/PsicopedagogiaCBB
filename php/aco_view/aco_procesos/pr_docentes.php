@@ -236,6 +236,7 @@ if ($userData[0]["sedeId"] == "1" && ($perfil == "1" || $perfil == "5")) {
 
 <script>
     $(function () {
+        $('body').css('overflow', 'auto');
         /*Para la carga del excel*/
         $("#upload_formUsuarios").on('submit', function (event) {
             $("#uploadUsuarios").attr("disabled", true);

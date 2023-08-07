@@ -1295,8 +1295,16 @@ function con_eliminar_sub_solicitud_alumno($id, $estado) {
 }
 
 function con_buscar_semaforo_docentes($sede, $semaforo, $bimestre, $nivel, $grado, $seccion, $docente) {
-    $sql = "SELECT sede,perfil,docente,cantidad,faltantes as cantidad_faltantes,realizados as cantidad_realizados,porcentaje,sem_color as color FROM (
-SELECT p1.usu_id,p1.sed_id,p1.sede,p1.perfil,p1.docente,if(p1.cantidad=-1,count(p2.usu_id),p1.cantidad) as cantidad,if(p1.cantidad=-1,0,p1.cantidad-count(p2.usu_id)) as faltantes,count(p2.usu_id) as realizados,IF(p2.usu_id IS NULL,'0.0000 %',IF(p1.cantidad=-1,'100.000 %',CONCAT(((count(p2.usu_id)/p1.cantidad)*100),' %'))) as porcentaje,p1.anio
+    $sql = "SELECT sede,perfil,docente,cantidad,cantidad_faltantes,cantidad_realizados,porcentaje,if(porcentaje2>100.00,'Verde',color) as color FROM (
+SELECT usu_id as usuario,sede,perfil,docente,cantidad,faltantes as cantidad_faltantes,realizados as cantidad_realizados,porcentaje,porcentaje2,
+(SELECT sem_color FROM tb_semaforo WHERE bim_id=2 AND porcentaje2 BETWEEN sem_valor_ini AND sem_valor_fin)
+as color,
+(SELECT sem_orden FROM tb_semaforo WHERE bim_id=2 AND porcentaje2 BETWEEN sem_valor_ini AND sem_valor_fin)
+as colorId
+FROM ( 
+SELECT p1.usu_id,p1.sed_id,p1.sede,p1.perfil,p1.docente,if(p1.cantidad=-1,count(p2.usu_id),p1.cantidad) as cantidad,if(p1.cantidad=-1,0,p1.cantidad-count(p2.usu_id)) as faltantes,
+count(p2.usu_id) as realizados,IF(p2.usu_id IS NULL,'0.0000 %',IF(p1.cantidad=-1,'100.000 %',CONCAT(((count(p2.usu_id)/p1.cantidad)*100),' %'))) as porcentaje,
+IF(p2.usu_id IS NULL,0.000,IF(p1.cantidad=-1,100.000,((count(p2.usu_id)/p1.cantidad)*100))) as porcentaje2, p1.anio 
 FROM (
 SELECT a.usu_id,CONCAT(usu_paterno,' ',usu_materno,' ',usu_nombres) as docente,a.sed_id,sed_nombre as sede,(SELECT ROUND((DATEDIFF(bim_fecha_fin,bim_fecha_ini)/7)-1)*2 FROM tb_bimestre WHERE bim_id=$bimestre) as cantidad,UPPER(perf_nombre) as perfil,(SELECT YEAR(bim_fecha_ini) as anio FROM tb_bimestre WHERE bim_id=$bimestre) as anio
 FROM tb_usuario_dictado a 
@@ -1349,15 +1357,15 @@ WHERE ssol_estado=1 AND bim_id=$bimestre ";
     if ($sede !== "0") {
         $sql .= " AND sed_id=$sede ";
     }
-    $sql .= " ) p2 ON p1.usu_id=p2.usu_id
+    $sql .= " ) p2 ON p1.usu_id=p2.usu_id 
 GROUP BY p1.usu_id,p1.sed_id) as c1
-INNER JOIN tb_semaforo c2 ON c1.anio=c2.sem_nombre AND porcentaje BETWEEN sem_valor_ini AND sem_valor_fin
-WHERE 1=1";
+WHERE 1=1  ) as c2 WHERE 1=1 ";
     if ($docente !== "" && $docente !== 0 && $docente !== "0") {
-        $sql .= " AND c1.usu_id=$docente ";
+        $sql .= " AND usuario=$docente ";
     }
+    $sql .= "  ";
     if ($semaforo !== "0") {
-        $sql .= " AND c2.sem_id=$semaforo ";
+        $sql .= " AND colorId=$semaforo ";
     }
     $sql .= ";";
     return $sql;
@@ -1728,8 +1736,7 @@ function con_editar_sede($id, $nombre, $descripcion, $icono, $estado) {
 
 function con_eliminar_sede($id) {
     $sql = "UPDATE tb_sede SET sed_estado = '0' "
-            . " WHERE sed_id = '$id';
-";
+            . " WHERE sed_id = '$id';";
     return $sql;
 }
 
@@ -2481,33 +2488,31 @@ VALUES ('" . $codigo . "', '" . $descripcion . "', '" . $estado . "')";
 }
 
 function con_registrar_semaforo($id, $codigo, $nombre, $valor_inio, $valor_fin, $color, $orden, $estado) {
-    $sql = "INSERT INTO tb_semaforo(sem_codigo, anisem_id, sem_nombre, sem_valor_ini, sem_valor_fin, sem_color, sem_orden, sem_estado)
+    $sql = "INSERT INTO tb_semaforo(sem_codigo, bim_id, sem_nombre, sem_valor_ini, sem_valor_fin, sem_color, sem_orden, sem_estado)
 VALUES ('" . $codigo . "', '" . $id . "', '" . $nombre . "', '" . $valor_inio . "', '" . $valor_fin . "', '" . $color . "', '" . $orden . "', '" . $estado . "')";
     return $sql;
 }
 
-function con_lista_anio_semaforo($id, $estado) {
+function con_lista_bimestre_semaforo($id, $estado) {
     $cadena = "";
-    $sql = "SELECT p1.id, p1.codigo, p1.nombre, GROUP_CONCAT(color ORDER BY p1.sem_id) as semaforo,
+    $sql = "SELECT p1.id, p1.codigo, p1.nombre,p1.bimestre, GROUP_CONCAT(color ORDER BY p1.sem_id) as semaforo,
  GROUP_CONCAT(CONCAT(sem_valor_ini, ' a ', sem_valor_fin) ORDER BY p1.sem_id) as rango, p1.estado, p1.estadoId
 FROM (
-SELECT a.anisem_id as id, sem_codigo as codigo, sem_nombre as nombre,
+SELECT a.bim_id as id, sem_codigo as codigo, sem_nombre as nombre,CONCAT(bim_nombre, ' - ', 'Del ', DATE_FORMAT(bim_fecha_ini, '%d/%m/%Y'), ' al ', DATE_FORMAT(bim_fecha_fin, '%d/%m/%Y')) as bimestre,
  sem_valor_ini, sem_valor_fin, sem_id, sem_color as color,
  CASE sem_estado WHEN 1 THEN 'Activo' WHEN 0 THEN 'Inactivo' ELSE '' END AS estado, sem_estado as estadoId
-FROM tb_anio_semaforo a
-INNER JOIN tb_semaforo b ON a.anisem_id = b.anisem_id
-WHERE 1 = 1
-";
+FROM tb_bimestre a 
+INNER JOIN tb_semaforo b ON a.bim_id = b.bim_id
+WHERE 1 = 1";
     if ($id !== "") {
-        $sql .= " AND a.anisem_id in ('$id') ";
+        $sql .= " AND a.bim_id in ('$id') ";
     }
     if ($estado !== "") {
-        $cadena .= " AND anisem_estado = 1 ";
+        $cadena .= " AND bim_estado = 1 ";
     } else {
         $cadena .= " ";
     }
-    $sql .= $cadena . " ORDER BY id) as p1 GROUP BY p1.id ORDER BY p1.sem_id;
-";
+    $sql .= $cadena . " ORDER BY id) as p1 GROUP BY p1.id ORDER BY p1.sem_id; ";
     return $sql;
 }
 
@@ -2526,17 +2531,17 @@ SELECT YEAR(DATE_ADD(NOW(), INTERVAL 3 YEAR)) as fecha
 
 function con_lista_anio_semaforo_x_anio($id, $estado) {
     $cadena = "";
-    $sql = "SELECT a.anisem_id as id, anisem_codigo as codigo, anisem_desc as nombre, sem_nombre,
+    $sql = "SELECT a.bim_id as id, sem_codigo as codigo, sem_nombre as nombre, sem_nombre,
  sem_valor_ini AS valor_ini, sem_valor_fin as valor_fin, sem_id,
- CASE anisem_estado WHEN 1 THEN 'Activo' WHEN 0 THEN 'Inactivo' ELSE '' END AS estado, anisem_estado as estadoId
-FROM tb_anio_semaforo a
-INNER JOIN tb_semaforo b ON a.anisem_id = b.anisem_id
+ CASE sem_estado WHEN 1 THEN 'Activo' WHEN 0 THEN 'Inactivo' ELSE '' END AS estado, sem_estado as estadoId
+FROM tb_bimestre a
+INNER JOIN tb_semaforo b ON a.bim_id = b.bim_id
 WHERE 1 = 1 ";
     if ($id !== "") {
-        $sql .= " AND a.anisem_id in ('$id') ";
+        $sql .= " AND a.bim_id in ('$id') ";
     }
     if ($estado !== "") {
-        $cadena .= " AND anisem_estado = 1 ";
+        $cadena .= " AND sem_estado = 1 ";
     } else {
         $cadena .= " ";
     }
@@ -2552,8 +2557,7 @@ function con_editar_anio_semaforo($id, $nombre, $estado) {
 
 function con_editar_semaforo_x_anio($id, $orden, $fecha_ini, $fecha_fin, $estado) {
     $sql = "UPDATE tb_semaforo SET sem_valor_ini = '$fecha_ini', sem_valor_fin = '$fecha_fin', sem_estado = '$estado' "
-            . " WHERE anisem_id = $id AND sem_orden = '$orden';
-";
+            . " WHERE bim_id = $id AND sem_orden = '$orden';";
     return $sql;
 }
 
@@ -2627,7 +2631,7 @@ FROM tb_semaforo WHERE sem_nombre = YEAR(NOW()) ";
 
 function con_lista_bimestre($id, $estado) {
     $sql = "SELECT bim_id as id, CONCAT(bim_nombre, ' - ', 'Del ', DATE_FORMAT(bim_fecha_ini, '%d/%m/%Y'), ' al ', DATE_FORMAT(bim_fecha_fin, '%d/%m/%Y')) as nombre,
-IF(DATE(NOW()) BETWEEN bim_fecha_ini AND bim_fecha_fin,'1','0') as estado        
+IF(DATE(NOW()) BETWEEN bim_fecha_ini AND bim_fecha_fin,'1','0') as estado,anio_desc as anio         
 FROM tb_bimestre a
 INNER JOIN tb_anio_bimestre b ON a.anio_id = b.anio_id
 WHERE anio_desc = YEAR(NOW()) ";
@@ -2637,8 +2641,45 @@ WHERE anio_desc = YEAR(NOW()) ";
     if ($estado != "") {
         $sql .= " AND anio_estado = '$estado' ";
     }
-    $sql .= " ORDER BY bim_orden ASC;
-";
+    $sql .= " ORDER BY bim_orden ASC;";
+    return $sql;
+}
+
+function con_lista_semaforo_bimestre($id, $estado) {
+    $sql = "SELECT p1.id,p1.nombre,p1.estado,p1.anio FROM (
+SELECT bim_id as id, CONCAT(bim_nombre, ' - ', 'Del ', DATE_FORMAT(bim_fecha_ini, '%d/%m/%Y'), ' al ', DATE_FORMAT(bim_fecha_fin, '%d/%m/%Y')) as nombre,
+IF(DATE(NOW()) BETWEEN bim_fecha_ini AND bim_fecha_fin,'1','0') as estado,anio_desc as anio,bim_orden as orden
+FROM tb_bimestre a
+INNER JOIN tb_anio_bimestre b ON a.anio_id = b.anio_id
+WHERE anio_desc = YEAR(NOW()) ) as p1 LEFT JOIN
+tb_semaforo p2 ON p1.id=p2.bim_id
+WHERE p2.sem_id is NULL ";
+    if ($id != "") {
+        $sql .= " AND p1.id = $id ";
+    }
+    if ($estado != "") {
+        $sql .= " AND p1.estado = '$estado' ";
+    }
+    $sql .= " ORDER BY p1.orden ASC;";
+    return $sql;
+}
+
+function con_lista_semaforo_bimestre2($id, $estado) {
+    $sql = "SELECT p1.id,p1.nombre,p1.estado,p1.anio FROM (
+SELECT bim_id as id, CONCAT(bim_nombre, ' - ', 'Del ', DATE_FORMAT(bim_fecha_ini, '%d/%m/%Y'), ' al ', DATE_FORMAT(bim_fecha_fin, '%d/%m/%Y')) as nombre,
+IF(DATE(NOW()) BETWEEN bim_fecha_ini AND bim_fecha_fin,'1','0') as estado,anio_desc as anio,bim_orden as orden
+FROM tb_bimestre a
+INNER JOIN tb_anio_bimestre b ON a.anio_id = b.anio_id
+WHERE anio_desc = YEAR(NOW()) ) as p1 INNER JOIN
+tb_semaforo p2 ON p1.id=p2.bim_id
+WHERE 1=1 ";
+    if ($id != "") {
+        $sql .= " AND p1.id = $id ";
+    }
+    if ($estado != "") {
+        $sql .= " AND p1.estado = '$estado' ";
+    }
+    $sql .= " GROUP BY p1.id  ORDER BY p1.orden ASC;";
     return $sql;
 }
 
@@ -2761,19 +2802,19 @@ function con_cambiar_pass_usuario($id, $password) {
     return $sql;
 }
 
-//marita
 function con_lista_cantidad_entrevistas($sede, $bimestre, $nivel, $grado, $seccion) {
-    $sql = "SELECT categoria,subcategoria,cantidad_entrevista,cantidad_subentrevista,total,
+    $sql = "SELECT sede,categoria,subcategoria,cantidad_entrevista,cantidad_subentrevista,total,
         IF(total/cantidad_total is null,'0.0000 %',CONCAT((total/cantidad_total)*100,' %')) as porcentaje FROM (
-        SELECT p1.categoria as categoria,p1.subcategoria as subcategoria,
+        SELECT p1.sede,p1.categoria as categoria,p1.subcategoria as subcategoria,
         if(p2.cantidad is null,0,p2.cantidad) as cantidad_entrevista,if(p3.cantidad is null,0,p3.cantidad) as cantidad_subentrevista,(if(p2.cantidad is null,0,p2.cantidad)+if(p3.cantidad is null,0,p3.cantidad)) as total,(
         SELECT COUNT(*) FROM (
-        SELECT subca_id FROM tb_solicitudes a 
+        SELECT subca_id,c.sed_id as sedeId,sed_nombre as sede FROM tb_solicitudes a 
         INNER JOIN tb_bimestre b1 ON DATE(sol_fecha) BETWEEN bim_fecha_ini AND bim_fecha_fin
         INNER JOIN tb_matricula c ON a.mat_id=c.mat_id
         INNER JOIN tb_seccion d ON c.sec_id=d.sec_id
         INNER JOIN tb_grado e ON d.gra_id=e.gra_id
         INNER JOIN tb_nivel f ON e.niv_id=f.niv_id
+        INNER JOIN tb_sede g ON c.sed_id=g.sed_id
         WHERE sol_estado=1 AND bim_id=$bimestre ";
     if ($sede !== "0") {
         $sql .= " AND a.sed_id=$sede ";
@@ -2788,12 +2829,13 @@ function con_lista_cantidad_entrevistas($sede, $bimestre, $nivel, $grado, $secci
         $sql .= " AND c.sec_id=$seccion ";
     }
     $sql .= " UNION ALL
-        SELECT subca_id FROM tb_sub_solicitudes b 
+        SELECT subca_id,c.sed_id as sedeId,sed_nombre as sede FROM tb_sub_solicitudes b 
         INNER JOIN tb_bimestre b2 ON DATE(ssol_fecha) BETWEEN bim_fecha_ini AND bim_fecha_fin
         INNER JOIN tb_matricula c ON b.mat_id=c.mat_id
         INNER JOIN tb_seccion d ON c.sec_id=d.sec_id
         INNER JOIN tb_grado e ON d.gra_id=e.gra_id
         INNER JOIN tb_nivel f ON e.niv_id=f.niv_id
+        INNER JOIN tb_sede g ON c.sed_id=g.sed_id
         WHERE ssol_estado=1 AND bim_id=$bimestre ";
     if ($sede !== "0") {
         $sql .= " AND b.sed_id=$sede ";
@@ -2809,13 +2851,18 @@ function con_lista_cantidad_entrevistas($sede, $bimestre, $nivel, $grado, $secci
     }
     $sql .= " ) as a) as cantidad_total
         FROM (
-        SELECT a.cat_id as catId,b.subca_id as subId,cat_nombre as categoria,subca_nombre as subcategoria
+        SELECT c.sed_id as sedeId,sed_nombre as sede,a.cat_id as catId,b.subca_id as subId,cat_nombre as categoria,subca_nombre as subcategoria
         FROM tb_categoria a
         INNER JOIN tb_subcategoria b ON a.cat_id=b.cat_id
-        WHERE cat_estado=1 AND subca_estado=1 ORDER BY a.cat_id,b.subca_id)
+        INNER JOIN tb_sede c  
+        WHERE cat_estado=1 AND sed_estado=1 AND sed_id!='1' ";
+    if ($sede !== "0") {
+        $sql .= " AND sed_id=$sede ";
+    }
+    $sql .= " AND subca_estado=1 ORDER BY a.cat_id,b.subca_id)
         as p1
         LEFT JOIN (
-        SELECT subca_id as subca,'Entrevista' as tipo,count(*) as cantidad FROM tb_solicitudes a 
+        SELECT a.sed_id,subca_id as subca,'Entrevista' as tipo,count(*) as cantidad FROM tb_solicitudes a 
         INNER JOIN tb_bimestre b1 ON DATE(sol_fecha) BETWEEN bim_fecha_ini AND bim_fecha_fin
         INNER JOIN tb_matricula c ON a.mat_id=c.mat_id
         INNER JOIN tb_seccion d ON c.sec_id=d.sec_id
@@ -2834,10 +2881,10 @@ function con_lista_cantidad_entrevistas($sede, $bimestre, $nivel, $grado, $secci
     if ($seccion !== "0") {
         $sql .= " AND c.sec_id=$seccion ";
     }
-    $sql .= " GROUP BY subca_id 
-         ) p2 ON p1.subId=p2.subca
+    $sql .= " GROUP BY c.sed_id,subca_id 
+         ) p2 ON p1.subId=p2.subca and p1.sedeId=p2.sed_id
         LEFT JOIN (
-        SELECT subca_id as subca,'Subentrevista' as tipo,count(*) as cantidad FROM tb_sub_solicitudes b 
+        SELECT c.sed_id,subca_id as subca,'Subentrevista' as tipo,count(*) as cantidad FROM tb_sub_solicitudes b 
         INNER JOIN tb_bimestre b2 ON DATE(ssol_fecha) BETWEEN bim_fecha_ini AND bim_fecha_fin
         INNER JOIN tb_matricula c ON b.mat_id=c.mat_id
         INNER JOIN tb_seccion d ON c.sec_id=d.sec_id
@@ -2856,9 +2903,9 @@ function con_lista_cantidad_entrevistas($sede, $bimestre, $nivel, $grado, $secci
     if ($seccion !== "0") {
         $sql .= " AND c.sec_id=$seccion ";
     }
-    $sql .= " GROUP BY subca_id 
-        ) p3 ON p1.subId=p3.subca
-        GROUP BY p1.subId
+    $sql .= " GROUP BY c.sed_id,subca_id 
+        ) p3 ON p1.subId=p3.subca and p1.sedeId=p2.sed_id
+        GROUP BY p1.sede,p1.subId
         ) as c1;";
     return $sql;
 }
@@ -2872,15 +2919,19 @@ function con_lista_rango_fechas_bimestre($bimestre) {
 }
 
 function con_lista_reporte_semanal($sede, $bimestre, $fecha_inicio, $fecha_final, $nivel, $grado, $seccion) {
-    $sql = "SELECT p1.nivel,p1.grado,p1.seccion,IF(p2.cantidad is null,0,p2.cantidad) as cantidad_entrevistas,
+    $sql = "SELECT p1.sede,p1.nivel,p1.grado,p1.seccion,IF(p2.cantidad is null,0,p2.cantidad) as cantidad_entrevistas,
     If(p3.cantidad is null,0,p3.cantidad) as cantidad_subentrevistas, (IF(p2.cantidad is null,0,p2.cantidad)+If(p3.cantidad is null,0,p3.cantidad)) as total
     FROM (
-    SELECT a.sec_id as secid,niv_nombre as nivel,gra_nombre as grado,sec_nombre as seccion
+    SELECT a.sec_id as secid,a.sed_id as sedId,sed_nombre as sede,niv_nombre as nivel,gra_nombre as grado,sec_nombre as seccion
     FROM tb_usuario_dictado a
     INNER JOIN tb_seccion b ON a.sec_id=b.sec_id
     INNER JOIN tb_grado c ON b.gra_id=c.gra_id
     INNER JOIN tb_nivel d ON c.niv_id=d.niv_id
+    INNER JOIN tb_sede e ON a.sed_id=e.sed_id
     WHERE dic_estado=1 ";
+    if ($sede !== "0") {
+        $sql .= " AND a.sed_id=$sede ";
+    }
     if ($nivel !== "0") {
         $sql .= " AND c.niv_id=$nivel ";
     }
@@ -2890,10 +2941,10 @@ function con_lista_reporte_semanal($sede, $bimestre, $fecha_inicio, $fecha_final
     if ($seccion !== "0") {
         $sql .= " AND a.sec_id=$seccion ";
     }
-    $sql .= " GROUP BY a.sec_id ORDER BY a.sec_id)
+    $sql .= " GROUP BY a.sed_id,a.sec_id ORDER BY a.sec_id)
     as p1
     LEFT JOIN (
-    SELECT c.sec_id as sec,'Entrevista' as tipo,count(*) as cantidad FROM tb_solicitudes a 
+    SELECT a.sed_id,c.sec_id as sec,'Entrevista' as tipo,count(*) as cantidad FROM tb_solicitudes a 
     INNER JOIN tb_bimestre b1 ON DATE(sol_fecha) BETWEEN bim_fecha_ini AND bim_fecha_fin
     INNER JOIN tb_matricula c ON a.mat_id=c.mat_id
     INNER JOIN tb_seccion d ON c.sec_id=d.sec_id
@@ -2913,10 +2964,10 @@ function con_lista_reporte_semanal($sede, $bimestre, $fecha_inicio, $fecha_final
     if ($seccion !== "0") {
         $sql .= " AND d.sec_id=$seccion ";
     }
-    $sql .= " GROUP BY c.sec_id
-    ) p2 ON p1.secid = p2.sec
+    $sql .= " GROUP BY a.sed_id,c.sec_id
+    ) p2 ON p1.secid = p2.sec AND p1.sedId=p2.sed_id
     LEFT JOIN (
-    SELECT c.sec_id as sec, 'Subentrevista' as tipo, count(*) as cantidad FROM tb_sub_solicitudes b
+    SELECT b.sed_id,c.sec_id as sec, 'Subentrevista' as tipo, count(*) as cantidad FROM tb_sub_solicitudes b
     INNER JOIN tb_bimestre b2 ON DATE(ssol_fecha) BETWEEN bim_fecha_ini AND bim_fecha_fin
     INNER JOIN tb_matricula c ON b.mat_id = c.mat_id
     INNER JOIN tb_seccion d ON c.sec_id = d.sec_id
@@ -2937,7 +2988,221 @@ function con_lista_reporte_semanal($sede, $bimestre, $fecha_inicio, $fecha_final
         $sql .= " AND d.sec_id=$seccion ";
     }
     $sql .= "  GROUP BY c.sec_id
-    ) p3 ON p1.secid = p3.sec
-    GROUP BY p1.secid;";
+    ) p3 ON p1.secid = p3.sec AND p1.sedId=p3.sed_id
+    GROUP BY p1.sedId,p1.secid ORDER BY p1.sede,p1.secid;";
+    return $sql;
+}
+
+function con_obtener_fecha_actual() {
+    $sql = "SELECT DATE_FORMAT(NOW(), '%d%m%Y_%H%i%s') as fecha";
+    return $sql;
+}
+
+function con_registrar_solicitudes_archivos($solicitud, $nombre, $tipo, $estado) {
+    $sql = "INSERT INTO tb_solicitudes_archivos(sol_id,arc_nombre,arc_tipo,arc_estado)
+VALUES ('" . $solicitud . "', '" . $nombre . "', '" . $tipo . "', '" . $estado . "')";
+    return $sql;
+}
+
+function con_lista_solicitudes_archivos($solicitud, $estado) {
+    $sql = "SELECT arc_id AS codigo,
+sol_id as solicitud ,
+arc_nombre as nombre,
+arc_tipo as tipo ,
+CASE arc_estado WHEN 1 THEN 'Activo' WHEN 0 THEN 'Inactivo' ELSE '' END AS estado
+FROM 
+tb_solicitudes_archivos
+WHERE sol_id=$solicitud AND arc_estado IN ($estado);";
+    return $sql;
+}
+
+function con_obtener_solicitud_archivo($solicitud) {
+    $sql = "SELECT arc_id AS codigo,
+arc_nombre as nombre
+FROM 
+tb_solicitudes_archivos
+WHERE arc_id =$solicitud;";
+    return $sql;
+}
+
+function con_eliminar_archivo($id, $estado) {
+    $sql = "UPDATE tb_solicitudes_archivos SET arc_estado='$estado' "
+            . " WHERE arc_id='$id';";
+    return $sql;
+}
+
+function con_buscar_docentes($nombres, $sede, $secciones) {
+    $cadena_sede = "";
+    $cadena_seccion = "";
+    $sql = "SELECT a.usu_id as value, CONCAT(usu_num_doc, ' - ', usu_paterno, ' ', usu_materno, ' ', usu_nombres, ' - SEDE ',sed_nombre) as text,
+ usu_num_doc as dni, CONCAT(usu_num_doc, ' - ', usu_paterno, ' ', usu_materno, ' ', usu_nombres) as nombres
+FROM tb_usuario a
+LEFT JOIN tb_usuario_dictado b ON a.usu_id = b.usu_id
+INNER JOIN tb_sede c on a.sed_id=c.sed_id
+WHERE 1 = 1 ";
+    if ($secciones !== 0 && $secciones !== '' && $secciones !== '0') {
+        $cadena_seccion = " AND sec_id IN ($secciones) ";
+    } else {
+        $cadena_seccion = "";
+    }
+    if ($sede !== 0 && $sede !== '0') {
+        $cadena_sede = " AND a.sed_id = $sede ";
+    } else {
+        $cadena_sede = "";
+    }
+    $sql .= $cadena_seccion . $cadena_sede . " AND (CONCAT(usu_paterno, ' ', usu_materno, ' ', usu_nombres) like '$nombres%' OR usu_num_doc like '$nombres%') GROUP BY a.usu_id ORDER BY CONCAT(usu_paterno, ' ', usu_materno, ' ', usu_nombres);";
+    return $sql;
+}
+
+function con_historial_todas_secciones_docente($codigo) {
+    $sql = "SELECT dic_id as dicId,a.sec_id as id,niv_nombre as nivel, gra_nombre as grado,
+sec_nombre as seccion,dic_estado as estadoId,
+CASE dic_estado WHEN 1 THEN 'Activo' WHEN 0 THEN 'Inactivo' ELSE '' END AS estado
+FROM tb_usuario_dictado a
+INNER JOIN tb_seccion b ON a.sec_id=b.sec_id
+INNER JOIN tb_grado c ON b.gra_id=c.gra_id
+INNER JOIN tb_nivel d ON c.niv_id=d.niv_id
+WHERE a.usu_id=$codigo";
+    return $sql;
+}
+
+function con_buscar_seccion_docente($docente, $sede, $seccion) {
+    $sql = "SELECT dic_id as id,a.sec_id as sedId,CONCAT(gra_nombre,' ', sec_nombre) as seccion"
+            . " FROM tb_usuario_dictado a "
+            . " INNER JOIN tb_seccion b ON a.sec_id=b.sec_id "
+            . " INNER JOIN tb_grado c ON b.gra_id=c.gra_id "
+            . " WHERE usu_id=$docente AND sed_id=$sede AND a.sec_id=$seccion; ";
+    return $sql;
+}
+
+function con_registrar_seccion_docente($docente, $sede, $seccion) {
+    $sql = "INSERT INTO tb_usuario_dictado(usu_id,dic_nivel,dic_plana,dic_fecha_ingreso,sed_id,sec_id,dic_fecha,dic_estado)
+VALUES ('" . $docente . "','0','0',DATE(NOW()),'" . $sede . "', '" . $seccion . "', NOW(), '1')";
+    return $sql;
+}
+
+function con_obtener_seccion_docente($codigo) {
+    $sql = "SELECT dic_id as dicId,a.sec_id as seccionId,b.gra_id as gradoId, c.niv_id as nivelId,
+sec_nombre as seccion,sec_estado as estadoId,
+CASE sec_estado WHEN 1 THEN 'Activo' WHEN 0 THEN 'Inactivo' ELSE '' END AS estado
+FROM tb_usuario_dictado a
+INNER JOIN tb_seccion b ON a.sec_id=b.sec_id
+INNER JOIN tb_grado c ON b.gra_id=c.gra_id
+INNER JOIN tb_nivel d ON c.niv_id=d.niv_id
+WHERE dic_id=$codigo";
+    return $sql;
+}
+
+function con_editar_seccion_docente($dictado, $seccion, $estado) {
+    $sql = "UPDATE tb_usuario_dictado SET sec_id='$seccion',dic_estado='$estado' " .
+            " WHERE dic_id= $dictado";
+    return $sql;
+}
+
+function con_buscar_gradoseccion_docente($dictado) {
+    $sql = "SELECT dic_id as id,a.sec_id as sedId,CONCAT(gra_nombre,' ', sec_nombre) as seccion"
+            . " FROM tb_usuario_dictado a "
+            . " INNER JOIN tb_seccion b ON a.sec_id=b.sec_id "
+            . " INNER JOIN tb_grado c ON b.gra_id=c.gra_id "
+            . " WHERE dic_id=$dictado; ";
+    return $sql;
+}
+
+function con_eliminar_seccion_docente($id, $estado) {
+    $sql = "UPDATE tb_usuario_dictado SET dic_estado = '$estado' "
+            . " WHERE dic_id = '$id';";
+    return $sql;
+}
+
+function con_lista_grados_x_secciones($id, $estado) {
+    $sql = "SELECT p1.gradoId,p1.grado,REPLACE(GROUP_CONCAT(seccion,' - ',estado ),',',',<br>') as secciones,p1.grado_estado
+FROM (
+SELECT a.gra_id as gradoId,gra_nombre as grado,sec_nombre as seccion,
+CASE sec_estado WHEN 1 THEN 'Activo' WHEN 0 THEN 'Inactivo' ELSE '' END AS estado,
+CASE gra_estado WHEN 1 THEN 'Activo' WHEN 0 THEN 'Inactivo' ELSE '' END AS grado_estado
+FROM tb_grado a
+INNER JOIN tb_seccion b ON a.gra_id=b.gra_id
+) as p1 WHERE 1=1 ";
+    if ($id !== "") {
+        $sql .= " AND p1.gradoId='$id' ";
+    } else {
+        $sql .= "";
+    }
+    if ($estado !== "") {
+        $sql .= " AND grado_estado='$estado' ";
+    } else {
+        $sql .= "";
+    }
+    $sql .= " GROUP BY p1.gradoId ;";
+    return $sql;
+}
+
+function con_registrar_grado($codigo, $nombre, $nivel) {
+    $sql = "INSERT INTO tb_grado(gra_codigo,gra_nombre,niv_id,gra_estado) "
+            . "VALUES ('" . $codigo . "','" . $nombre . "','" . $nivel . "','1')";
+    return $sql;
+}
+
+function con_obtener_codigo_valor($nivel) {
+    $sql = "SELECT (SUBSTR(sec_codigo,3,1)*1)+1 as valor from tb_grado a
+		INNER JOIN tb_seccion b ON a.gra_id=b.gra_id
+		WHERE niv_id=$nivel ORDER BY sec_codigo desc LIMIT 1;";
+    return $sql;
+}
+
+function con_registrar_secciones($lista) {
+    $sql = "INSERT INTO tb_seccion(sec_codigo,sec_nombre,gra_id,sec_estado) "
+            . "VALUES $lista";
+    return $sql;
+}
+
+function con_obtener_gradoseccion($id) {
+    $sql = "SELECT gra_id as id,gra_codigo as codigo,gra_nombre as nombre,niv_id as nivId,gra_estado as estadoId,
+	CASE gra_estado WHEN 1 THEN 'Activo' WHEN 0 THEN 'Inactivo' ELSE '' END AS estado,gra_inicio as inicio
+	FROM tb_grado WHERE gra_id=$id";
+    return $sql;
+}
+
+function con_lista_secciones($grado) {
+    $sql = "SELECT a.sec_id as codigo,sec_nombre as nombre,sec_codigo as descr,
+        sec_estado as estado,SUBSTRING_INDEX(sec_nombre,' ',-1) as letra
+	FROM tb_seccion a 
+	INNER JOIN tb_grado b ON a.gra_id=b.gra_id
+	WHERE 1=1 ";
+    if ($grado !== "0") {
+        $sql .= " AND b.gra_id='$grado' ";
+    }
+    $sql .= " ORDER BY sec_nombre;";
+    return $sql;
+}
+
+function con_editar_grado($id, $disable, $codigo, $nombre, $nivel, $estado) {
+    $sql = "";
+    if ($disable === "disabled") {
+        $sql = "UPDATE tb_grado SET gra_estado='$estado' "
+                . " WHERE gra_id=$id";
+    } else {
+        $sql = "UPDATE tb_grado SET gra_estado='$estado',gra_codigo='$codigo',gra_nombre='$nombre',niv_id='$nivel' "
+                . " WHERE gra_id=$id";
+    }
+    return $sql;
+}
+
+function con_editar_seccion($id, $estado) {
+    $sql = "UPDATE tb_seccion SET sec_estado='$estado' "
+            . " WHERE sec_id=$id;";
+    return $sql;
+}
+
+function con_obtener_codigo_valor_edi($grado) {
+    $sql = "SELECT (SUBSTR(sec_codigo,3,1)*1)+1 as valor from tb_grado a
+		INNER JOIN tb_seccion b ON a.gra_id=b.gra_id
+		WHERE a.gra_id=$grado ORDER BY sec_codigo desc LIMIT 1;";
+    return $sql;
+}
+
+function con_eliminar_grado($id) {
+    $sql = "UPDATE tb_grado SET gra_estado='0' "
+            . " WHERE gra_id='$id';";
     return $sql;
 }

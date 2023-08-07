@@ -225,6 +225,7 @@ $lista_niveles = fnc_lista_niveles($conexion, '', '1');
 </section>
 <script>
     $(function () {
+        $('body').css('overflow', 'auto');
         $("#fecha1").daterangepicker({
             autoApply: true,
             showButtonPanel: false,

@@ -147,7 +147,7 @@ function formulario_editar_usuario() {
     $eu_cod1 = explode("-", $eu_codigo);
     $eu_codi = explode("/", $eu_cod1[1]);
     $usuario_dta = fnc_lista_usuarios($conexion, $eu_codi[0], "");
-    $l_tipo_usuarios = fnc_lista_tipo_usuarios($conexion, "", "");
+    $l_tipo_usuarios = fnc_lista_tipo_usuarios($conexion, "", "1");
     $l_tipo_documentos = fnc_lista_tipo_documentos($conexion, "");
     $str_sede = "";
     if (p_sede === "1") {
@@ -763,7 +763,7 @@ function formulario_registro_nuevo_submenu() {
             <label>Link: </label>
         </div>
         <div class="col-md-6">
-            <input type="text" id="txtLinkSub" class="form-control" style="width: 100%;text-transform: lowercase;" placeholder="Ejm: lista" onkeypress="return solo_letras(event);"/>
+            <input type="text" id="txtLinkSub" class="form-control" style="width: 100%;text-transform: lowercase;" placeholder="Ejm: lista" onkeypress="return solo_letras_v(event);"/>
         </div>
     </div>
     <?php
@@ -884,7 +884,7 @@ function formulario_editar_submenu() {
             <label>Link: </label>
         </div>
         <div class="col-md-6">
-            <input type="text" id="txtLinkSubEdi" class="form-control" style="width: 100%;text-transform: lowercase;" placeholder="Ejm: lista" value="<?php echo trim($enlace_ruta[0]); ?>" onkeypress="return solo_letras(event);"/>
+            <input type="text" id="txtLinkSubEdi" class="form-control" style="width: 100%;text-transform: lowercase;" placeholder="Ejm: lista" value="<?php echo trim($enlace_ruta[0]); ?>" onkeypress="return solo_letras_v(event);"/>
         </div>
     </div>
     <div class="row space-div">
@@ -1049,7 +1049,7 @@ function formulario_registro_nuevo_perfil() {
                             . "<legend class='legend_menu'>" . $lista["nombre"] . "</legend>";
                     foreach ($lista_submenu as $lista_s) {
                         $html .= "<div class='custom-control custom-checkbox'>
-                          <input class='custom-control-input' type='checkbox' id='customCheckbox" . $lista_s["id"] . "' value='" . $lista_s["id"] . "'>
+                          <input class='custom-control-input' style='z-index: 1000 !important;' type='checkbox' id='customCheckbox" . $lista_s["id"] . "' value='" . $lista_s["id"] . "'>
                           <label for='customCheckbox" . $lista_s["id"] . "' class='custom-control-label'>" . $lista_s["submenu"] . "</label>
                         </div>";
                     }
@@ -1192,7 +1192,7 @@ function formulario_editar_perfil() {
                             $idMenuAsig = 0;
                         }
                         $html .= "<div class='custom-control custom-checkbox'>
-                          <input class='custom-control-input' type='checkbox' id='customCheckbox" . $lista_s["id"] . "' $checked value='" . $idMenuAsig . "_" . $lista_s["id"] . "'>
+                          <input class='custom-control-input' style='z-index: 1000 !important;' type='checkbox' id='customCheckbox" . $lista_s["id"] . "' $checked value='" . $idMenuAsig . "_" . $lista_s["id"] . "'>
                           <label for='customCheckbox" . $lista_s["id"] . "' class='custom-control-label'>" . $lista_s["submenu"] . "</label>
                         </div>";
                     }
@@ -2050,7 +2050,7 @@ function formulario_detalle_tipo_solicitud() {
                 <h5>I. DATOS INFORMATIVOS:</h5>
                 <div class="row space-div"> 
                     <div class="col-md-12 icheck-success d-inline">
-                        <label for="checkPrivacidad"> PRIVACIDAD:
+                        <label for="checkPrivacidad"> RESERVADO:
                         </label>&nbsp;&nbsp;&nbsp;
                         <input type="checkbox" id="checkPrivacidad" style="transform : scale(1.8);">
                     </div>
@@ -2171,7 +2171,7 @@ function formulario_detalle_tipo_solicitud() {
                 <h5>I. DATOS INFORMATIVOS:</h5>
                 <div class="row space-div"> 
                     <div class="col-md-12 icheck-success d-inline">
-                        <label for="checkPrivacidad"> PRIVACIDAD:
+                        <label for="checkPrivacidad"> RESERVADO:
                         </label>&nbsp;&nbsp;&nbsp;
                         <input type="checkbox" id="checkPrivacidad" style="transform : scale(1.8);">
                     </div>
@@ -2762,6 +2762,7 @@ function operacion_buscar_semaforo_docentes() {
     $lista = fnc_buscar_semaforo_docentes($conexion, $s_sede, $s_semaforo, $s_bimestre, $s_nivel, $s_grado, $s_seccion, $s_docente);
     $html = "";
     $aux = 1;
+    $color = "";
     if (count($lista) > 0) {
         foreach ($lista as $value) {
             if ($value["color"] == "Rojo") {
@@ -2885,7 +2886,7 @@ function formulario_detalle_tipo_solicitud_sub() {
                 <h5>I. DATOS INFORMATIVOS:</h5>
                 <div class="row space-div"> 
                     <div class="col-md-12 icheck-success d-inline">
-                        <label for="checkPrivacidad_sub"> PRIVACIDAD:
+                        <label for="checkPrivacidad_sub"> RESERVADO:
                         </label>&nbsp;&nbsp;&nbsp;
                         <input type="checkbox" id="checkPrivacidad_sub" style="transform : scale(1.8);">
                     </div>
@@ -3004,7 +3005,7 @@ function formulario_detalle_tipo_solicitud_sub() {
                 <h5>I. DATOS INFORMATIVOS:</h5>
                 <div class="row space-div"> 
                     <div class="col-md-12 icheck-success d-inline">
-                        <label for="checkPrivacidad_sub"> PRIVACIDAD:
+                        <label for="checkPrivacidad_sub"> RESERVADO:
                         </label>&nbsp;&nbsp;&nbsp;
                         <input type="checkbox" id="checkPrivacidad_sub" style="transform : scale(1.8);">
                     </div>
@@ -3603,7 +3604,7 @@ function formulario_carga_solicitudes() {
                 <h5>I. DATOS INFORMATIVOS:</h5>
                 <div class="row space-div"> 
                     <div class="col-md-12 icheck-success d-inline">
-                        <label for="checkPrivacidad_edi"> PRIVACIDAD:
+                        <label for="checkPrivacidad_edi"> RESERVADO:
                         </label>&nbsp;&nbsp;&nbsp;
                         <input type="checkbox" id="checkPrivacidad_edi" ' . $campos_disabled . ' style="transform : scale(1.8);" ' . ($lista_solicitud[0]['privacidad'] == '1' ? 'checked' : '') . '>
                     </div>
@@ -3778,7 +3779,7 @@ function formulario_carga_solicitudes() {
             <h5>I. DATOS INFORMATIVOS:</h5>
             <div class = "row space-div">
             <div class = "col-md-12 icheck-success d-inline">
-            <label for = "checkPrivacidad_edi"> PRIVACIDAD:
+            <label for = "checkPrivacidad_edi"> RESERVADO:
             </label>&nbsp;
             &nbsp;
             &nbsp;
@@ -4715,7 +4716,7 @@ function formulario_carga_solicitudes_detalla() {
             $imagen2 = "";
             if (count($imagen_soli2) > 0) {
                 if ($imagen_soli2[0]["id"] !== "") {
-                    $imagen_codi2 = $imagen_soli[0]["id"];
+                    $imagen_codi2 = $imagen_soli2[0]["id"];
                     $imagen2 = "./php/" . str_replace("../", "", $imagen_soli2[0]["imagen"]);
                 } else {
                     $imagen_codi2 = "";
@@ -5238,6 +5239,7 @@ function mostrar_busqueda_entrevistas() {
             if ($perfil !== "9") {
                 $html .= "<i class='nav-icon fas fa-paper-plane azul' title='Enviar al correo' data-toggle='modal' data-target='#modal-enviar-solicitud' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;";
             }
+            $html .= "<i class='nav-icon fas fa-upload negro' title='Cargar archivo(s)' data-toggle='modal' data-target='#modal-cargar-archivos' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;";
             $html .= "</td>"
                     . "</tr>";
             $num++;
@@ -5860,7 +5862,7 @@ function formulario_historial_detalle() {
             $imagen2 = "";
             if (count($imagen_soli2) > 0) {
                 if ($imagen_soli2[0]["id"] !== "") {
-                    $imagen_codi2 = $imagen_soli[0]["id"];
+                    $imagen_codi2 = $imagen_soli2[0]["id"];
                     $imagen2 = "./php/" . str_replace("../", "", $imagen_soli2[0]["imagen"]);
                 } else {
                     $imagen_codi2 = "";
@@ -6029,7 +6031,7 @@ function formulario_historial_detalle() {
             $imagen2 = "";
             if (count($imagen_soli2) > 0) {
                 if ($imagen_soli2[0]["id"] !== "") {
-                    $imagen_codi2 = $imagen_soli[0]["id"];
+                    $imagen_codi2 = $imagen_soli2[0]["id"];
                     $imagen2 = "./php/" . str_replace("../", "", $imagen_soli2[0]["imagen"]);
                 } else {
                     $imagen_codi2 = "";
@@ -6440,18 +6442,19 @@ function proceso_editar_bimestres() {
 function formulario_registro_nuevo_semaforo() {
     $con = new DB(1111);
     $conexion = $con->connect();
-    $lista_anios = fnc_lista_anios_semaforos($conexion);
+    //$lista_anios = fnc_lista_anios_semaforos($conexion);//
+    $lista_bimestres = fnc_lista_semaforo_bimestre($conexion, "", "");
     ?>
     <div class="row space-div">
         <div class="col-md-4" style="margin-bottom: 0px;">
-            <label>A&ntilde;o: </label>
+            <label>Bimestre: </label>
         </div>
-        <div class="col-md-6">
-            <select id="cbbAnios" data-show-content="true" class="form-control" style="width: 100%" onchange="cambiar_anio_bimestre(this)">
+        <div class="col-md-8">
+            <select id="cbbBimestres" data-show-content="true" class="form-control" style="width: 100%" onchange="cambiar_anio_bimestre(this)">
                 <?php
-                if (count($lista_anios) > 0) {
-                    foreach ($lista_anios as $anio) {
-                        echo "<option value='" . $anio["fecha"] . "' >" . $anio["fecha"] . "</option>";
+                if (count($lista_bimestres) > 0) {
+                    foreach ($lista_bimestres as $aniobimestre) {
+                        echo "<option value='" . $aniobimestre["id"] . "' >" . $aniobimestre["anio"] . " - " . $aniobimestre["nombre"] . "</option>";
                     }
                 }
                 ?>
@@ -6528,16 +6531,16 @@ function proceso_registrar_semaforo() {
     $con = new DB(1111);
     $conexion = $con->connect();
     $sm_codigo = strip_tags(trim($_POST["sm_codigo"]));
-    $s_anio = strip_tags(trim($_POST["s_anio"]));
+    $s_bimestre = strip_tags(trim($_POST["s_bimestre"]));
     $s_valor11 = strip_tags(trim($_POST["s_valor11"]));
     $s_valor12 = strip_tags(trim($_POST["s_valor12"]));
     $s_valor21 = strip_tags(trim($_POST["s_valor21"]));
     $s_valor22 = strip_tags(trim($_POST["s_valor22"]));
     $s_valor31 = strip_tags(trim($_POST["s_valor31"]));
     $s_valor32 = strip_tags(trim($_POST["s_valor32"]));
-    $m_codigo = substr($s_anio, 0, 4) . "_" . fnc_generate_random_string(6);
-    $anio_semaforo_id = fnc_registrar_anio_semaforo($conexion, $m_codigo, $s_anio, "1");
-    if ($anio_semaforo_id) {
+    $m_codigo = $s_bimestre . "_" . fnc_generate_random_string(8);
+    $data_bimestre = fnc_lista_bimestre($conexion, $s_bimestre, "");
+    if (count($data_bimestre) > 0) {
         $str_submenu = "";
         $str_menu_id = "";
         $str_menu_nombre = "";
@@ -6551,40 +6554,33 @@ function proceso_registrar_semaforo() {
             $str_menu_id = "";
             $str_menu_nombre = "";
         }
-
-        if (count($submenu) > 0) {
-            $sql_auditoria = fnc_registrar_anio_semaforo_auditoria($m_codigo, $s_anio, "1");
-            $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_registrar_semaforo" . '", "' . "fnc_registrar_anio_semaforo" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_anio_semaforo" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
-            fnc_registrar_auditoria($conexion, $sql_insert);
-        }
-
-        $registro_semaforo1 = fnc_registrar_semaforo($conexion, $anio_semaforo_id, $m_codigo, $s_anio, $s_valor11, $s_valor12, "Rojo", "1", "1");
+        $registro_semaforo1 = fnc_registrar_semaforo($conexion, $s_bimestre, $m_codigo, $data_bimestre[0]["anio"], $s_valor11, $s_valor12, "Rojo", "1", "1");
         if ($registro_semaforo1) {
             if (count($submenu) > 0) {
-                $sql_auditoria = fnc_registrar_semaforo_auditoria($anio_semaforo_id, $m_codigo, $s_anio, $s_valor11, $s_valor12, "Rojo", "1", "1");
+                $sql_auditoria = fnc_registrar_semaforo_auditoria($s_bimestre, $m_codigo, $data_bimestre[0]["anio"], $s_valor11, $s_valor12, "Rojo", "1", "1");
                 $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_registrar_semaforo" . '", "' . "fnc_registrar_semaforo" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_semaforo" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
                 fnc_registrar_auditoria($conexion, $sql_insert);
             }
         }
-        $registro_semaforo2 = fnc_registrar_semaforo($conexion, $anio_semaforo_id, $m_codigo, $s_anio, $s_valor21, $s_valor22, "Ambar", "2", "1");
+        $registro_semaforo2 = fnc_registrar_semaforo($conexion, $s_bimestre, $m_codigo, $data_bimestre[0]["anio"], $s_valor21, $s_valor22, "Ambar", "2", "1");
         if ($registro_semaforo2) {
             if (count($submenu) > 0) {
-                $sql_auditoria = fnc_registrar_semaforo_auditoria($anio_semaforo_id, $m_codigo, $s_anio, $s_valor21, $s_valor22, "Ambar", "2", "1");
+                $sql_auditoria = fnc_registrar_semaforo_auditoria($s_bimestre, $m_codigo, $data_bimestre[0]["anio"], $s_valor21, $s_valor22, "Ambar", "2", "1");
                 $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_registrar_semaforo" . '", "' . "fnc_registrar_semaforo" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_semaforo" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
                 fnc_registrar_auditoria($conexion, $sql_insert);
             }
         }
-        $registro_semaforo3 = fnc_registrar_semaforo($conexion, $anio_semaforo_id, $m_codigo, $s_anio, $s_valor31, $s_valor32, "Verde", "3", "1");
+        $registro_semaforo3 = fnc_registrar_semaforo($conexion, $s_bimestre, $m_codigo, $data_bimestre[0]["anio"], $s_valor31, $s_valor32, "Verde", "3", "1");
         if ($registro_semaforo3) {
             if (count($submenu) > 0) {
-                $sql_auditoria = fnc_registrar_semaforo_auditoria($anio_semaforo_id, $m_codigo, $s_anio, $s_valor31, $s_valor32, "Verde", "3", "1");
+                $sql_auditoria = fnc_registrar_semaforo_auditoria($s_bimestre, $m_codigo, $data_bimestre[0]["anio"], $s_valor31, $s_valor32, "Verde", "3", "1");
                 $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_registrar_semaforo" . '", "' . "fnc_registrar_semaforo" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_semaforo" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
                 fnc_registrar_auditoria($conexion, $sql_insert);
             }
         }
-        echo "***1***Semaforo del " . $s_anio . " registrado correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
+        echo "***1***Semaforo del " . $data_bimestre[0]["nombre"] . " registrado correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
     } else {
-        echo "***0***Error al registrar el Semaforo del " . $s_anio . ".***<br/>";
+        echo "***0***Error al registrar el Semaforo del " . $data_bimestre[0]["nombre"] . ".***<br/>";
     }
 }
 
@@ -6593,28 +6589,29 @@ function formulario_editar_semaforo() {
     $conexion = $con->connect();
     $u_anio_codigo = strip_tags(trim($_POST["u_anio_codigo"]));
     $eu_codanio = explode("-", $u_anio_codigo);
-    $anio_codi = explode("/", $eu_codanio[1]);
-    $anios = fnc_lista_anios_semaforo_edi($conexion);
-    $lista_anios = fnc_lista_anio_semaforo_x_anio($conexion, $anio_codi[0], "1");
+    $bimestre_codi = explode("/", $eu_codanio[1]);
+    $lista_anios = fnc_lista_anio_semaforo_x_anio($conexion, $bimestre_codi[0], "1");
+    $lista_bimestres = fnc_lista_semaforo_bimestre2($conexion, $bimestre_codi[0], "");
     if (count($lista_anios) > 0) {
         ?>
         <div class="row space-div">
             <div class="col-md-4" style="margin-bottom: 0px;">
-                <label>A&ntilde;o: </label>
+                <label>Bimestre: </label>
             </div>
-            <div class="col-md-6">
-                <input type="hidden" id="codi_edi" value="<?php echo $anio_codi[0]; ?>"/>
-                <select id="cbbAnios_edi" data-show-content="true" class="form-control" style="width: 100%" disabled="">
+            <div class="col-md-8">
+                <input type="hidden" id="codi_edi" value="<?php echo $bimestre_codi[0]; ?>"/>
+                <select id="cbbBimestre_edi" data-show-content="true" class="form-control" style="width: 100%" disabled="">
                     <?php
-                    if (count($anios) > 0) {
+                    if (count($lista_bimestres) > 0) {
                         $selected = "";
-                        foreach ($anios as $anio) {
-                            if ($anio["fecha"] == $lista_anios[0]["nombre"]) {
+
+                        foreach ($lista_bimestres as $aniobimestre) {
+                            if ($bimestre_codi[0] == $aniobimestre["id"]) {
                                 $selected = " selected ";
                             } else {
                                 $selected = "";
                             }
-                            echo "<option value='" . $anio["fecha"] . "' $selected>" . $anio["fecha"] . "</option>";
+                            echo "<option value='" . $aniobimestre["id"] . "' >" . $aniobimestre["anio"] . " - " . $aniobimestre["nombre"] . "</option>";
                         }
                     }
                     ?>
@@ -6699,14 +6696,15 @@ function proceso_editar_semaforo() {
     $conexion = $con->connect();
     $sm_codigo = strip_tags(trim($_POST["sm_codigo"]));
     $s_codi_edi = strip_tags(trim($_POST["s_codi_edi"]));
-    $s_anio = strip_tags(trim($_POST["s_anio"]));
+    $s_bimestre = strip_tags(trim($_POST["s_bimestre"]));
     $s_valor11 = strip_tags(trim($_POST["s_valor11"]));
     $s_valor12 = strip_tags(trim($_POST["s_valor12"]));
     $s_valor21 = strip_tags(trim($_POST["s_valor21"]));
     $s_valor22 = strip_tags(trim($_POST["s_valor22"]));
     $s_valor31 = strip_tags(trim($_POST["s_valor31"]));
     $s_valor32 = strip_tags(trim($_POST["s_valor32"]));
-    $m_codigo = substr($s_anio, 0, 4) . "_" . fnc_generate_random_string(6);
+    $m_codigo = $s_bimestre . "_" . fnc_generate_random_string(6);
+    $data_bimestre = fnc_lista_bimestre($conexion, $s_bimestre, "");
     if ($s_codi_edi) {
         $str_submenu = "";
         $str_menu_id = "";
@@ -6720,14 +6718,6 @@ function proceso_editar_semaforo() {
             $str_submenu = "";
             $str_menu_id = "";
             $str_menu_nombre = "";
-        }
-        $editar_anio = fnc_editar_anio_bimestres($conexion, $s_codi_edi, $m_codigo, $s_anio, "1");
-        if ($editar_anio) {
-            if (count($submenu) > 0) {
-                $sql_auditoria = fnc_editar_anio_bimestres_auditoria($s_codi_edi, $m_codigo, $s_anio, "1");
-                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_semaforo" . '", "' . "fnc_editar_anio_bimestres" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_anio_bimestre" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
-                fnc_registrar_auditoria($conexion, $sql_insert);
-            }
         }
         $editar_semaforo_1 = fnc_editar_semaforo_x_anio($conexion, $s_codi_edi, "1", $s_valor11, $s_valor12, "1");
         if ($editar_semaforo_1) {
@@ -6753,9 +6743,9 @@ function proceso_editar_semaforo() {
                 fnc_registrar_auditoria($conexion, $sql_insert);
             }
         }
-        echo "***1***Semaforo del " . $s_anio . " editados correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
+        echo "***1***Semaforo del " . $data_bimestre[0]["nombre"] . " editados correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
     } else {
-        echo "***0***Error al editar el Semaforo del " . $s_anio . ".***<br/>";
+        echo "***0***Error al editar el Semaforo del " . $data_bimestre[0]["nombre"] . ".***<br/>";
     }
 }
 
@@ -7082,6 +7072,7 @@ function operacion_cantidad_entrevistas_subentrevitas() {
         foreach ($lista_cantidad_entrevistas as $lista) {
             $html .= "<tr>
                 <td>" . $num . "</td>
+                <td>" . $lista["sede"] . "</td>
                 <td>" . $lista["categoria"] . "</td>
                 <td >" . $lista["subcategoria"] . "</td>
                 <td style='text-align:center'>" . $lista["cantidad_entrevista"] . "</td>
@@ -7152,11 +7143,11 @@ function operacion_reporte_semanal() {
     $lista_reporte_semanal = fnc_lista_reporte_semanal($conexion, $sedeCodi, $s_bimestre, $fecha_ini, $fecha_fin, $s_nivel, $s_grado, $s_seccion);
     $html = "";
     $num = 1;
-    $aux = 1;
     if (count($lista_reporte_semanal) > 0) {
         foreach ($lista_reporte_semanal as $lista) {
             $html .= "<tr>
                 <td>" . $num . "</td>
+                <td>" . $lista["sede"] . "</td>
                 <td>" . $lista["nivel"] . "</td>
                 <td >" . $lista["grado"] . "</td>
                 <td >" . $lista["seccion"] . "</td>
@@ -7171,3 +7162,924 @@ function operacion_reporte_semanal() {
     }
     echo $html;
 }
+
+function formulario_cargar_archivos() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_solicitud = strip_tags(trim($_POST["s_solicitud"]));
+    $perfil = p_perfil;
+    $html = '<div class="row">
+        <div class="col-lg-5">
+            <div class="col-lg-12 col-md-4 col-sm-6 col-12">
+                <div class="form-group" style="margin-bottom: 0px;">
+                    <label> Subir archivo: </label>
+                </div>
+                <input type="hidden" id="hdmSolicitud" value="' . $s_solicitud . '" />
+                <div class="col-md-12 col-sm-12 col-12">
+                    <form method="post" id="upload_form" enctype="multipart/form-data" >
+                        <input type="file" name="select_file" id="select_file" style="" />
+                        <input type="submit" name="upload" id="upload" style="border-color: #1cc88a!important;color: white;" class="btn bg-gradient-success" value="Cargar Archivo"/>
+                    </form>
+                </div>
+                <div class="col-sm-6 col-12">
+                    <div class="alert" id="messageFile" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="col-lg-12 col-md-4 col-sm-6 col-12">
+                <table id="tableListArchivos" class="table table-bordered table-hover" style="font-size: 14px;width: 100%">
+                    <thead>
+                        <tr>
+                            <th>Nro.</th>
+                            <th>Nombre</th>
+                            <th>Tipo</th>
+                            <th>Estado</th>
+                            <th>Opci&oacute;n</th>
+                        </tr>
+                    </thead>
+                    <tbody>';
+    $eu_solicitud = explode("-", $s_solicitud);
+    $soli_codi = explode("/", $eu_solicitud[1]);
+    if ($perfil === "1" || $perfil === "5") {
+        $lista_archivos = fnc_lista_solicitudes_archivos($conexion, $soli_codi[0], '0,1');
+    } else {
+        $lista_archivos = fnc_lista_solicitudes_archivos($conexion, $soli_codi[0], '1');
+    }
+    if (count($lista_archivos) > 0) {
+        $num = 1;
+        foreach ($lista_archivos as $lista) {
+            $html .= '<tr>
+                    <td style="text-align:center">' . $num . '</td>
+                    <td>' . $lista["nombre"] . '</td>
+                    <td style="text-align:center">' . $lista["tipo"] . '</td>
+                    <td style="text-align:center">' . $lista["estado"] . '</td>
+                    <td style="text-align:center">
+                        <a href="php/aco_archivos/' . $lista["nombre"] . '" download><i class="nav-icon fas fa-download azul" title="Descargar"></i></a>&nbsp;&nbsp;&nbsp;';
+            if ($perfil === "1" || $perfil === "5") {
+                if ($lista["estado"] == "Activo") {
+                    $html .= '<i class="nav-icon fas fa-trash rojo" title="Eliminar" data-toggle="modal" data-target="#modal-eliminar-archivo" data-backdrop="static" data-solicitud="' . $s_solicitud . '" data-archivo="' . $lista["codigo"] . '"></i>';
+                } else {
+                    $html .= '<i class="nav-icon fas fa-undo green" title="Activar" data-toggle="modal" data-target="#modal-activar-archivo" data-backdrop="static" data-solicitud="' . $s_solicitud . '" data-archivo="' . $lista["codigo"] . '"></i>';
+                }
+            }
+            $html .= '</td>
+                </tr>';
+            $num++;
+        }
+    } else {
+        $html .= '<tr><td colspan="5">*No se encontraron alumnos a registrar</td></tr>';
+    }
+    $html .= '</tbody>
+                </table>
+            </div></div>';
+    echo $html;
+}
+
+function operacion_cargar_tabla_archivos() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_solicitud = strip_tags(trim($_POST["s_solicitud"]));
+    $eu_solicitud = explode("-", $s_solicitud);
+    $soli_codi = explode("/", $eu_solicitud[1]);
+    $perfil = p_perfil;
+    if ($perfil === "1" || $perfil === "5") {
+        $lista_archivos = fnc_lista_solicitudes_archivos($conexion, $soli_codi[0], '0,1');
+    } else {
+        $lista_archivos = fnc_lista_solicitudes_archivos($conexion, $soli_codi[0], '1');
+    }
+    $html = '';
+    if (count($lista_archivos) > 0) {
+        $num = 1;
+        foreach ($lista_archivos as $lista) {
+            $html .= '<tr>
+                    <td style="text-align:center">' . $num . '</td>
+                    <td>' . $lista["nombre"] . '</td>
+                    <td style="text-align:center">' . $lista["tipo"] . '</td>
+                    <td style="text-align:center">' . $lista["estado"] . '</td>
+                    <td style="text-align:center">
+                        <a href="php/aco_archivos/' . $lista["nombre"] . '" download><i class="nav-icon fas fa-download azul" title="Descargar"></i></a>&nbsp;&nbsp;&nbsp;';
+            if ($lista["estado"] == "Activo") {
+                $html .= '<i class="nav-icon fas fa-trash rojo" title="Eliminar" data-toggle="modal" data-target="#modal-eliminar-archivo" data-backdrop="static" data-solicitud="' . $s_solicitud . '" data-archivo="' . $lista["codigo"] . '"></i>';
+            } else {
+                $html .= '<i class="nav-icon fas fa-undo green" title="Activar" data-toggle="modal" data-target="#modal-activar-archivo" data-backdrop="static" data-solicitud="' . $s_solicitud . '" data-archivo="' . $lista["codigo"] . '"></i>';
+            }
+            $html .= '</td>
+                </tr>';
+            $num++;
+        }
+    } else {
+        $html .= '<tr><td colspan="5">*No se encontraron alumnos a registrar</td></tr>';
+    }
+    echo $html;
+}
+
+function formulario_eliminar_archivo() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $solicitud = strip_tags(trim($_POST["s_solicitud"]));
+    $archivo = strip_tags(trim($_POST["s_archivo"]));
+    $dato_archivo = fnc_obtener_solicitud_archivo($conexion, $archivo);
+    ?>
+    <div class="row space-div">
+        <div class="col-md-12" style="margin-bottom: 0px;">
+            <input type="hidden" id="hdnCodiSolicitud" class="form-control" value="<?php echo trim($solicitud); ?>"/>
+            <input type="hidden" id="hdnCodiArchivo" class="form-control" value="<?php echo trim($dato_archivo[0]["codigo"]); ?>"/>
+            <label>&iquest;Esta seguro de eliminar el archivo "<label style="font-style: italic; "><?php echo $dato_archivo[0]["nombre"] ?>"</label> ?</label>
+        </div>
+    </div>
+    <?php
+}
+
+function operacion_eliminar_archivo() {//lupis
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $sm_codigoEdi = strip_tags(trim($_POST["sm_codigo"]));
+    $u_codiArchivo = strip_tags(trim($_POST["u_codiArchivo"]));
+    try {
+        $str_submenu = "";
+        $str_menu_id = "";
+        $str_menu_nombre = "";
+        $submenu = fnc_consultar_submenu($conexion, $sm_codigoEdi);
+        if (count($submenu) > 0) {
+            $str_submenu = $submenu[0]["ruta"];
+            $str_menu_id = $submenu[0]["id"];
+            $str_menu_nombre = $submenu[0]["nombre"];
+        } else {
+            $str_submenu = "";
+            $str_menu_id = "";
+            $str_menu_nombre = "";
+        }
+        $resp = fnc_eliminar_archivo($conexion, $u_codiArchivo, "0");
+        if ($resp) {
+            $sql_auditoria = fnc_eliminar_archivo_auditoria($u_codiArchivo, "0");
+            $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "operacion_eliminar_archivo" . '", "' . "fnc_eliminar_archivo" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_solicitudes_archivos" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+            fnc_registrar_auditoria($conexion, $sql_insert);
+            echo "***1***Archivo eliminado correctamente.<br/>";
+        } else {
+            echo "***0***Error al eliminar el archivo.<br/>";
+        }
+    } catch (Exception $exc) {
+        echo "***0***Error al eliminar el archivo.<br/>";
+    }
+}
+
+function formulario_activar_archivo() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $solicitud = strip_tags(trim($_POST["s_solicitud"]));
+    $archivo = strip_tags(trim($_POST["s_archivo"]));
+    $dato_archivo = fnc_obtener_solicitud_archivo($conexion, $archivo);
+    ?>
+    <div class="row space-div">
+        <div class="col-md-12" style="margin-bottom: 0px;">
+            <input type="hidden" id="hdnCodiSolicitud" class="form-control" value="<?php echo trim($solicitud); ?>"/>
+            <input type="hidden" id="hdnCodiArchivo" class="form-control" value="<?php echo trim($dato_archivo[0]["codigo"]); ?>"/>
+            <label>&iquest;Esta seguro de activar el archivo "<label style="font-style: italic; "><?php echo $dato_archivo[0]["nombre"] ?>"</label> ?</label>
+        </div>
+    </div>
+    <?php
+}
+
+function operacion_activar_archivo() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $sm_codigoEdi = strip_tags(trim($_POST["sm_codigo"]));
+    $u_codiArchivo = strip_tags(trim($_POST["u_codiArchivo"]));
+    try {
+        $str_submenu = "";
+        $str_menu_id = "";
+        $str_menu_nombre = "";
+        $submenu = fnc_consultar_submenu($conexion, $sm_codigoEdi);
+        if (count($submenu) > 0) {
+            $str_submenu = $submenu[0]["ruta"];
+            $str_menu_id = $submenu[0]["id"];
+            $str_menu_nombre = $submenu[0]["nombre"];
+        } else {
+            $str_submenu = "";
+            $str_menu_id = "";
+            $str_menu_nombre = "";
+        }
+        $resp = fnc_eliminar_archivo($conexion, $u_codiArchivo, "1");
+        if ($resp) {
+            $sql_auditoria = fnc_eliminar_archivo_auditoria($u_codiArchivo, "1");
+            $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "operacion_activar_archivo" . '", "' . "fnc_eliminar_archivo" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_solicitudes_archivos" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+            fnc_registrar_auditoria($conexion, $sql_insert);
+            echo "***1***Archivo activado correctamente.<br/>";
+        } else {
+            echo "***0***Error al activar el archivo.<br/>";
+        }
+    } catch (Exception $exc) {
+        echo "***0***Error al activar el archivo.<br/>";
+    }
+}
+
+function formulario_secciones_docente() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_usua = strip_tags(trim($_POST["sol_usuario"]));
+    $html = "";
+    if ($s_usua) {
+        $historial = fnc_historial_todas_secciones_docente($conexion, $s_usua);
+        $count = 1;
+        $html .= '<div class="row" >'
+                . '<div class="col-2">'
+                . '<button type="submit" class="btn btn-primary btn-block" data-toggle="modal" data-target="#modal-nueva-seccion-docente" data-backdrop="static" data-docente="' . $s_usua . '">Nueva sección</button>'
+                . '</div>'
+                . '</div><br/>'
+                . '<div class="row">'
+                . '<div class="col-12">'
+                . '<div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap" id="tablaHistorialDocente">
+                  <thead>
+                    <tr>
+                      <th>Nro.</th>
+                      <th>Nivel</th>
+                      <th>Grado</th>
+                      <th>Secci&oacute;n</th>
+                      <th style="text-align:center">Estado</th>
+                      <th style="text-align:center">Opci&oacute;n</th>
+                    </tr>
+                  </thead>
+                  <tbody>';
+        foreach ($historial as $value) {
+            $html .= '<tr class="tr-cursor">
+                      <td>' . $count . '</td>
+                      <td>' . $value["nivel"] . '</td>
+                      <td>' . $value["grado"] . '</td>
+                      <td>' . $value["seccion"] . '</td>
+                      <td style="text-align:center">' . $value["estado"] . '</td>
+                      <td style="text-align:center">';
+            if ($value["estadoId"] === "1") {
+                $html .= '<i class = "nav-icon fas fa-trash rojo" title = "Eliminar" data-toggle = "modal" data-target = "#modal-eliminar-seccion-docente" data-backdrop = "static" data-docente = "' . $s_usua . '" data-dictado = "' . $value["dicId"] . '"></i>';
+            } else {
+                $html .= '<i class = "nav-icon fas fa-undo green" title = "Activar" data-toggle = "modal" data-target = "#modal-activar-seccion-docente" data-backdrop = "static" data-docente = "' . $s_usua . '" data-dictado = "' . $value["dicId"] . '"></i>';
+            }
+            $html .= '</td>
+                    </tr>';
+            $count++;
+        }
+
+        $html .= '</tbody>'
+                . '</table>'
+                . '</div><br/>'
+                . '<div>'
+                . '</div><br/>'
+                . '<div>';
+    }
+    echo $html;
+}
+
+function formulario_registro_seccion_docente() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_docente = strip_tags(trim($_POST["s_docente"]));
+    $data_usuario = fnc_datos_usuario($conexion, $s_docente);
+    if (count($data_usuario) > 0) {
+        $lista_niveles = fnc_lista_niveles($conexion, '', '1');
+        ?>
+        <div class="row space-div">
+            <div class="col-md-4" style="margin-bottom: 0px;">
+                <label>Nombre: </label>
+            </div>
+            <div class="col-md-8">
+                <input type="hidden" id="hdnDocente" class="form-control" style="width: 100%;text-transform: uppercase" value="<?php echo $s_docente; ?>"/>
+                <input type="hidden" id="txtSede" class="form-control" style="width: 100%;text-transform: uppercase" value="<?php echo $data_usuario[0]["sedeId"]; ?>"/>
+                <input type="text" id="txtNombreSed" class="form-control" style="width: 100%;text-transform: uppercase;" disabled="" value="<?php echo $data_usuario[0]["usuariodata"]; ?>"/>
+            </div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-4" style="margin-bottom: 0px;">
+                <label> Nivel: </label>
+            </div>
+            <div class="col-md-8">
+                <select id="cbbNivel" data-show-content="true" class="form-control" style="width: 100%" onchange="cargar_selector_grado_docente(this)">
+                    <option value="0">-- Seleccione --</option>
+                    <?php
+                    foreach ($lista_niveles as $nivel) {
+                        echo "<option value='" . $nivel["codigo"] . "' >" . $nivel["nombre"] . "</option>";
+                    }
+                    ?>
+
+                </select>
+            </div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-4" style="margin-bottom: 0px;">
+                <label> Grado: </label>
+            </div>
+            <div class="col-md-8">
+                <select id="cbbGrado" data-show-content="true" class="form-control" style="width: 100%" onchange="cargar_selector_seccion_docente(this)">
+                    <option value="0">-- Seleccione --</option>
+                </select>
+            </div>
+        </div>
+        <div class="row space-div">
+            <div class="col-md-4" style="margin-bottom: 0px;">
+                <label> Secci&oacute;n: </label>
+            </div>
+            <div class="col-md-8">
+                <select id="cbbSeccion" data-show-content="true" class="form-control" style="width: 100%">
+                    <option value="0">-- Seleccione --</option>
+                </select>
+            </div>
+        </div>
+        <?php
+    }
+}
+
+function operacion_registro_seccion_docente() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $sm_codigoEdi = strip_tags(trim($_POST["sm_codigo"]));
+    $s_docente = strip_tags(trim($_POST["s_docente"]));
+    $s_nivel = strip_tags(trim($_POST["s_nivel"]));
+    $s_grado = strip_tags(trim($_POST["s_grado"]));
+    $s_seccion = strip_tags(trim($_POST["s_seccion"]));
+    $s_sede = strip_tags(trim($_POST["s_sede"]));
+    try {
+        $str_submenu = "";
+        $str_menu_id = "";
+        $str_menu_nombre = "";
+        $submenu = fnc_consultar_submenu($conexion, $sm_codigoEdi);
+        if (count($submenu) > 0) {
+            $str_submenu = $submenu[0]["ruta"];
+            $str_menu_id = $submenu[0]["id"];
+            $str_menu_nombre = $submenu[0]["nombre"];
+        } else {
+            $str_submenu = "";
+            $str_menu_id = "";
+            $str_menu_nombre = "";
+        }
+
+        $busqueda = fnc_buscar_seccion_docente($conexion, $s_docente, $s_sede, $s_seccion);
+        if (count($busqueda) === 0) {
+            $resp = fnc_registrar_seccion_docente($conexion, $s_docente, $s_sede, $s_seccion);
+            if ($resp) {
+                $sql_auditoria = fnc_registrar_seccion_docente_auditoria($s_docente, $s_sede, $s_seccion);
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "operacion_registro_seccion_docente" . '", "' . "fnc_registrar_seccion_docente" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_usuario_dictado" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+                echo "***1***Sección registrada correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
+            } else {
+                echo "***0***Error al registrar la sección al docente.<br/>";
+            }
+        } else {
+            echo "***0***El grado y sección " . $busqueda[0]["seccion"] . " ya fue registrada.<br/>";
+        }
+    } catch (Exception $exc) {
+        echo "***0***Error al registrar la sección al docente.<br/>";
+    }
+}
+
+function formulario_eliminar_seccion_docente() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $u_docente = strip_tags(trim($_POST["u_docente"]));
+    $u_dictado = strip_tags(trim($_POST["u_dictado"]));
+    $data_dictado = fnc_buscar_gradoseccion_docente($conexion, $u_dictado);
+    ?>
+    <div class="row space-div">
+        <div class="col-md-12" style="margin-bottom: 0px;">
+            <input type="hidden" id="hdnCodiDictado" class="form-control" value="<?php echo trim($u_dictado); ?>"/>
+            <input type="hidden" id="hdnCodiDocente" class="form-control" value="<?php echo trim($u_docente); ?>"/>
+            <label>&iquest;Esta seguro de eliminar el grado y secci&oacute;n "<label style="font-style: italic; "><?php echo $data_dictado[0]["seccion"] ?>"</label> al docente?</label>
+        </div>
+    </div>
+    <?php
+}
+
+function operacion_eliminar_seccion_docente() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $sm_codigo = strip_tags(trim($_POST["sm_codigo"]));
+    $u_hdnCodiDictado = strip_tags(trim($_POST["u_hdnCodiDictado"]));
+    try {
+        $eliminar = fnc_eliminar_seccion_docente($conexion, $u_hdnCodiDictado, '0');
+        $str_submenu = "";
+        $str_menu_id = "";
+        $str_menu_nombre = "";
+        $submenu = fnc_consultar_submenu($conexion, $sm_codigo);
+        if (count($submenu) > 0) {
+            $str_submenu = $submenu[0]["ruta"];
+            $str_menu_id = $submenu[0]["id"];
+            $str_menu_nombre = $submenu[0]["nombre"];
+        } else {
+            $str_submenu = "";
+            $str_menu_id = "";
+            $str_menu_nombre = "";
+        }
+        if ($eliminar) {
+            $sql_auditoria = fnc_eliminar_seccion_docente_auditoria($u_hdnCodiDictado, '0');
+            $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "operacion_eliminar_seccion_docente" . '", "' . "fnc_eliminar_seccion_docente" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_usuario_dictado" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+            fnc_registrar_auditoria($conexion, $sql_insert);
+        }
+        echo "***1***Sección del docente eliminada correctamente." . "";
+    } catch (Exception $exc) {
+        echo "***0***Error al eliminar el grado y sección al docente.<br/>";
+    }
+}
+
+function formulario_activar_seccion_docente() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $u_docente = strip_tags(trim($_POST["u_docente"]));
+    $u_dictado = strip_tags(trim($_POST["u_dictado"]));
+    $data_dictado = fnc_buscar_gradoseccion_docente($conexion, $u_dictado);
+    ?>
+    <div class="row space-div">
+        <div class="col-md-12" style="margin-bottom: 0px;">
+            <input type="hidden" id="hdnCodiDictado" class="form-control" value="<?php echo trim($u_dictado); ?>"/>
+            <input type="hidden" id="hdnCodiDocente" class="form-control" value="<?php echo trim($u_docente); ?>"/>
+            <label>&iquest;Esta seguro de activar el grado y secci&oacute;n "<label style="font-style: italic; "><?php echo $data_dictado[0]["seccion"] ?>"</label> al docente?</label>
+        </div>
+    </div>
+    <?php
+}
+
+function operacion_activar_seccion_docente() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $sm_codigo = strip_tags(trim($_POST["sm_codigo"]));
+    $u_hdnCodiDictado = strip_tags(trim($_POST["u_hdnCodiDictado"]));
+    try {
+        $eliminar = fnc_eliminar_seccion_docente($conexion, $u_hdnCodiDictado, '1');
+        $str_submenu = "";
+        $str_menu_id = "";
+        $str_menu_nombre = "";
+        $submenu = fnc_consultar_submenu($conexion, $sm_codigo);
+        if (count($submenu) > 0) {
+            $str_submenu = $submenu[0]["ruta"];
+            $str_menu_id = $submenu[0]["id"];
+            $str_menu_nombre = $submenu[0]["nombre"];
+        } else {
+            $str_submenu = "";
+            $str_menu_id = "";
+            $str_menu_nombre = "";
+        }
+        if ($eliminar) {
+            $sql_auditoria = fnc_eliminar_seccion_docente_auditoria($u_hdnCodiDictado, '1');
+            $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "operacion_eliminar_seccion_docente" . '", "' . "fnc_eliminar_seccion_docente" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_usuario_dictado" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+            fnc_registrar_auditoria($conexion, $sql_insert);
+        }
+        echo "***1***Sección del docente activada correctamente." . "";
+    } catch (Exception $exc) {
+        echo "***0***Error al activar el grado y sección al docente.<br/>";
+    }
+}
+
+function formulario_registro_nuevo_gradoseccion() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $lista_niveles = fnc_lista_niveles($conexion, '', '1');
+    ?>
+    <div class="row">
+        <div class="col-lg-6" style="margin-bottom: 0px;">
+            <div class="col-lg-12 col-md-4 col-sm-6 col-12">
+                <div class="row space-div">
+                    <div class="col-md-4" style="margin-bottom: 0px;">
+                        <label>C&oacute;digo: </label>
+                    </div>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control pull-right" id="txtCodigo" style="width: 100%;text-transform: uppercase;" maxlength="8" placeholder="Ejm: EP-3,PRI-1,SEC-2,..." />
+                    </div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-4" style="margin-bottom: 0px;">
+                        <label>Nombre: </label>
+                    </div>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control pull-right" id="txtNombre" />
+                    </div>
+                </div>
+                <div class="row space-div">
+                    <div class="col-md-4" style="margin-bottom: 0px;">
+                        <label>Nivel: </label>
+                    </div>
+                    <div class="col-md-8">
+                        <select id="cbbNivel" data-show-content="true" class="form-control" style="width: 100%" >
+                            <option value="0">-- Seleccione --</option>
+                            <?php
+                            foreach ($lista_niveles as $nivel) {
+                                echo "<option value='" . $nivel["codigo"] . "' >" . $nivel["nombre"] . "</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6" style="margin-bottom: 0px;">
+            <div class="col-lg-12 col-md-4 col-sm-6 col-12">
+                <fieldset class="col-md-12 fieldset2" id="listSecciones">
+                    <legend class="legend">SECCIONES</legend>
+                    <div class="wrapper">
+                        <div class="buttons">  
+                            <input type="button" class="btn btn-success" onclick="crear_elemento();" value="Agregar"/>
+                        </div><br>
+                        <div id="contenedor">
+                            <li><label>Secci&oacute;n A</label> <a onclick="eliminar_elemento(this);">&times;</a></li>
+                        </div>
+                        <br>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+    <?php
+}
+
+function proceso_nuevo_gradoseccion() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $sm_codigoMenu = strip_tags(trim($_POST["sm_codigo"]));
+    $s_codigo = strip_tags(trim($_POST["s_codigo"]));
+    $s_nombre = strip_tags(trim($_POST["s_nombre"]));
+    $s_nivel = strip_tags(trim($_POST["s_nivel"]));
+    $sec_lista = strip_tags(trim($_POST["sec_lista"]));
+    try {
+        $str_submenu = "";
+        $str_menu_id = "";
+        $str_menu_nombre = "";
+        $submenu = fnc_consultar_submenu($conexion, $sm_codigoMenu);
+        if (count($submenu) > 0) {
+            $str_submenu = $submenu[0]["ruta"];
+            $str_menu_id = $submenu[0]["id"];
+            $str_menu_nombre = $submenu[0]["nombre"];
+        } else {
+            $str_submenu = "";
+            $str_menu_id = "";
+            $str_menu_nombre = "";
+        }
+        $lastInsertGrado = fnc_registrar_grado($conexion, $s_codigo, $s_nombre, $s_nivel);
+        if ($lastInsertGrado !== "0") {
+            $str_inserts = "";
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_registrar_grado_auditoria($s_codigo, $s_nombre, $s_nivel);
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_nuevo_gradoseccion" . '", "' . "fnc_registrar_grado" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_grado" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
+
+            if ($sec_lista !== "") {
+                $sec_lista = substr($sec_lista, 0, -1);
+                $lista_secciones = explode("*", $sec_lista);
+                if (count($lista_secciones) > 0) {
+                    $valor = fnc_obtener_codigo_valor($conexion, $s_nivel);
+                    $num_nivel = str_pad($s_nivel - 1, 2, "0", STR_PAD_LEFT);
+                    for ($i = 0; $i < count($lista_secciones); $i++) {
+                        $arreglo = explode("Sección ", $lista_secciones[$i]);
+                        $codigo_seccion = $num_nivel . $valor[0]["valor"] . $arreglo[1];
+                        $str_inserts .= "('" . $codigo_seccion . "','" . $lista_secciones[$i] . "','" . $lastInsertGrado . "','1'),";
+                    }
+                    $str_lista_insert = substr($str_inserts, 0, -1);
+                    if ($str_lista_insert !== "") {
+                        $registrar_accesos = fnc_registrar_secciones($conexion, $str_lista_insert);
+                        if ($registrar_accesos) {
+                            if (count($submenu) > 0) {
+                                $sql_auditoria = fnc_registrar_secciones_auditoria($str_lista_insert);
+                                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_nuevo_gradoseccion" . '", "' . "fnc_registrar_secciones" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_seccion" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                                fnc_registrar_auditoria($conexion, $sql_insert);
+                            }
+                        }
+                    }
+                }
+            }
+            echo "***1***Grado y seccion registrados correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
+        } else {
+            echo "***0***Error al registrar grado y sección.***<br/>";
+        }
+    } catch (Exception $exc) {
+        echo "***0***Error al registrar el grado y sección.***<br/>";
+    }
+}
+
+function formulario_editar_gradoseccion() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $u_gradoseccion = strip_tags(trim($_POST["u_gradoseccion"]));
+    $eu_codgradoseccion = explode("-", $u_gradoseccion);
+    $gradoseccion_codigo = explode("/", $eu_codgradoseccion[1]);
+    $lista_niveles = fnc_lista_niveles($conexion, '', '1');
+    $obtener_datos = fnc_obtener_gradoseccion($conexion, $gradoseccion_codigo[0]);
+    if (count($obtener_datos) > 0) {
+        $disabled = "";
+        if ($obtener_datos[0]["inicio"] === "1") {
+            $disabled = " disabled ";
+        } else {
+            $disabled = "";
+        }
+        ?>
+        <div class="row">
+            <div class="col-lg-6" style="margin-bottom: 0px;">
+                <div class="col-lg-12 col-md-4 col-sm-6 col-12">
+                    <input type="hidden" id="txtCod" value="<?php echo $obtener_datos[0]["id"]; ?>"/>
+                    <input type="hidden" id="txtDisable" value="<?php echo trim($disabled); ?>"/>
+                    <div class="row space-div">
+                        <div class="col-md-4" style="margin-bottom: 0px;">
+                            <label>C&oacute;digo: </label>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="text" class="form-control pull-right" id="txtCodigoEdi" style="width: 100%;text-transform: uppercase;" 
+                                   maxlength="8" placeholder="Ejm: EP-3,PRI-1,SEC-2,..." value="<?php echo $obtener_datos[0]["codigo"]; ?>" <?php echo $disabled; ?>/>
+                        </div>
+                    </div>
+                    <div class="row space-div">
+                        <div class="col-md-4" style="margin-bottom: 0px;">
+                            <label>Nombre: </label>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="text" class="form-control pull-right" id="txtNombreEdi" value="<?php echo $obtener_datos[0]["nombre"]; ?>" <?php echo $disabled; ?>/>
+                        </div>
+                    </div>
+                    <div class="row space-div">
+                        <div class="col-md-4" style="margin-bottom: 0px;">
+                            <label>Nivel: </label>
+                        </div>
+                        <div class="col-md-8">
+                            <select id="cbbNivelEdi" data-show-content="true" class="form-control" style="width: 100%" <?php echo $disabled; ?>>
+                                <option value="0">-- Seleccione --</option>
+                                <?php
+                                $selected = "";
+                                foreach ($lista_niveles as $nivel) {
+                                    if ($obtener_datos[0]["nivId"] === $nivel["codigo"]) {
+                                        $selected = " selected ";
+                                    } else {
+                                        $selected = "";
+                                    }
+                                    echo "<option value='" . $nivel["codigo"] . "' $selected>" . $nivel["nombre"] . "</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row space-div">
+                        <div class="col-md-4" style="margin-bottom: 0px;">
+                            <label>Estado: </label>
+                        </div>
+                        <div class="col-md-8">
+                            <select id="cbbEstadoGraSec" class="form-control select2" style="width: 100%">
+                                <option value="-1">-- Seleccione --</option>
+                                <?php
+                                $selectedestado = "";
+                                $array_estado = array();
+                                array_push($array_estado, ["id" => "1", "nombre" => "Activo"]);
+                                array_push($array_estado, ["id" => "0", "nombre" => "Inactivo"]);
+                                foreach ($array_estado as $listestado) {
+                                    if ($listestado["id"] == $obtener_datos[0]["estadoId"]) {
+                                        $selectedestado = " selected ";
+                                    } else {
+                                        $selectedestado = "";
+                                    }
+                                    echo "<option value='" . $listestado["id"] . "' $selectedestado>" . $listestado["nombre"] . "</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6" style="margin-bottom: 0px;">
+                <div class="col-lg-12 col-md-4 col-sm-6 col-12">
+                    <fieldset class="col-md-12 fieldset2" id="listSecciones">
+                        <legend class="legend">SECCIONES</legend>
+                        <div class="wrapper">
+                            <div class="buttons">  
+                                <input type="button" class="btn btn-success" onclick="crear_elemento_edi();" value="Agregar"/>
+                            </div><br>
+                            <div id="contenedor0">
+                                <?php
+                                $secciones = fnc_lista_secciones($conexion, $obtener_datos[0]["id"]);
+                                $checked = "";
+                                $ultimo_seccion = "";
+                                foreach ($secciones as $seccion) {
+                                    if ($seccion["estado"] === "1") {
+                                        $checked = " checked ";
+                                    } else {
+                                        $checked = "";
+                                    }
+                                    $ultimo_seccion = $seccion["letra"];
+                                    echo '<li><input type="checkbox" class="checkboxesSecciones" name="check_seccion[]" value="' . $seccion["codigo"] . '" ' . $checked . ' />&nbsp;&nbsp;&nbsp; <label>' . $seccion['nombre'] . '</label></li>';
+                                }
+                                ?>
+                            </div>
+                            <div id="contenedor">
+                                <?php
+                                $lista_nombres = fnc_lista_nombre_secciones();
+                                $index = array_search($ultimo_seccion, $lista_nombres, true) + 1;
+                                ?>
+                                <!--<li><label>Secci&oacute;n <?php //echo $lista_nombres[$index];         ?></label> <a onclick="eliminar_elemento(this);">&times;</a></li>-->
+                            </div>
+                            <br>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+}
+
+function proceso_editar_gradoseccion() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $sm_codigoMenu = strip_tags(trim($_POST["sm_codigo"]));
+    $s_cod = strip_tags(trim($_POST["s_cod"]));
+    $s_disable = strip_tags(trim($_POST["s_disable"]));
+    $s_codigo = strip_tags(trim($_POST["s_codigo"]));
+    $s_nombre = strip_tags(trim($_POST["s_nombre"]));
+    $s_nivel = strip_tags(trim($_POST["s_nivel"]));
+    $s_estado = strip_tags(trim($_POST["s_estado"]));
+    $sec_lista_edi = strip_tags(trim($_POST["sec_lista_edi"]));
+    $sec_lista_nue = strip_tags(trim($_POST["sec_lista_nue"]));
+    if (trim($sec_lista_nue) !== "") {
+        $sec_lista_nue = substr($sec_lista_nue, 0, -1);
+    } else {
+        $sec_lista_nue = "";
+    }
+    $sec_lista_edi = substr($sec_lista_edi, 0, -1);
+    try {
+        $str_submenu = "";
+        $str_menu_id = "";
+        $str_menu_nombre = "";
+        $submenu = fnc_consultar_submenu($conexion, $sm_codigoMenu);
+        if (count($submenu) > 0) {
+            $str_submenu = $submenu[0]["ruta"];
+            $str_menu_id = $submenu[0]["id"];
+            $str_menu_nombre = $submenu[0]["nombre"];
+        } else {
+            $str_submenu = "";
+            $str_menu_id = "";
+            $str_menu_nombre = "";
+        }
+        $lastEditarGrado = fnc_editar_grado($conexion, $s_cod, $s_disable, $s_codigo, $s_nombre, $s_nivel, $s_estado);
+        if ($lastEditarGrado) {
+            $str_inserts = "";
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_editar_grado_auditoria($s_cod, $s_disable, $s_codigo, $s_nombre, $s_nivel, $s_estado);
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_gradoseccion" . '", "' . "fnc_editar_grado" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_grado" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
+            if (trim($sec_lista_edi) !== "") {
+                $lista_secciones_edi = explode("*", $sec_lista_edi);
+                if (count($lista_secciones_edi) > 0) {
+                    for ($i = 0; $i < count($lista_secciones_edi); $i++) {
+                        $arreglito = explode("-", $lista_secciones_edi[$i]);
+                        $codigo_id = $arreglito[0];
+                        $estado = $arreglito[1];
+                        $edi = fnc_editar_seccion($conexion, $codigo_id, $estado);
+                        if ($edi) {
+                            $sql_auditoria = fnc_editar_seccion_auditoria($codigo_id, $estado);
+                            $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_gradoseccion" . '", "' . "fnc_editar_seccion" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_seccion" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                            fnc_registrar_auditoria($conexion, $sql_insert);
+                        }
+                    }
+                }
+            }
+            if (trim($sec_lista_nue) !== "") {
+                $lista_secciones_nuevo = explode("*", $sec_lista_nue);
+                if (count($lista_secciones_nuevo) > 0) {
+                    $valor = fnc_obtener_codigo_valor_edi($conexion, $s_cod);
+                    $num_nivel = str_pad($s_nivel - 1, 2, "0", STR_PAD_LEFT);
+                    for ($i = 0; $i < count($lista_secciones_nuevo); $i++) {
+                        $arreglo = explode("Sección ", $lista_secciones_nuevo[$i]);
+                        $codigo_seccion = $num_nivel . $valor[0]["valor"] . $arreglo[1];
+                        $str_inserts .= "('" . $codigo_seccion . "','" . $lista_secciones_nuevo[$i] . "','" . $s_cod . "','1'),";
+                    }
+                    $str_lista_insert = substr($str_inserts, 0, -1);
+                    if ($str_lista_insert !== "") {
+                        $registrar_accesos = fnc_registrar_secciones($conexion, $str_lista_insert);
+                        if ($registrar_accesos) {
+                            if (count($submenu) > 0) {
+                                $sql_auditoria = fnc_registrar_secciones_auditoria($str_lista_insert);
+                                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_gradoseccion" . '", "' . "fnc_registrar_secciones" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_seccion" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                                fnc_registrar_auditoria($conexion, $sql_insert);
+                            }
+                        }
+                    }
+                }
+            }
+            echo "***1***Grado y seccion editados correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
+        } else {
+            if (trim($sec_lista_edi) !== "") {
+                $lista_secciones_edi = explode("*", $sec_lista_edi);
+                if (count($lista_secciones_edi) > 0) {
+                    for ($i = 0; $i < count($lista_secciones_edi); $i++) {
+                        $arreglito = explode("-", $lista_secciones_edi[$i]);
+                        $codigo_id = $arreglito[0];
+                        $estado = $arreglito[1];
+                        $edi = fnc_editar_seccion($conexion, $codigo_id, $estado);
+                        if ($edi) {
+                            $sql_auditoria = fnc_editar_seccion_auditoria($codigo_id, $estado);
+                            $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_gradoseccion" . '", "' . "fnc_editar_seccion" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_seccion" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                            fnc_registrar_auditoria($conexion, $sql_insert);
+                        }
+                    }
+                }
+            }
+            if (trim($sec_lista_nue) !== "") {
+                $lista_secciones_nuevo = explode("*", $sec_lista_nue);
+                if (count($lista_secciones_nuevo) > 0) {
+                    $valor = fnc_obtener_codigo_valor_edi($conexion, $s_cod);
+                    $num_nivel = str_pad($s_nivel - 1, 2, "0", STR_PAD_LEFT);
+                    for ($i = 0; $i < count($lista_secciones_nuevo); $i++) {
+                        $arreglo = explode("Sección ", $lista_secciones_nuevo[$i]);
+                        $codigo_seccion = $num_nivel . $valor[0]["valor"] . $arreglo[1];
+                        $str_inserts .= "('" . $codigo_seccion . "','" . $lista_secciones_nuevo[$i] . "','" . $s_cod . "','1'),";
+                    }
+                    $str_lista_insert = substr($str_inserts, 0, -1);
+                    if ($str_lista_insert !== "") {
+                        $registrar_accesos = fnc_registrar_secciones($conexion, $str_lista_insert);
+                        if ($registrar_accesos) {
+                            if (count($submenu) > 0) {
+                                $sql_auditoria = fnc_registrar_secciones_auditoria($str_lista_insert);
+                                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_gradoseccion" . '", "' . "fnc_registrar_secciones" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_seccion" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                                fnc_registrar_auditoria($conexion, $sql_insert);
+                            }
+                        }
+                    }
+                }
+            }
+            echo "***1***Grado y seccion editados correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
+        }
+    } catch (Exception $exc) {
+        echo "***0***Error al editar el grado y sección.***<br/>";
+    }
+}
+
+function formulario_eliminar_gradoseccion() {
+    $eu_codigo = strip_tags(trim($_POST["u_gradoseccion"]));
+    $eu_cod1 = explode("-", $eu_codigo);
+    $eu_codi = explode("/", $eu_cod1[1]);
+    ?>
+    <div class="row space-div">
+        <div class="col-md-12" style="margin-bottom: 0px;">
+            <input type="hidden" id="hdnCodiGradoEli" class="form-control" value="<?php echo trim($eu_codi[0]); ?>"/>
+            <label>&iquest;Esta seguro de cambiar el estado del grado a inactivo?</label>
+        </div>
+    </div>
+    <?php
+}
+
+function operacion_eliminar_gradoseccion() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $sm_codigoEdi = strip_tags(trim($_POST["sm_codigo"]));
+    $u_u_codiGrado = strip_tags(trim($_POST["u_codiGrado"]));
+    try {
+        $eliminar = fnc_eliminar_grado($conexion, $u_u_codiGrado);
+        $str_submenu = "";
+        $str_menu_id = "";
+        $str_menu_nombre = "";
+        $submenu = fnc_consultar_submenu($conexion, $sm_codigoEdi);
+        if (count($submenu) > 0) {
+            $str_submenu = $submenu[0]["ruta"];
+            $str_menu_id = $submenu[0]["id"];
+            $str_menu_nombre = $submenu[0]["nombre"];
+        } else {
+            $str_submenu = "";
+            $str_menu_id = "";
+            $str_menu_nombre = "";
+        }
+        if ($eliminar) {
+            if (count($submenu) > 0) {
+                $sql_auditoria = fnc_eliminar_grado_auditoria($u_u_codiGrado);
+                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "operacion_eliminar_gradoseccion" . '", "' . "fnc_eliminar_grado" . '","' . $sql_auditoria . '","' . "UPDATE" . '","' . "tb_grado" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql_insert);
+            }
+        }
+        echo "***1***Grado eliminado correctamente." . "***" . $str_menu_id . "--" . $str_submenu . "--" . $str_menu_nombre . "";
+    } catch (Exception $exc) {
+        echo "***0***Error al eliminar el grado.***<br/>";
+    }
+}
+
+function formulario_selector_grado_docente() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_nivel = strip_tags(trim($_POST["s_nivel"]));
+    $html = "";
+    $lista_grados = fnc_lista_grados_x_nivel($conexion, $s_nivel);
+    if (count($lista_grados) > 0) {
+        $html .= '<option value="0">-- Seleccione --</option>';
+        foreach ($lista_grados as $grado) {
+            $html .= "<option value='" . $grado["codigo"] . "' >" . $grado["nombre"] . "</option>";
+        }
+    }
+    echo $html;
+}
+
+function formulario_selector_seccion_docente() {
+    $con = new DB(1111);
+    $conexion = $con->connect();
+    $s_nivel = strip_tags(trim($_POST["s_nivel"]));
+    $s_grado = strip_tags(trim($_POST["s_grado"]));
+    $html = "";
+    $lista_secciones = fnc_lista_secciones_grados($conexion, $s_nivel, $s_grado);
+    if (count($lista_secciones) > 0) {
+        $html .= '<option value="0">-- Seleccione --</option>';
+        foreach ($lista_secciones as $seccion) {
+            $html .= "<option value='" . $seccion["codigo"] . "' >" . $seccion["nombre"] . "</option>";
+        }
+    }
+    echo $html;
+}
+?>

@@ -144,6 +144,7 @@ $lista_perfiles = fnc_lista_tipo_usuarios($conexion, "", "");
 
 <script>
     $(function () {
+        $('body').css('overflow', 'auto');
         /*Modales de Administrar Perfiles*/
         $('#modal-nuevo-perfil').on('show.bs.modal', function (event) {
             var modal = $(this);

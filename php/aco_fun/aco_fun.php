@@ -1450,9 +1450,9 @@ function fnc_registrar_semaforo_auditoria($id, $codigo, $nombre, $valor_inio, $v
     return $sql;
 }
 
-function fnc_lista_anio_semaforo($conexion, $id, $estado) {
+function fnc_lista_bimestre_semaforo($conexion, $id, $estado) {
     $arreglo = array();
-    $sql = con_lista_anio_semaforo($id, $estado);
+    $sql = con_lista_bimestre_semaforo($id, $estado);
     $stmt = $conexion->query($sql);
     foreach ($stmt as $data) {
         array_push($arreglo, $data);
@@ -1492,7 +1492,7 @@ function fnc_editar_semaforo_x_anio($conexion, $id, $orden, $fecha_ini, $fecha_f
     return $stmt;
 }
 
-function fnc_editar_semaforo_x_anio_auditoria($conexion, $id, $orden, $fecha_ini, $fecha_fin, $estado) {
+function fnc_editar_semaforo_x_anio_auditoria($id, $orden, $fecha_ini, $fecha_fin, $estado) {
     $sql = con_editar_semaforo_x_anio($id, $orden, $fecha_ini, $fecha_fin, $estado);
     return $sql;
 }
@@ -1530,6 +1530,26 @@ function fnc_lista_semaforo($conexion, $id, $estado) {
 function fnc_lista_bimestre($conexion, $id, $estado) {
     $arreglo = array();
     $sql = con_lista_bimestre($id, $estado);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_semaforo_bimestre($conexion, $id, $estado) {
+    $arreglo = array();
+    $sql = con_lista_semaforo_bimestre($id, $estado);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_semaforo_bimestre2($conexion, $id, $estado) {
+    $arreglo = array();
+    $sql = con_lista_semaforo_bimestre2($id, $estado);
     $stmt = $conexion->query($sql);
     foreach ($stmt as $data) {
         array_push($arreglo, $data);
@@ -1656,7 +1676,6 @@ function fnc_cambiar_pass_usuario_auditoria($usuario, $password) {
     return $sql;
 }
 
-//marita
 function fnc_lista_cantidad_entrevistas($conexion, $sede, $bimestre, $nivel, $grado, $seccion) {
     $arreglo = array();
     $sql = con_lista_cantidad_entrevistas($sede, $bimestre, $nivel, $grado, $seccion);
@@ -1687,4 +1706,252 @@ function fnc_lista_reporte_semanal($conexion, $sede, $bimestre, $fecha_inicio, $
     return $arreglo;
 }
 
+function fnc_obtener_fecha_actual($conexion) {
+    $arreglo = array();
+    $sql = con_obtener_fecha_actual();
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_registrar_solicitudes_archivos($conexion, $solicitud, $nombre, $tipo, $estado) {
+    $sql = con_registrar_solicitudes_archivos($solicitud, $nombre, $tipo, $estado);
+    $stmt = $conexion->exec($sql);
+    return $conexion->lastInsertId();
+}
+
+function fnc_registrar_solicitudes_archivos_auditoria($solicitud, $nombre, $tipo, $estado) {
+    $sql = con_registrar_solicitudes_archivos($solicitud, $nombre, $tipo, $estado);
+    return $sql;
+}
+
+function fnc_lista_solicitudes_archivos($conexion, $solicitud, $estado) {
+    $arreglo = array();
+    $sql = con_lista_solicitudes_archivos($solicitud, $estado);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_obtener_solicitud_archivo($conexion, $solicitud) {
+    $arreglo = array();
+    $sql = con_obtener_solicitud_archivo($solicitud);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_eliminar_archivo($conexion, $id, $estado) {
+    $sql = con_eliminar_archivo($id, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_eliminar_archivo_auditoria($id, $estado) {
+    $sql = con_eliminar_archivo($id, $estado);
+    return $sql;
+}
+
+function fnc_buscar_docentes($conexion, $filtro, $sede, $seccion) {
+    $reporte = array();
+    $sql = con_buscar_docentes($filtro, $sede, $seccion);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        $reporte_row["value"] = $data["value"];
+        $reporte_row["label"] = $data["text"];
+        $reporte_row["dni"] = $data["dni"];
+        $reporte_row["nombres"] = $data["nombres"];
+        array_push($reporte, $reporte_row);
+    }
+    return $reporte;
+}
+
+function fnc_historial_todas_secciones_docente($conexion, $codigo) {
+    $arreglo = array();
+    $sql = con_historial_todas_secciones_docente($codigo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_buscar_seccion_docente($conexion, $docente, $sede, $seccion) {
+    $arreglo = array();
+    $sql = con_buscar_seccion_docente($docente, $sede, $seccion);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_registrar_seccion_docente($conexion, $docente, $sede, $seccion) {
+    $sql = con_registrar_seccion_docente($docente, $sede, $seccion);
+    $stmt = $conexion->exec($sql);
+    return $conexion->lastInsertId();
+}
+
+function fnc_registrar_seccion_docente_auditoria($docente, $sede, $seccion) {
+    $sql = con_registrar_seccion_docente($docente, $sede, $seccion);
+    return $sql;
+}
+
+function fnc_obtener_seccion_docente($conexion, $codigo) {
+    $arreglo = array();
+    $sql = con_obtener_seccion_docente($codigo);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_editar_seccion_docente($conexion, $dictado, $seccion, $estado) {
+    $sql = con_editar_seccion_docente($dictado, $seccion, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_editar_seccion_docente_auditoria($dictado, $seccion, $estado) {
+    $sql = con_editar_seccion_docente($dictado, $seccion, $estado);
+    return $sql;
+}
+
+function fnc_buscar_gradoseccion_docente($conexion, $dictado) {
+    $arreglo = array();
+    $sql = con_buscar_gradoseccion_docente($dictado);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_eliminar_seccion_docente($conexion, $id, $estado) {
+    $sql = con_eliminar_seccion_docente($id, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_eliminar_seccion_docente_auditoria($id, $estado) {
+    $sql = con_eliminar_seccion_docente($id, $estado);
+    return $sql;
+}
+
+function fnc_lista_grados_x_secciones($conexion, $id, $estado) {
+    $arreglo = array();
+    $sql = con_lista_grados_x_secciones($id, $estado);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_registrar_grado($conexion, $codigo, $nombre, $nivel) {
+    $sql = con_registrar_grado($codigo, $nombre, $nivel);
+    $stmt = $conexion->exec($sql);
+    return $conexion->lastInsertId();
+}
+
+function fnc_registrar_grado_auditoria($codigo, $nombre, $nivel) {
+    $sql = con_registrar_grado($codigo, $nombre, $nivel);
+    return $sql;
+}
+
+function fnc_obtener_codigo_valor($conexion, $nivel) {
+    $arreglo = array();
+    $sql = con_obtener_codigo_valor($nivel);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_registrar_secciones($conexion, $lista) {
+    $sql = con_registrar_secciones($lista);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_registrar_secciones_auditoria($lista) {
+    $sql = con_registrar_secciones($lista);
+    return $sql;
+}
+
+function fnc_obtener_gradoseccion($conexion, $id) {
+    $arreglo = array();
+    $sql = con_obtener_gradoseccion($id);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_secciones($conexion, $grado) {
+    $arreglo = array();
+    $sql = con_lista_secciones($grado);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_lista_nombre_secciones() {
+    $arreglo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'X'];
+    return $arreglo;
+}
+
+function fnc_editar_grado($conexion, $id, $disable, $codigo, $nombre, $nivel, $estado) {
+    $sql = con_editar_grado($id, $disable, $codigo, $nombre, $nivel, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_editar_grado_auditoria($id, $disable, $codigo, $nombre, $nivel, $estado) {
+    $sql = con_editar_grado($id, $disable, $codigo, $nombre, $nivel, $estado);
+    return $sql;
+}
+
+function fnc_editar_seccion($conexion, $id, $estado) {
+    $sql = con_editar_seccion($id, $estado);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_editar_seccion_auditoria( $id, $estado) {
+    $sql = con_editar_seccion($id, $estado);
+    return $sql;
+}
+
+function fnc_obtener_codigo_valor_edi($conexion, $grado) {
+    $arreglo = array();
+    $sql = con_obtener_codigo_valor_edi($grado);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+function fnc_eliminar_grado($conexion, $id) {
+    $sql = con_eliminar_grado($id);
+    $stmt = $conexion->exec($sql);
+    return $stmt;
+}
+
+function fnc_eliminar_grado_auditoria($id) {
+    $sql = con_eliminar_grado($id);
+    return $sql;
+}
 ?>

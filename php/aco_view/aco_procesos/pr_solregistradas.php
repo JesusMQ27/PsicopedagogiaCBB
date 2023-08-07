@@ -154,7 +154,7 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                                     <?php
                                     if ($perfil == "1" || $perfil == "5" || $perfil == "9") {
                                         ?>
-                                        <th>Privacidad</th>
+                                        <th>Reservado</th>
                                         <?php
                                     }
                                     ?>
@@ -202,6 +202,8 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
                                     if ($perfil !== "9") {
                                         $html .= "<i class='nav-icon fas fa-paper-plane azul' title='Enviar al correo' data-toggle='modal' data-target='#modal-enviar-solicitud' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;";
                                     }
+
+                                    $html .= "<i class='nav-icon fas fa-upload negro' title='Cargar archivo(s)' data-toggle='modal' data-target='#modal-cargar-archivos' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;";
                                     $html .= "</td>"
                                             . "</tr>";
                                     $num++;
@@ -248,7 +250,6 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
     <!-- /.modal-content -->
 </div>
 <!-- /.modal-dialog -->
-</div>
 <div class="modal fade" id="modal-editar-apoderado" role="dialog" aria-hidden="true" aria-labelledby="modal-editar-apoderado">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -550,9 +551,79 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
     </div>
     <!-- /.modal-dialog -->
 </div>
-
+<!-- marita-->
+<div class="modal fade" id="modal-cargar-archivos" role="dialog" aria-hidden="true" aria-labelledby="modal-cargar-archivos">
+    <div class="modal-dialog" style="max-width: 80%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Cargar archivo(s)</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                <div style="float: right">
+                    <label></label>
+                </div>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<div class="modal fade" id="modal-eliminar-archivo" role="dialog" aria-hidden="true" aria-labelledby="modal-eliminar-archivo">
+    <div class="modal-dialog" style="max-width: 40%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Eliminar archivo</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                <div style="float: right">
+                    <label></label>
+                    <button type="button" id="btnEliminarArchivo" class="btn btn-primary swalDefaultError" onclick="return eliminar_archivo()">Eliminar archivo</button>
+                </div>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<div class="modal fade" id="modal-activar-archivo" role="dialog" aria-hidden="true" aria-labelledby="modal-activar-archivo">
+    <div class="modal-dialog" style="max-width: 40%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Activar archivo</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                <div style="float: right">
+                    <label></label>
+                    <button type="button" id="btnActivarArchivo" class="btn btn-primary swalDefaultError" onclick="return activar_archivo()">Activar archivo</button>
+                </div>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- marita-->
 <script>
     $(function () {
+        $('body').css('overflow', 'auto');
         /*var conteo = new Date(timeLimit * 60000);
          var estado = 0;
          //var intervalo = window.setInterval(mostrar_hora, 1); // Frecuencia de actualización
@@ -826,6 +897,28 @@ $lista_solicitudes = fnc_lista_solicitudes($conexion, $sedeCodi, $fechas[0]["dat
             mostrar_enviar_solicitud(modal, solicitud);
         });
 
+//marita
+        $('#modal-cargar-archivos').on('show.bs.modal', function (event) {
+            var modal = $(this);
+            var button = $(event.relatedTarget);
+            var solicitud = button.data('solicitud');
+            mostrar_cargar_archivos(modal, solicitud);
+        });
+        $('#modal-eliminar-archivo').on('show.bs.modal', function (event) {
+            var modal = $(this);
+            var button = $(event.relatedTarget);
+            var solicitud = button.data('solicitud');
+            var archivo = button.data('archivo');
+            mostrar_eliminar_archivo(modal, solicitud, archivo);
+        });
+        $('#modal-activar-archivo').on('show.bs.modal', function (event) {
+            var modal = $(this);
+            var button = $(event.relatedTarget);
+            var solicitud = button.data('solicitud');
+            var archivo = button.data('archivo');
+            mostrar_activar_archivo(modal, solicitud, archivo);
+        });
+//marita
 
         $("#tableSolicitudesRegistradas").DataTable({
             "responsive": true,

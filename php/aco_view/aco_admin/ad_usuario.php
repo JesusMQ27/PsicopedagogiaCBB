@@ -188,6 +188,7 @@ $lista_usuarios = fnc_lista_usuarios($conexion, "", $sedeCodigo);
 
 <script>
     $(function () {
+        $('body').css('overflow', 'auto');
         /*Modales de Administrar Usuarios*/
         $('#modal-nuevo-usuario').on('show.bs.modal', function (event) {
             var modal = $(this);

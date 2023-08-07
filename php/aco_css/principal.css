@@ -33,6 +33,12 @@ and open the template in the editor.
     cursor: pointer;
 }
 
+/*marita*/
+.negro{
+    color: black;
+    cursor: pointer;
+}
+
 .space-div{
     padding-bottom: 7px;
 }
@@ -210,4 +216,36 @@ and open the template in the editor.
 
 .tr-cursor{
     cursor: pointer;
+}
+
+.fieldset2{
+    background-color: #d3d7db;
+    border-radius: 4px;
+}
+
+#contenedor li {
+    padding: 8px;
+    margin: 4px 0;
+    background: #ddd;
+    list-style: none;
+}
+#contenedor li a {
+    cursor: pointer;
+    float: right;
+    padding: 2px 5px;
+    background: #fbfbfb;
+}
+
+#contenedor0 li {
+    padding: 9px;
+    margin: 4px 0;
+    background: #ddd;
+    list-style: none;
+}
+
+#contenedor li input {
+    cursor: pointer;
+    float: right;
+    padding: 3px 7px;
+    background: #fbfbfb;
 }

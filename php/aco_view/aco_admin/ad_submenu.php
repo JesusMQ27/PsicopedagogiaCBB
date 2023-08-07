@@ -147,7 +147,7 @@ $lista_submenus = fnc_lista_submenus($conexion, "", "");
 
 <script>
     $(function () {
-
+        $('body').css('overflow', 'auto');
         /*Modales de Administrar Menus*/
         $('#modal-nuevo-submenu').on('show.bs.modal', function (event) {
             var modal = $(this);

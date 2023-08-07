@@ -253,6 +253,7 @@ $bimestre_select_id = "";
 </section>
 <script>
     $(function () {
+        $('body').css('overflow', 'auto');
         $("#fecha1").daterangepicker({
             autoApply: true,
             showButtonPanel: false,

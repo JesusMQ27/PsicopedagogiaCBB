@@ -144,7 +144,7 @@ $lista_solicitudes = fnc_lista_solicitudes_y_subsolicitudes($conexion, $sedeCodi
                                     <?php
                                     if ($perfil == "1" || $perfil == "5" || $perfil == "9") {
                                         ?>
-                                        <th>Privacidad</th>
+                                        <th>Reservado</th>
                                         <?php
                                     }
                                     ?>
@@ -221,6 +221,7 @@ $lista_solicitudes = fnc_lista_solicitudes_y_subsolicitudes($conexion, $sedeCodi
 </div>
 <script>
     $(function () {
+        $('body').css('overflow', 'auto');
         $("#fecha1").daterangepicker({
             autoApply: true,
             showButtonPanel: false,
