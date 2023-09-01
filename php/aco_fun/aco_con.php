@@ -1586,13 +1586,14 @@ WHERE sol_id = $codigo ";
     return $sql;
 }
 
-function con_obtener_solicitud_x_codigo($tipo, $codi) {
+function con_obtener_solicitud_x_codigo($tipo, $codi) {//Guadalupe
     $sql = "";
     if ($tipo === "ent") {
         $sql = "SELECT sol_codigo as codigo, a.mat_id as matricula, a0.alu_id as aluId, CONCAT(alu_dni, ' - ', alu_nombres) as alumno_busq, CONCAT(alu_nombres, ' - ', alu_dni) as alumno, alu_sexo as sexo, f.cat_id as categoria, a.subca_id as subcategorgia, a.ent_id, CONCAT(gra_nombre, ' - ', sec_nombre) as grado,
  a.sed_id as sedeId, sed_nombre as sede, CONCAT(usu_paterno, ' ', usu_materno, ' ', usu_nombres) as usuario, usu_num_doc as dni, sol_motivo as motivo, DATE_FORMAT(sol_fecha, '%d/%m/%Y %H:%i:%s') as fecha, sol_plan_estu as plan_estudiante, sol_plan_entre as plan_entrevistador, sol_acuerdos as acuerdos, sol_informe as informe, sol_plan_padre as plan_padre,
  sol_plan_docen as plan_docente, sol_acuerdos_1 as acuerdos1, sol_acuerdos_2 as acuerdos2, a.apo_id as apoderado, sol_estado as estadoId, sol_privacidad as privacidad,
- CASE sol_estado WHEN 0 THEN 'Inactivo' WHEN 1 THEN 'Activo' END as estado, IF(a.apo_id is null, '', CONCAT(apo_nombres)) as apoderado_nombre, IF(apo_dni is null, '', apo_dni) as apoderado_dni
+ CASE sol_estado WHEN 0 THEN 'Inactivo' WHEN 1 THEN 'Activo' END as estado, IF(a.apo_id is null, '', CONCAT(apo_nombres)) as apoderado_nombre, IF(apo_dni is null, '', apo_dni) as apoderado_dni,
+ a.usu_id as usuCodi,perf_id as perfil
 FROM tb_solicitudes a
 INNER JOIN tb_matricula a0 ON a.mat_id = a0.mat_id
 INNER JOIN tb_alumno b ON a0.alu_id = b.alu_id
@@ -1609,7 +1610,8 @@ WHERE sol_id = $codi;
         $sql = "SELECT ssol_codigo as codigo, a.mat_id as matricula, a0.alu_id as aluId, CONCAT(alu_dni, ' - ', alu_nombres) as alumno_busq, CONCAT(alu_nombres, ' - ', alu_dni) as alumno, alu_sexo as sexo, f.cat_id as categoria, a.subca_id as subcategorgia, a.ent_id, CONCAT(gra_nombre, ' - ', sec_nombre) as grado,
  a.sed_id as sedeId, sed_nombre as sede, CONCAT(usu_paterno, ' ', usu_materno, ' ', usu_nombres) as usuario, usu_num_doc as dni, ssol_motivo as motivo, DATE_FORMAT(ssol_fecha, '%d/%m/%Y %H:%i:%s') as fecha, ssol_plan_estu as plan_estudiante, ssol_plan_entre as plan_entrevistador, ssol_acuerdos as acuerdos, ssol_informe as informe, ssol_plan_padre as plan_padre,
  ssol_plan_docen as plan_docente, ssol_acuerdos_1 as acuerdos1, ssol_acuerdos_2 as acuerdos2, a.apo_id as apoderado, ssol_estado as estadoId, ssol_privacidad as privacidad,
- CASE ssol_estado WHEN 0 THEN 'Inactivo' WHEN 1 THEN 'Activo' END as estado, IF(a.apo_id is null, '', CONCAT(apo_nombres)) as apoderado_nombre, IF(apo_dni is null, '', apo_dni) as apoderado_dni
+ CASE ssol_estado WHEN 0 THEN 'Inactivo' WHEN 1 THEN 'Activo' END as estado, IF(a.apo_id is null, '', CONCAT(apo_nombres)) as apoderado_nombre, IF(apo_dni is null, '', apo_dni) as apoderado_dni,
+ a.usu_id as usuCodi,perf_id as perfil
 FROM tb_sub_solicitudes a
 INNER JOIN tb_matricula a0 ON a.mat_id = a0.mat_id
 INNER JOIN tb_alumno b ON a0.alu_id = b.alu_id
@@ -1876,6 +1878,7 @@ WHERE 1 = 1 and tipo = 'No entrevistado' ";
         $sql .= " AND p1.sed_id = $sede ";
     }
     $sql .= " ORDER BY p1.fecha DESC, p1.sede, p1.tipo, p1.docente, p1.gradId, p1.alumno";
+    echo $sql;
     return $sql;
 }
 
@@ -2619,7 +2622,7 @@ function con_lista_semaforo($id, $estado) {
     $sql = "SELECT sem_id AS id, CONCAT(sem_color, ' - de ', sem_valor_ini, ' a ', sem_valor_fin, ' %') as nombre
 FROM tb_semaforo WHERE sem_nombre = YEAR(NOW()) ";
     if ($id != "") {
-        $sql .= " AND sem_id = $id ";
+        $sql .= " AND bim_id = $id ";
     }
     if ($estado != "") {
         $sql .= " AND sem_estado = '$estado' ";
@@ -3204,5 +3207,12 @@ function con_obtener_codigo_valor_edi($grado) {
 function con_eliminar_grado($id) {
     $sql = "UPDATE tb_grado SET gra_estado='0' "
             . " WHERE gra_id='$id';";
+    return $sql;
+}
+
+//Guadalupe
+function con_ultima_firma_usuario($usuario) {
+    $sql = "SELECT REPLACE(firm_imagen,'../','') as imagen FROM tb_solicitudes_firmas WHERE usu_id=$usuario "
+            . "AND firm_imagen like '%_" . $usuario . "_%' AND firm_estado=1 GROUP BY firm_imagen ORDER BY firm_fecha DESC LIMIT 1;";
     return $sql;
 }

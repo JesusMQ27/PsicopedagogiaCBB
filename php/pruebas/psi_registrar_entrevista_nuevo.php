@@ -9,7 +9,7 @@ require_once '../../php/aco_fun/aco_fun.php';
 
 session_start();
 $psi_usuario = $_SESSION["psi_user"]["id"];
-$perfil = $_SESSION["psi_user"]["perfCod"]; //Guadalupe
+$perfil = $_SESSION["psi_user"]["perfCod"];
 $con = new DB(1111);
 $conexion = $con->connect();
 $sm_codigo = strip_tags(trim($_POST["sm_codigo"]));
@@ -110,7 +110,8 @@ try {
                 }
             }
         }
-        if ($perfil == "3" && $s_solicitud_tipo === "1") {//Guadalupe
+
+        if ($perfil == "3") {
             $file2 = str_replace("./php/", "../", $s_img2);
             $cadena_imag2 = "('" . $solicitud_id . "','" . $s_matricula . "','" . $psi_usuario . "','" . $s_apoderado .
                     "','" . $file2 . "',NOW(),'2','1')";
@@ -147,3 +148,4 @@ try {
 } catch (Exception $exc) {
     echo "***0***Error al registrar la solicitud.***<br/>";
 }
+?>

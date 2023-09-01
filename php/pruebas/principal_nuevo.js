@@ -145,9 +145,9 @@ function registrar_usuario() {
     } else {
         if (valida_correo(correo)) {
             var array_correo = correo.val().split("@");
-            /*if ($.trim(array_correo[1]) !== "cbb.edu.pe" && $.trim(array_correo[1]) !== "ich.edu.pe") {
-             mensaje += "Ingrese correo electrónico institucional (@cbb.edu.pe o ich.edu.pe)<br>";
-             }*/
+            if ($.trim(array_correo[1]) !== "cbb.edu.pe" && $.trim(array_correo[1]) !== "ich.edu.pe") {
+                mensaje += "Ingrese correo electrónico institucional (@cbb.edu.pe o ich.edu.pe)<br>";
+            }
         } else {
             mensaje += "Ingrese un correo electrónico válido<br>";
         }
@@ -2543,249 +2543,7 @@ function buscar_entrevistas() {
     });
 }
 
-function registrar_solicitud_jesus() {
-    $("#btnRegistrarSolicitud").attr("disabled", true);
-    var Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 4000
-    });
-    var solicitud_tipo = $("#cbbTipoSolicitud").val();
-    var docAlumno = $("#dataAlumno").html().split(" - ");
-    var matricula = $("#matric").val();
-    var sede = $("#txt_sede").val();
-    var categoria = $("#cbbCategoria").select().val();
-    var subcategoria = $("#cbbSubcategoria").select().val();
-    var sexo_estu = $("#cbbSexo").select().val();
-    var txtMotivo = "";
-    var planEstudiante = "";
-    var planEntrevistador = "";
-    var acuerdos = "";
-    var informe = "";
-    var planPadre = "";
-    var planDocente = "";
-    var acuerdosPadres = "";
-    var acuerdosColegio = "";
-    var apoderado = "";
-    var mensaje = "";
-    var wrapper = document.getElementById("signature-pad");
-    var canvas_1 = wrapper.querySelector("canvas");
-    var wrapper_entrevistador = document.getElementById("signature-pad-entrevistador");
-    var canvas_2 = wrapper_entrevistador.querySelector("canvas");
-    var blank = isCanvasBlank(document.getElementById('canvas1'));
-    //var blank2 = isCanvasBlank(document.getElementById('canvas2'));
-    SetTabletState(0, tmr, 0);
-    SetTabletState(0, tmr2, 0);
-    clearInterval(tmr);
-    clearInterval(tmr2);
-    var checkPrivacidad = $("#checkPrivacidad").is(':checked');
-    var hora = $("#hora");
-    var minuto = $("#minuto");
-    var segundo = $("#segundo");
-    var hora_total = "";
-    if (hora.hasClass('parpadea')) {//paso los 40 min
-        hora_total = sumarFechas(minutos_a_hora(timeLimit), hora.html(), minuto.html(), segundo.html());
-    } else {//esta dentro los 40 min establecidos
-        var res_horas = restarFechas(minutos_a_hora(timeLimit), $.trim(hora.html()), $.trim(minuto.html()), $.trim(segundo.html()));
-        hora_total = res_horas;
-    }
-    var privacidad_value = "";
-    if (checkPrivacidad) {
-        privacidad_value = "1";
-    } else {
-        privacidad_value = "0";
-    }
-    if (categoria === "") {
-        mensaje += "*Seleccione la categoria<br>";
-        $("#cbbCategoria").addClass("is-invalid");
-    }
-    if (subcategoria === "") {
-        mensaje += "*Seleccione la subcategoria<br>";
-        $("#cbbSubcategoria").addClass("is-invalid");
-    }
-    if ($.trim(sexo_estu) === "0") {
-        mensaje += "*Seleccione el sexo<br>";
-        $("#cbbSexo").addClass("is-invalid");
-    }
-    if (solicitud_tipo === "1") {
-        txtMotivo = $("#txtMotivo").val();
-        planEstudiante = $("#txtPlanEstudiante").val();
-        planEntrevistador = $("#txtPlanEntrevistador").val();
-        acuerdos = $("#txtAcuerdos").val();
-        informe = "";
-        planPadre = "";
-        planDocente = "";
-        acuerdosPadres = "";
-        acuerdosColegio = "";
-        apoderado = "";
-        if ($.trim(txtMotivo) == "") {
-            mensaje += "*Ingrese el motivo de solicitud<br>";
-            $("#txtMotivo").addClass("is-invalid");
-        }
-        if ($.trim(planEstudiante) == '') {
-            mensaje += "*Ingrese el Planteamiento del estudiante<br>";
-            $("#txtPlanEstudiante").addClass("is-invalid");
-        }
-        if ($.trim(planEntrevistador) == '') {
-            mensaje += "*Ingrese el Planteamiento del entrevistador(a)<br>";
-            $("#txtPlanEntrevistador").addClass("is-invalid");
-        }
-        if ($.trim(acuerdos) == '') {
-            mensaje += "*Ingrese los Acuerdos<br>";
-            $("#txtAcuerdos").addClass("is-invalid");
-        }
-        //if (signaturePad.isEmpty()) {
-        //    mensaje += "*Ingrese la firma del estudiante<br>";
-        //    canvas_1.style.border = '1px solid #dc3545';
-        //}
-        /*if (blank2 == true) {
-         mensaje += "*Ingrese la firma del entrevistador<br>";
-         canvas_2.style.border = '1px solid #dc3545';
-         }*/
-    } else {
-        txtMotivo = $("#txtMotivo").val();
-        planEstudiante = "";
-        planEntrevistador = "";
-        acuerdos = "";
-        informe = $("#txtInforme").val();
-        planPadre = $("#txtPlanPadre").val();
-        planDocente = $("#txtPlanDocente").val();
-        acuerdosPadres = $("#txtAcuerdosPadres").val();
-        acuerdosColegio = $("#txtAcuerdosColegio").val();
-        apoderado = $("#cbbTipoApoderado").select().val();
-        if ($.trim(apoderado) < 0 || $.trim(apoderado) === "") {
-            mensaje += "*Seleccione el apoderado<br>";
-            $("#cbbTipoApoderado").addClass("is-invalid");
-        }
-        if ($.trim(txtMotivo) == "") {
-            mensaje += "*Ingrese el motivo de solicitud<br>";
-            $("#txtMotivo").addClass("is-invalid");
-        }
-        if ($.trim(informe) == '') {
-            mensaje += "*Ingrese el Informe<br>";
-            $("#txtInforme").addClass("is-invalid");
-        }
-        if ($.trim(planPadre) == '') {
-            mensaje += "*Ingrese el Planteamiento del padre, madre <br>";
-            $("#txtPlanPadre").addClass("is-invalid");
-        }
-        if ($.trim(planDocente) == '') {
-            mensaje += "*Ingrese el Planteamiento del docente<br>";
-            $("#txtPlanDocente").addClass("is-invalid");
-        }
-        if ($.trim(acuerdosPadres) == '') {
-            mensaje += "*Ingrese las acciones a realizar por los padres<br>";
-            $("#txtAcuerdosPadres").addClass("is-invalid");
-        }
-        if ($.trim(acuerdosColegio) == '') {
-            mensaje += "*Ingrese las acciones a realizar por el colegio<br>";
-            $("#txtAcuerdosColegio").addClass("is-invalid");
-        }
-//if (signaturePad.isEmpty()) {
-//mensaje += "Ingrese la firma del padre, madre o apoderado<br>";
-//canvas.style.border = '1px solid #dc3545';
-//}
-        /*if (blank2 === true) {
-         mensaje += "*Ingrese la firma del entrevistador<br>";
-         canvas_2.style.border = '1px solid #dc3545';
-         }*/
-    }
-    if (mensaje !== "") {
-        Toast.fire({
-            position: 'top-end',
-            icon: 'error',
-            title: mensaje,
-            showConfirmButton: false
-        });
-        $("#btnRegistrarSolicitud").attr("disabled", false);
-    } else {
-        var codSMenu = $("#hdnCodiSR");
-        var txt_perfil = $("#txt_perfil").val();
-        var canvas1 = document.getElementById('canvas1');
-        var dataURL1 = canvas1.toDataURL();
-        var dataURL2 = "";
-        if (txt_perfil === "3") {
-            dataURL2 = document.getElementById('canvas2_img').getAttribute('src');
-        } else {
-            var canvas2 = document.getElementById('canvas2');
-            dataURL2 = canvas2.toDataURL();
-        }
-        var dataURL1_1 = "aaa";
-        if (blank === true) {
-            dataURL1_1 = "";
-        }
-        $.ajax({
-            url: "php/aco_php/psi_registrar_entrevista.php",
-            dataType: "html",
-            type: "POST",
-            data: {
-                sm_codigo: $.trim(codSMenu.val()),
-                s_docAlumno: $.trim(docAlumno[0]),
-                s_solicitud_tipo: solicitud_tipo,
-                s_matricula: matricula,
-                s_sede: sede,
-                s_categoria: categoria,
-                s_subcategoria: subcategoria,
-                s_sexo: sexo_estu,
-                s_motivo: txtMotivo,
-                s_planEstudiante: planEstudiante,
-                s_planEntrevistador: planEntrevistador,
-                s_acuerdos: acuerdos,
-                s_informe: informe,
-                s_planPadre: planPadre,
-                s_planDocente: planDocente,
-                s_acuerdosPadres: acuerdosPadres,
-                s_acuerdosColegio: acuerdosColegio,
-                s_apoderado: apoderado,
-                s_privacidad: privacidad_value,
-                s_dataURL1: dataURL1,
-                s_dataURL2: dataURL2,
-                dataURL1_1: dataURL1_1,
-                s_hora_total: hora_total
-            },
-            beforeSend: function (objeto) {
-                $("#modal-nueva-solicitud").find('.modal-footer div label').html("");
-                $("#modal-nueva-solicitud").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                //$("#contentMenu").html(xhr.responseText);
-            },
-            success: function (datos) {
-                var resp = datos.split("***");
-                if (resp[1] === "1") {
-                    var lista_sm = resp[3].split("--");
-                    $("#modal-nueva-solicitud").find('.modal-footer div label').html('');
-                    Toast.fire({
-                        position: 'top-end',
-                        icon: 'success',
-                        title: resp[2],
-                        showConfirmButton: false
-                    });
-                    setTimeout(function () {
-                        $('#modal-nueva-solicitud').modal('hide');
-                        $("#btnRegistrarSolicitud").attr("disabled", false);
-                        $('.modal-backdrop').remove();
-                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
-                    }, 4500);
-                } else {
-                    Toast.fire({
-                        position: 'top-end',
-                        icon: 'error',
-                        title: resp[2],
-                        showConfirmButton: false
-                    });
-                    setTimeout(function () {
-                        $("#btnRegistrarSolicitud").attr("disabled", false);
-                    }, 4500);
-                }
-            }
-        });
-    }
-
-}
-
-function registrar_solicitud() {//Guadalupe
+function registrar_solicitud() {
     $("#btnRegistrarSolicitud").attr("disabled", true);
     var Toast = Swal.mixin({
         toast: true,
@@ -2812,14 +2570,13 @@ function registrar_solicitud() {//Guadalupe
     var apoderado = "";
     var mensaje = "";
     var txt_perfil = $("#txt_perfil").val();
-    var txtCantiFirma = $("#txtCantiFirma").val();
     var wrapper = document.getElementById("signature-pad");
     var canvas_1 = wrapper.querySelector("canvas");
     var wrapper_entrevistador = document.getElementById("signature-pad-entrevistador");
     var canvas_2 = wrapper_entrevistador.querySelector("canvas");
     var blank = isCanvasBlank(document.getElementById('canvas1'));
     var blank2 = "";
-    if (txt_perfil === "3" && solicitud_tipo === "1" && txtCantiFirma > 0) {
+    if (txt_perfil === "3") {
         blank2 = "";
     } else {
         blank2 = isCanvasBlank(document.getElementById('canvas2'));
@@ -2888,12 +2645,7 @@ function registrar_solicitud() {//Guadalupe
         //    mensaje += "*Ingrese la firma del estudiante<br>";
         //    canvas_1.style.border = '1px solid #dc3545';
         //}
-        if (txtCantiFirma===0 && txt_perfil===3) {
-            if (blank2 == true) {
-                mensaje += "*Ingrese la firma del entrevistador<br>";
-                canvas_2.style.border = '1px solid #dc3545';
-            }
-        } else if(txt_perfil!==3){
+        if (txt_perfil !== "3") {
             if (blank2 == true) {
                 mensaje += "*Ingrese la firma del entrevistador<br>";
                 canvas_2.style.border = '1px solid #dc3545';
@@ -2942,12 +2694,12 @@ function registrar_solicitud() {//Guadalupe
 //mensaje += "Ingrese la firma del padre, madre o apoderado<br>";
 //canvas.style.border = '1px solid #dc3545';
 //}
-        //if (txt_perfil !== "3" && solicitud_tipo !== "1") {
+        if (txt_perfil !== "3") {
             if (blank2 === true) {
                 mensaje += "*Ingrese la firma del entrevistador<br>";
                 canvas_2.style.border = '1px solid #dc3545';
             }
-        //}
+        }
     }
     if (mensaje !== "") {
         Toast.fire({
@@ -2962,7 +2714,7 @@ function registrar_solicitud() {//Guadalupe
         var canvas1 = document.getElementById('canvas1');
         var dataURL1 = canvas1.toDataURL();
         var dataURL2 = "";
-        if (txt_perfil === "3" && solicitud_tipo === "1" && txtCantiFirma > 0) {
+        if (txt_perfil === "3") {
             dataURL2 = document.getElementById('canvas2_img').getAttribute('src');
         } else {
             var canvas2 = document.getElementById('canvas2');
@@ -3477,251 +3229,7 @@ function mostrar_tipo_solicitud_sub(dato) {
  signaturePad_entrevistador_sub.clear();
  }*/
 
-function registrar_sub_solicitud_jesus() {
-    $("#btnRegistrarSubSolicitud").attr("disabled", true);
-    var Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 4000
-    });
-    var codi_entre_sub = $("#codi_entre_sub").val();
-    var solicitud_tipo = $("#cbbTipoSolicitud_sub").val();
-    var docAlumno = $("#dataAlumno_sub").html().split(" - ");
-    var matricula = $("#matric_sub").val();
-    var sede = $("#txt_sede_sub").val();
-    var categoria = $("#cbbCategoria_sub").select().val();
-    var subcategoria = $("#cbbSubcategoria_sub").select().val();
-    var sexo = $("#cbbSexo_sub").select().val();
-    var txtMotivo = "";
-    var planEstudiante = "";
-    var planEntrevistador = "";
-    var acuerdos = "";
-    var informe = "";
-    var planPadre = "";
-    var planDocente = "";
-    var acuerdosPadres = "";
-    var acuerdosColegio = "";
-    var apoderado = "";
-    var mensaje = "";
-    var wrapper = document.getElementById("signature-pad-sub");
-    var canvas_1 = wrapper.querySelector("canvas");
-    var wrapper_entrevistador = document.getElementById("signature-pad-entrevistador-sub");
-    var canvas_2 = wrapper_entrevistador.querySelector("canvas");
-    var blank = isCanvasBlank(document.getElementById('canvas1_sub'));
-    var blank2 = isCanvasBlank(document.getElementById('canvas2_sub'));
-    SetTabletState(0, tmr_sub, 0);
-    SetTabletState(0, tmr_sub2, 0);
-    clearInterval(tmr_sub);
-    clearInterval(tmr_sub2);
-    var checkPrivacidad = $("#checkPrivacidad_sub").is(':checked');
-    var privacidad_value = "";
-    var hora = $("#hora_s");
-    var minuto = $("#minuto_s");
-    var segundo = $("#segundo_s");
-    var hora_total = "";
-    if (hora.hasClass('parpadea_s')) {//paso los 40 min
-        hora_total = sumarFechas(minutos_a_hora(timeLimit), hora.html(), minuto.html(), segundo.html());
-    } else {//esta dentro los 40 min establecidos
-        var res_horas = restarFechas(minutos_a_hora(timeLimit), $.trim(hora.html()), $.trim(minuto.html()), $.trim(segundo.html()));
-        hora_total = res_horas;
-    }
-    if (checkPrivacidad) {
-        privacidad_value = "1";
-    } else {
-        privacidad_value = "0";
-    }
-    if (categoria === "") {
-        mensaje += "*Seleccione la categoria<br>";
-        $("#cbbCategoria_sub").addClass("is-invalid");
-    }
-    if (subcategoria === "") {
-        mensaje += "*Seleccione la subcategoria<br>";
-        $("#cbbSubcategoria_sub").addClass("is-invalid");
-    }
-    if (sexo === "0") {
-        mensaje += "*Seleccione el sexo<br>";
-        $("#cbbSexo_sub").addClass("is-invalid");
-    }
-
-    if (solicitud_tipo === "1") {
-        txtMotivo = $("#txtMotivo_sub").val();
-        planEstudiante = $("#txtPlanEstudiante_sub").val();
-        planEntrevistador = $("#txtPlanEntrevistador_sub").val();
-        acuerdos = $("#txtAcuerdos_sub").val();
-        informe = "";
-        planPadre = "";
-        planDocente = "";
-        acuerdosPadres = "";
-        acuerdosColegio = "";
-        apoderado = "";
-        if ($.trim(txtMotivo) == "") {
-            mensaje += "*Ingrese el motivo de solicitud<br>";
-            $("#txtMotivo_sub").addClass("is-invalid");
-        }
-        if ($.trim(planEstudiante) == '') {
-            mensaje += "*Ingrese el Planteamiento del estudiante<br>";
-            $("#txtPlanEstudiante_sub").addClass("is-invalid");
-        }
-        if ($.trim(planEntrevistador) == '') {
-            mensaje += "*Ingrese el Planteamiento del entrevistador(a)<br>";
-            $("#txtPlanEntrevistador_sub").addClass("is-invalid");
-        }
-        if ($.trim(acuerdos) == '') {
-            mensaje += "*Ingrese los Acuerdos<br>";
-            $("#txtAcuerdos_sub").addClass("is-invalid");
-        }
-        //if (signaturePad_sub.isEmpty()) {
-        //    mensaje += "*Ingrese la firma del estudiante<br>";
-        //    canvas_1.style.border = '1px solid #dc3545';
-        //}
-        /*if (blank2 == true) {
-         mensaje += "*Ingrese la firma del entrevistador<br>";
-         canvas_2.style.border = '1px solid #dc3545';
-         }*/
-    } else {
-        txtMotivo = $("#txtMotivo_sub").val();
-        planEstudiante = "";
-        planEntrevistador = "";
-        acuerdos = "";
-        informe = $("#txtInforme_sub").val();
-        planPadre = $("#txtPlanPadre_sub").val();
-        planDocente = $("#txtPlanDocente_sub").val();
-        acuerdosPadres = $("#txtAcuerdosPadres_sub").val();
-        acuerdosColegio = $("#txtAcuerdosColegio_sub").val();
-        apoderado = $("#cbbTipoApoderado_sub").select().val();
-        if ($.trim(apoderado) < 0 || $.trim(apoderado) === "") {
-            mensaje += "*Seleccione el apoderado<br>";
-            $("#cbbTipoApoderado_sub").addClass("is-invalid");
-        }
-        if ($.trim(txtMotivo) == "") {
-            mensaje += "*Ingrese el motivo de solicitud<br>";
-            $("#txtMotivo_sub").addClass("is-invalid");
-        }
-        if ($.trim(informe) == '') {
-            mensaje += "*Ingrese el Informe<br>";
-            $("#txtInforme_sub").addClass("is-invalid");
-        }
-        if ($.trim(planPadre) == '') {
-            mensaje += "*Ingrese el Planteamiento del padre, madre <br>";
-            $("#txtPlanPadre_sub").addClass("is-invalid");
-        }
-        if ($.trim(planDocente) == '') {
-            mensaje += "*Ingrese el Planteamiento del docente<br>";
-            $("#txtPlanDocente_sub").addClass("is-invalid");
-        }
-        if ($.trim(acuerdosPadres) == '') {
-            mensaje += "*Ingrese las acciones a realizar por los padres<br>";
-            $("#txtAcuerdosPadres_sub").addClass("is-invalid");
-        }
-        if ($.trim(acuerdosColegio) == '') {
-            mensaje += "*Ingrese las acciones a realizar por el colegio<br>";
-            $("#txtAcuerdosColegio_sub").addClass("is-invalid");
-        }
-        /*if (signaturePad.isEmpty()) {
-         mensaje += "Ingrese la firma del padre, madre o apoderado<br>";
-         canvas.style.border = '1px solid #dc3545';
-         }*/
-        /*if (blank2 === true) {
-         mensaje += "*Ingrese la firma del entrevistador<br>";
-         canvas_2.style.border = '1px solid #dc3545';
-         }*/
-    }
-    if (mensaje !== "") {
-        Toast.fire({
-            position: 'top-end',
-            icon: 'error',
-            title: mensaje,
-            showConfirmButton: false
-        });
-        $("#btnRegistrarSubSolicitud").attr("disabled", false);
-    } else {
-        var codSMenu = $("#hdnCodiSR");
-        var txt_perfil = $("#txt_perfil_sub").val();
-        var canvas1 = document.getElementById('canvas1_sub');
-        var dataURL1 = canvas1.toDataURL();
-        var dataURL2 = "";
-        if (txt_perfil === "3") {
-            dataURL2 = document.getElementById('canvas2_img_edi').getAttribute('src');
-        } else {
-            var canvas2 = document.getElementById('canvas2_sub');
-            dataURL2 = canvas2.toDataURL();
-        }
-        var dataURL1_1 = "aaa";
-        if (blank === true) {
-            dataURL1_1 = "";
-        }
-        $.ajax({
-            url: "php/aco_php/psi_registrar_sub_entrevista.php",
-            dataType: "html",
-            type: "POST",
-            data: {
-                sm_codigo: $.trim(codSMenu.val()),
-                s_codi_entre_sub: codi_entre_sub,
-                s_docAlumno: $.trim(docAlumno[0]),
-                s_solicitud_tipo: solicitud_tipo,
-                s_matricula: matricula,
-                s_sede: sede,
-                s_categoria: categoria,
-                s_subcategoria: subcategoria,
-                s_sexo: sexo,
-                s_motivo: txtMotivo,
-                s_planEstudiante: planEstudiante,
-                s_planEntrevistador: planEntrevistador,
-                s_acuerdos: acuerdos,
-                s_informe: informe,
-                s_planPadre: planPadre,
-                s_planDocente: planDocente,
-                s_acuerdosPadres: acuerdosPadres,
-                s_acuerdosColegio: acuerdosColegio,
-                s_apoderado: apoderado,
-                s_privacidad: privacidad_value,
-                s_dataURL1_sub: dataURL1,
-                s_dataURL2_sub: dataURL2,
-                dataURL1_sub1: dataURL1_1,
-                s_hora_total_sub: hora_total
-            },
-            beforeSend: function (objeto) {
-                $("#modal-subentrevista").find('.modal-footer div label').html("");
-                $("#modal-subentrevista").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                //$("#contentMenu").html(xhr.responseText);
-            },
-            success: function (datos) {
-                var resp = datos.split("***");
-                if (resp[1] === "1") {
-                    var lista_sm = resp[3].split("--");
-                    $("#modal-subentrevista").find('.modal-footer div label').html('');
-                    Toast.fire({
-                        position: 'top-end',
-                        icon: 'success',
-                        title: resp[2],
-                        showConfirmButton: false
-                    });
-                    setTimeout(function () {
-                        $('#modal-subentrevista').modal('hide');
-                        $("#btnRegistrarSubSolicitud").attr("disabled", false);
-                        $('.modal-backdrop').remove();
-                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
-                    }, 4500);
-                } else {
-                    Toast.fire({
-                        position: 'top-end',
-                        icon: 'error',
-                        title: resp[2],
-                        showConfirmButton: false
-                    });
-                    setTimeout(function () {
-                        $("#btnRegistrarSubSolicitud").attr("disabled", false);
-                    }, 4500);
-                }
-            }
-        });
-    }
-}
-
-function registrar_sub_solicitud() {//Guadalupe
+function registrar_sub_solicitud() {
     $("#btnRegistrarSubSolicitud").attr("disabled", true);
     var Toast = Swal.mixin({
         toast: true,
@@ -3755,7 +3263,7 @@ function registrar_sub_solicitud() {//Guadalupe
     var canvas_2 = wrapper_entrevistador.querySelector("canvas");
     var blank = isCanvasBlank(document.getElementById('canvas1_sub'));
     var blank2 = "";
-    if (txt_perfil === "3" && solicitud_tipo === "1") {
+    if (txt_perfil === "3") {
         blank2 = "";
     } else {
         blank2 = isCanvasBlank(document.getElementById('canvas2_sub'));
@@ -3825,7 +3333,7 @@ function registrar_sub_solicitud() {//Guadalupe
         //    mensaje += "*Ingrese la firma del estudiante<br>";
         //    canvas_1.style.border = '1px solid #dc3545';
         //}
-        if (txt_perfil !== "3" && solicitud_tipo !== "1") {
+        if (txt_perfil !== "3") {
             if (blank2 == true) {
                 mensaje += "*Ingrese la firma del entrevistador<br>";
                 canvas_2.style.border = '1px solid #dc3545';
@@ -3874,12 +3382,12 @@ function registrar_sub_solicitud() {//Guadalupe
          mensaje += "Ingrese la firma del padre, madre o apoderado<br>";
          canvas.style.border = '1px solid #dc3545';
          }*/
-        //if (txt_perfil !== "3" && solicitud_tipo !== "1") {
-        if (blank2 === true) {
-            mensaje += "*Ingrese la firma del entrevistador<br>";
-            canvas_2.style.border = '1px solid #dc3545';
+        if (txt_perfil !== "3") {
+            if (blank2 === true) {
+                mensaje += "*Ingrese la firma del entrevistador<br>";
+                canvas_2.style.border = '1px solid #dc3545';
+            }
         }
-        //}
     }
     if (mensaje !== "") {
         Toast.fire({
@@ -3894,7 +3402,7 @@ function registrar_sub_solicitud() {//Guadalupe
         var canvas1 = document.getElementById('canvas1_sub');
         var dataURL1 = canvas1.toDataURL();
         var dataURL2 = "";
-        if (txt_perfil === "3" && solicitud_tipo === "1") {
+        if (txt_perfil === "3") {
             dataURL2 = document.getElementById('canvas2_img_edi').getAttribute('src');
         } else {
             var canvas2 = document.getElementById('canvas2_sub');
@@ -4910,7 +4418,7 @@ function registrar_nuevo_apoderado_edi() {
     }
 }
 
-function editar_solicitud_jesus() {
+function editar_solicitud() {
     var Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
@@ -5009,356 +4517,75 @@ function editar_solicitud_jesus() {
             //        canvas_1.style.border = '1px solid #dc3545';
             //    }
             //}
-            /*if (ruta_img2 == false) {
-             if (blank2 == true) {
-             mensaje += "*Ingrese la firma del entrevistador<br>";
-             canvas_2.style.border = '1px solid #dc3545';
-             $("#ruta_img2").css("border", "1px solid #dc3545");
-             }
-             }*/ /*else {
-              if (blank2 == true) {
-              mensaje += "*Ingrese la firma del entrevistador<br>";
-              canvas_2.style.border = '1px solid #dc3545';
-              $("#ruta_img2").css("border", "1px solid #dc3545");
-              }
-              }*/
-        } else {
-            txtMotivo = $("#txtMotivo_edi").val();
-            planEstudiante = "";
-            planEntrevistador = "";
-            acuerdos = "";
-            informe = $("#txtInforme_edi").val();
-            planPadre = $("#txtPlanPadre_edi").val();
-            planDocente = $("#txtPlanDocente_edi").val();
-            acuerdosPadres = $("#txtAcuerdosPadres_edi").val();
-            acuerdosColegio = $("#txtAcuerdosColegio_edi").val();
-            apoderado = $("#cbbTipoApoderado_edi").select().val();
-            if ($.trim(apoderado) < 0 || $.trim(apoderado) === "") {
-                mensaje += "*Seleccione el apoderado<br>";
-                $("#cbbTipoApoderado_edi").addClass("is-invalid");
-            }
-            if ($.trim(txtMotivo) == "") {
-                mensaje += "*Ingrese el motivo de solicitud<br>";
-                $("#txtMotivo_edi").addClass("is-invalid");
-            }
-            if ($.trim(informe) == '') {
-                mensaje += "*Ingrese el Informe<br>";
-                $("#txtInforme_edi").addClass("is-invalid");
-            }
-            if ($.trim(planPadre) == '') {
-                mensaje += "*Ingrese el Planteamiento del padre, madre <br>";
-                $("#txtPlanPadre_edi").addClass("is-invalid");
-            }
-            if ($.trim(planDocente) == '') {
-                mensaje += "*Ingrese el Planteamiento del docente<br>";
-                $("#txtPlanDocente_edi").addClass("is-invalid");
-            }
-            if ($.trim(acuerdosPadres) == '') {
-                mensaje += "*Ingrese las acciones a realizar por los padres<br>";
-                $("#txtAcuerdosPadres_edi").addClass("is-invalid");
-            }
-            if ($.trim(acuerdosColegio) == '') {
-                mensaje += "*Ingrese las acciones a realizar por el colegio<br>";
-                $("#txtAcuerdosColegio_edi").addClass("is-invalid");
-            }
-            /*if (signaturePad.isEmpty()) {
-             mensaje += "Ingrese la firma del padre, madre o apoderado<br>";
-             canvas.style.border = '1px solid #dc3545';
-             }*/
-            /*if (ruta_img2 == false) {
-             if (blank2 == true) {
-             mensaje += "*Ingrese la firma del entrevistador<br>";
-             canvas_2.style.border = '1px solid #dc3545';
-             $("#ruta_img2").css("border", "1px solid #dc3545");
-             }
-             }*/ /*else {
-              if (blank2 == true) {
-              mensaje += "*Ingrese la firma del entrevistador<br>";
-              canvas_2.style.border = '1px solid #dc3545';
-              $("#ruta_img2").css("border", "1px solid #dc3545");
-              }
-              }*/
-        }
-        if (mensaje !== "") {
-            Toast.fire({
-                position: 'top-end',
-                icon: 'error',
-                title: mensaje,
-                showConfirmButton: false
-            });
-            $("#btnEditarSolicitud").attr("disabled", false);
-        } else {
-            var codSMenu = $("#hdnCodiSR");
-            var canvas1 = {};
-            var dataURL1 = {};
-            var canvas2 = {};
-            var dataURL2 = {};
-            var dataURL1_1 = "aaa";
-            if (blank === true) {
-                dataURL1_1 = "";
-            }
-            if (ruta_img1 == false) {
-                canvas1 = document.getElementById('canvas1_edi');
-                dataURL1 = canvas1.toDataURL();
-            } else {
-                dataURL1 = $("#ruta_img1").attr("src");
-            }
-
             if (ruta_img2 == false) {
-                canvas2 = document.getElementById('canvas2_edi');
-                dataURL2 = canvas2.toDataURL();
-            } else {
-                dataURL2 = $("#ruta_img2").attr("src");
-            }
-
-            $.ajax({
-                url: "php/aco_php/psi_editar_entrevista.php",
-                dataType: "html",
-                type: "POST",
-                data: {
-                    sm_codigo: $.trim(codSMenu.val()),
-                    s_codi_solicitud: $.trim(codi_solicitud),
-                    s_docAlumno: $.trim(docAlumno[0]),
-                    s_solicitud_tipo: solicitud_tipo,
-                    s_matricula: matricula,
-                    s_sede: sede,
-                    s_categoria: categoria,
-                    s_subcategoria: subcategoria,
-                    s_sexo_alu: sexo_alu,
-                    s_motivo: txtMotivo,
-                    s_planEstudiante: planEstudiante,
-                    s_planEntrevistador: planEntrevistador,
-                    s_acuerdos: acuerdos,
-                    s_informe: informe,
-                    s_planPadre: planPadre,
-                    s_planDocente: planDocente,
-                    s_acuerdosPadres: acuerdosPadres,
-                    s_acuerdosColegio: acuerdosColegio,
-                    s_apoderado: apoderado,
-                    s_privacidad: privacidad_value,
-                    s_dataURL1: dataURL1,
-                    s_dataURL2: dataURL2,
-                    s_dataURL1_1: dataURL1_1
-                },
-                beforeSend: function (objeto) {
-                    $("#modal-editar-solicitud-alumno").find('.modal-footer div label').html("");
-                    $("#modal-editar-solicitud-alumno").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
-                },
-                error: function (xhr, ajaxOptions, thrownError) {
-                    //$("#contentMenu").html(xhr.responseText);
-                },
-                success: function (datos) {
-                    var resp = datos.split("***");
-                    if (resp[1] === "1") {
-                        var lista_sm = resp[3].split("--");
-                        $("#modal-editar-solicitud-alumno").find('.modal-footer div label').html('');
-                        Toast.fire({
-                            position: 'top-end',
-                            icon: 'success',
-                            title: resp[2],
-                            showConfirmButton: false
-                        });
-                        setTimeout(function () {
-                            $('#modal-editar-solicitud-alumno').modal('hide');
-                            $("#btnEditarSolicitud").attr("disabled", false);
-                            $('.modal-backdrop').remove();
-                            cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
-                        }, 4500);
-                    } else {
-                        Toast.fire({
-                            position: 'top-end',
-                            icon: 'error',
-                            title: resp[2],
-                            showConfirmButton: false
-                        });
-                        setTimeout(function () {
-                            $("#btnEditarSolicitud").attr("disabled", false);
-                        }, 4500);
-                    }
-                }
-            });
-        }
-    }
-}
-
-function editar_solicitud() {//Guadalupe
-    var Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 4000
-    });
-    var cbbTipoSolicitudCodis = $("#cbbTipoSolicitudCodisEdi").select().val();
-    if (cbbTipoSolicitudCodis === "") {
-        Toast.fire({
-            position: 'top-end',
-            icon: 'error',
-            title: 'Seleccione la Entrevista / Subentrevista',
-            showConfirmButton: false
-        });
-        $("#cbbTipoSolicitudCodisEdi").addClass("is-invalid");
-    } else {
-        $("#btnEditarSolicitud").attr("disabled", true);
-        var codi_solicitud = $("#cod_solicitud_edi").val();
-        var solicitud_tipo = $("#cbbTipoSolicitud_edi").val();
-        var docAlumno = $("#dataAlumno_edi").html().split(" - ");
-        var matricula = $("#matric_edi").val();
-        var sede = $("#txt_sede_edi").val();
-        var categoria = $("#cbbCategoria_edi").select().val();
-        var subcategoria = $("#cbbSubcategoria_edi").select().val();
-        var sexo_alu = $("#cbbSexo_edi").select().val();
-        var txtMotivo = "";
-        var planEstudiante = "";
-        var planEntrevistador = "";
-        var acuerdos = "";
-        var informe = "";
-        var planPadre = "";
-        var planDocente = "";
-        var acuerdosPadres = "";
-        var acuerdosColegio = "";
-        var apoderado = "";
-        var mensaje = "";
-        var txt_perfil = $("#txt_perfil").val();
-        var ruta_img1 = $("#ruta_img1").is(':visible');
-        var ruta_img2 = $("#ruta_img2").is(':visible');
-        var canvas_1 = document.getElementById("canvas1_edi");
-        var canvas_2 = document.getElementById("canvas2_edi");
-        var blank = isCanvasBlank(document.getElementById('canvas1_edi'));
-        var blank2 = "";
-        if (txt_perfil === "3" && solicitud_tipo === "1") {
-            blank2 = "";
-        } else {
-            blank2 = isCanvasBlank(document.getElementById('canvas2_edi'));
-        }
-        SetTabletState(0, tmr, 0);
-        SetTabletState(0, tmr2, 0);
-        clearInterval(tmr);
-        clearInterval(tmr2);
-        var checkPrivacidad = $("#checkPrivacidad_edi").is(':checked');
-        var privacidad_value = "";
-        if (checkPrivacidad) {
-            privacidad_value = "1";
-        } else {
-            privacidad_value = "0";
-        }
-        if (categoria === "") {
-            mensaje += "*Seleccione la categoria<br>";
-            $("#cbbCategoria_edi").addClass("is-invalid");
-        }
-        if (subcategoria === "") {
-            mensaje += "*Seleccione la subcategoria<br>";
-            $("#cbbSubcategoria_edi").addClass("is-invalid");
-        }
-        if (sexo_alu === "0") {
-            mensaje += "*Seleccione el sexo<br>";
-            $("#cbbSexo_edi").addClass("is-invalid");
-        }
-        if (solicitud_tipo === "1") {
-            txtMotivo = $("#txtMotivo_edi").val();
-            planEstudiante = $("#txtPlanEstudiante_edi").val();
-            planEntrevistador = $("#txtPlanEntrevistador_edi").val();
-            acuerdos = $("#txtAcuerdos_edi").val();
-            informe = "";
-            planPadre = "";
-            planDocente = "";
-            acuerdosPadres = "";
-            acuerdosColegio = "";
-            apoderado = "";
-            if ($.trim(txtMotivo) == "") {
-                mensaje += "*Ingrese el motivo de solicitud<br>";
-                $("#txtMotivo_edi").addClass("is-invalid");
-            }
-            if ($.trim(planEstudiante) == '') {
-                mensaje += "*Ingrese el Planteamiento del estudiante<br>";
-                $("#txtPlanEstudiante_edi").addClass("is-invalid");
-            }
-            if ($.trim(planEntrevistador) == '') {
-                mensaje += "*Ingrese el Planteamiento del entrevistador(a)<br>";
-                $("#txtPlanEntrevistador_edi").addClass("is-invalid");
-            }
-            if ($.trim(acuerdos) == '') {
-                mensaje += "*Ingrese los Acuerdos<br>";
-                $("#txtAcuerdos_edi").addClass("is-invalid");
-            }
-            //if (ruta_img1 == false) {
-            //    if (signaturePad_edi.isEmpty()) {
-            //        mensaje += "*Ingrese la firma del estudiante<br>";
-            //        canvas_1.style.border = '1px solid #dc3545';
-            //    }
-            //}
-            if (ruta_img2 == false) {
-                if (txt_perfil !== "3" && solicitud_tipo !== "1") {
-                    if (blank2 == true) {
-                        mensaje += "*Ingrese la firma del entrevistador<br>";
-                        canvas_2.style.border = '1px solid #dc3545';
-                        $("#ruta_img2").css("border", "1px solid #dc3545");
-                    }
-                }
-            } /*else {
-             if (blank2 == true) {
-             mensaje += "*Ingrese la firma del entrevistador<br>";
-             canvas_2.style.border = '1px solid #dc3545';
-             $("#ruta_img2").css("border", "1px solid #dc3545");
-             }
-             }*/
-        } else {
-            txtMotivo = $("#txtMotivo_edi").val();
-            planEstudiante = "";
-            planEntrevistador = "";
-            acuerdos = "";
-            informe = $("#txtInforme_edi").val();
-            planPadre = $("#txtPlanPadre_edi").val();
-            planDocente = $("#txtPlanDocente_edi").val();
-            acuerdosPadres = $("#txtAcuerdosPadres_edi").val();
-            acuerdosColegio = $("#txtAcuerdosColegio_edi").val();
-            apoderado = $("#cbbTipoApoderado_edi").select().val();
-            if ($.trim(apoderado) < 0 || $.trim(apoderado) === "") {
-                mensaje += "*Seleccione el apoderado<br>";
-                $("#cbbTipoApoderado_edi").addClass("is-invalid");
-            }
-            if ($.trim(txtMotivo) == "") {
-                mensaje += "*Ingrese el motivo de solicitud<br>";
-                $("#txtMotivo_edi").addClass("is-invalid");
-            }
-            if ($.trim(informe) == '') {
-                mensaje += "*Ingrese el Informe<br>";
-                $("#txtInforme_edi").addClass("is-invalid");
-            }
-            if ($.trim(planPadre) == '') {
-                mensaje += "*Ingrese el Planteamiento del padre, madre <br>";
-                $("#txtPlanPadre_edi").addClass("is-invalid");
-            }
-            if ($.trim(planDocente) == '') {
-                mensaje += "*Ingrese el Planteamiento del docente<br>";
-                $("#txtPlanDocente_edi").addClass("is-invalid");
-            }
-            if ($.trim(acuerdosPadres) == '') {
-                mensaje += "*Ingrese las acciones a realizar por los padres<br>";
-                $("#txtAcuerdosPadres_edi").addClass("is-invalid");
-            }
-            if ($.trim(acuerdosColegio) == '') {
-                mensaje += "*Ingrese las acciones a realizar por el colegio<br>";
-                $("#txtAcuerdosColegio_edi").addClass("is-invalid");
-            }
-            /*if (signaturePad.isEmpty()) {
-             mensaje += "Ingrese la firma del padre, madre o apoderado<br>";
-             canvas.style.border = '1px solid #dc3545';
-             }*/
-            if (ruta_img2 == false) {
-                //if (txt_perfil !== "3" && solicitud_tipo !== "1") {
                 if (blank2 == true) {
                     mensaje += "*Ingrese la firma del entrevistador<br>";
                     canvas_2.style.border = '1px solid #dc3545';
                     $("#ruta_img2").css("border", "1px solid #dc3545");
                 }
-                //}
             } /*else {
-             if (blank2 == true) {
-             mensaje += "*Ingrese la firma del entrevistador<br>";
-             canvas_2.style.border = '1px solid #dc3545';
-             $("#ruta_img2").css("border", "1px solid #dc3545");
-             }
+                if (blank2 == true) {
+                    mensaje += "*Ingrese la firma del entrevistador<br>";
+                    canvas_2.style.border = '1px solid #dc3545';
+                    $("#ruta_img2").css("border", "1px solid #dc3545");
+                }
+            }*/
+        } else {
+            txtMotivo = $("#txtMotivo_edi").val();
+            planEstudiante = "";
+            planEntrevistador = "";
+            acuerdos = "";
+            informe = $("#txtInforme_edi").val();
+            planPadre = $("#txtPlanPadre_edi").val();
+            planDocente = $("#txtPlanDocente_edi").val();
+            acuerdosPadres = $("#txtAcuerdosPadres_edi").val();
+            acuerdosColegio = $("#txtAcuerdosColegio_edi").val();
+            apoderado = $("#cbbTipoApoderado_edi").select().val();
+            if ($.trim(apoderado) < 0 || $.trim(apoderado) === "") {
+                mensaje += "*Seleccione el apoderado<br>";
+                $("#cbbTipoApoderado_edi").addClass("is-invalid");
+            }
+            if ($.trim(txtMotivo) == "") {
+                mensaje += "*Ingrese el motivo de solicitud<br>";
+                $("#txtMotivo_edi").addClass("is-invalid");
+            }
+            if ($.trim(informe) == '') {
+                mensaje += "*Ingrese el Informe<br>";
+                $("#txtInforme_edi").addClass("is-invalid");
+            }
+            if ($.trim(planPadre) == '') {
+                mensaje += "*Ingrese el Planteamiento del padre, madre <br>";
+                $("#txtPlanPadre_edi").addClass("is-invalid");
+            }
+            if ($.trim(planDocente) == '') {
+                mensaje += "*Ingrese el Planteamiento del docente<br>";
+                $("#txtPlanDocente_edi").addClass("is-invalid");
+            }
+            if ($.trim(acuerdosPadres) == '') {
+                mensaje += "*Ingrese las acciones a realizar por los padres<br>";
+                $("#txtAcuerdosPadres_edi").addClass("is-invalid");
+            }
+            if ($.trim(acuerdosColegio) == '') {
+                mensaje += "*Ingrese las acciones a realizar por el colegio<br>";
+                $("#txtAcuerdosColegio_edi").addClass("is-invalid");
+            }
+            /*if (signaturePad.isEmpty()) {
+             mensaje += "Ingrese la firma del padre, madre o apoderado<br>";
+             canvas.style.border = '1px solid #dc3545';
              }*/
+            if (ruta_img2 == false) {
+                if (blank2 == true) {
+                    mensaje += "*Ingrese la firma del entrevistador<br>";
+                    canvas_2.style.border = '1px solid #dc3545';
+                    $("#ruta_img2").css("border", "1px solid #dc3545");
+                }
+            } /*else {
+                if (blank2 == true) {
+                    mensaje += "*Ingrese la firma del entrevistador<br>";
+                    canvas_2.style.border = '1px solid #dc3545';
+                    $("#ruta_img2").css("border", "1px solid #dc3545");
+                }
+            }*/
         }
         if (mensaje !== "") {
             Toast.fire({
@@ -6629,7 +5856,7 @@ function alumnos_no_entrevistados_grafico_barras_sede(sede) {
         success: function (datos) {
             $("#bar-chart").html("");
             $("#donut-chart").html("");
-            $("#bar-chart2").html("");
+			$("#bar-chart2").html("");
             $("#div_Grados").html("");
             $("#div_Secciones").html("");
             if (datos.length !== 0) {
@@ -8360,7 +7587,7 @@ function cargar_selector_grado(nivel) {
         },
         success: function (datos) {
             $("#cbbGrado").html(datos);
-            $("#cbbSeccion").html('<option value="0">-- Todos --</option>');//marita
+			$("#cbbSeccion").html('<option value="0">-- Todos --</option>');
         }
     });
 }
@@ -8403,21 +7630,6 @@ function limpiar_campos_semaforo() {
     $('#cbbGrado option[value=0]').attr('selected', 'selected');
     $('#cbbSeccion option[value=0]').attr('selected', 'selected');
     buscar_semaforo_docente();
-}
-
-function limpiar_campos_no_entrevistados() {
-    $('#cbbBimestre option[value=0]').removeAttr('selected');
-    $('#cbbNivel option[value=0]').removeAttr('selected');
-    $('#cbbGrado option[value=0]').removeAttr('selected');
-    $('#cbbSeccion option[value=0]').removeAttr('selected');
-    $("#dataDocente").html("Docente:");
-    $("#docen").val("");
-    $("#searchDocente").val("");
-    $('#cbbBimestre option[value=0]').attr('selected', 'selected');
-    $('#cbbNivel option[value=0]').attr('selected', 'selected');
-    $('#cbbGrado option[value=0]').attr('selected', 'selected');
-    $('#cbbSeccion option[value=0]').attr('selected', 'selected');
-    buscar_alumnos_no_entrevistados();
 }
 
 function alumnos_no_entrevistas_grafico_barras_niveles(nivel) {
@@ -8985,17 +8197,17 @@ function buscar_historial_auditoria() {
                     {
                         extend: 'csv',
                         text: 'CSV',
-                        title: 'Lista de auditoria del sistema'//marita
+                        title: 'Lista de auditoria del sistema'
                     },
                     {
                         extend: 'excel',
                         text: 'Excel',
-                        title: 'Lista de auditoria del sistema'//marita
+                        title: 'Lista de auditoria del sistema'
                     },
                     {
                         extend: 'print',
                         text: 'Imprimir',
-                        title: 'Lista de auditoria del sistema'//marita
+                        title: 'Lista de auditoria del sistema'
                     }, "colvis"]
                         //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
                         //"buttons": ["new", "colvis"]
@@ -9003,7 +8215,6 @@ function buscar_historial_auditoria() {
         }
     });
 }
-
 
 function mostrar_detalle_solicitud_alumno(modal, solicitud) {
     var arreglo = solicitud.split("*");
@@ -9078,7 +8289,7 @@ function enter_cambiar_contra(evt) {
 
 
 function cambiar_contrasena_usuario() {
-    $("#btnCambiarContrasenaUsuario").attr("disabled", true);
+	$("#btnCambiarContrasenaUsuario").attr("disabled", true);
     var Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
@@ -9176,7 +8387,6 @@ function cambiar_contrasena_usuario() {
     }
 }
 
-/*marita*/
 function buscar_cantidad_entrevistas_subentrevistas() {
     var sede = $("#cbbSedes").select().val();
     var bimestre = $("#cbbBimestre").val();
@@ -9762,7 +8972,7 @@ function registrar_seccion_docente() {
                 s_nivel: $.trim(cbbNivel.select().val()),
                 s_grado: $.trim(cbbGrado.select().val()),
                 s_seccion: $.trim(cbbSeccion.select().val()),
-                s_sede: $.trim(txtSede.val())
+                s_sede: $.trim(txtSede.val()),
             },
             beforeSend: function (objeto) {
                 $("#modal-nueva-seccion-docente").find('.modal-footer div label').html("");
@@ -9787,7 +8997,7 @@ function registrar_seccion_docente() {
                         $('.modal-backdrop').remove();
                         $("#btnRegistrarSeccionDocente").attr("disabled", false);
                         //cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
-                        mostrar_secciones_docente($.trim(docente.val()));
+						mostrar_secciones_docente($.trim(docente.val()));
                     }, 4500);
                 } else {
                     Toast.fire({
@@ -10479,27 +9689,6 @@ function cargar_selector_seccion_docente(grado) {
         },
         success: function (datos) {
             $("#cbbSeccion").html(datos);
-        }
-    });
-}
-
-function cargar_semaforo_x_bimestre(bimestre){
-    var str_bimestre = bimestre.value;
-    $.ajax({
-        url: "php/aco_php/controller.php",
-        dataType: "html",
-        type: "POST",
-        data: {
-            opcion: "formulario_cargar_semaforo_bimestre",
-            s_bimestre: str_bimestre,
-        },
-        beforeSend: function (objeto) {
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            //$("#contentMenu").html(xhr.responseText);
-        },
-        success: function (datos) {
-            $("#cbbSemaforo").html(datos);
         }
     });
 }

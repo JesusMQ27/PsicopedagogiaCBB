@@ -1300,7 +1300,7 @@ function proceso_editar_perfil() {
                                 fnc_registrar_auditoria($conexion, $sql_insert);
                             }
                         }
-                        if ($str_inserts !== "") {
+						if ($str_inserts !== "") {
                             $registrar_accesos = fnc_registrar_accesos_perfil($conexion, $str_inserts);
                             if ($registrar_accesos) {
                                 if (count($submenu) > 0) {
@@ -1319,13 +1319,13 @@ function proceso_editar_perfil() {
                                 fnc_registrar_auditoria($conexion, $sql_insert);
                             }
                         }
-                        $registrar_accesos = fnc_registrar_accesos_perfil($conexion, $str_inserts);
-                        if ($registrar_accesos) {
-                            if (count($submenu) > 0) {
-                                $sql_auditoria = fnc_registrar_accesos_perfil_auditoria($str_inserts);
-                                $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_perfil" . '", "' . "fnc_registrar_accesos_perfil" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_menu_asigna" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
-                                fnc_registrar_auditoria($conexion, $sql_insert);
-                            }
+                    }
+                    $registrar_accesos = fnc_registrar_accesos_perfil($conexion, $str_inserts);
+                    if ($registrar_accesos) {
+                        if (count($submenu) > 0) {
+                            $sql_auditoria = fnc_registrar_accesos_perfil_auditoria($str_inserts);
+                            $sql_insert = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "proceso_editar_perfil" . '", "' . "fnc_registrar_accesos_perfil" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_menu_asigna" . '","' . $_SESSION["psi_user"]["id"] . '",NOW(),"1"';
+                            fnc_registrar_auditoria($conexion, $sql_insert);
                         }
                     }
                 }
@@ -2029,7 +2029,7 @@ function formulario_nueva_solicitud() {
     echo $html;
 }
 
-function formulario_detalle_tipo_solicitud() {//Guadalupe
+function formulario_detalle_tipo_solicitud() {
     $con = new DB(1111);
     $conexion = $con->connect();
     $sm_tipo_sol = strip_tags(trim($_POST["sol_tipo"]));
@@ -2042,7 +2042,7 @@ function formulario_detalle_tipo_solicitud() {//Guadalupe
     $sol_alumno = $arreglo_matricula[1];
     $matricula = fnc_alumno_matricula_detalle($conexion, $sol_matricula);
     $html = '<input type="hidden" id="txt_sede" value="' . $matricula[0]["sedeId"] . '">';
-    $html .= '<input type="hidden" id="txt_perfil" value="' . p_perfil . '">'; //Guadalupe
+	$html .= '<input type="hidden" id="txt_perfil" value="' . p_perfil . '">';
     if ($sm_tipo_sol === "1") {
         $html .= '<div class="card-header">
                 <h3 class="card-title">FICHA DE ENTREVISTA A ESTUDIANTE</h3>
@@ -2085,6 +2085,7 @@ function formulario_detalle_tipo_solicitud() {//Guadalupe
                 $html .= '<option value="' . $lista["codigo"] . '" ' . $selected_sexo . '>' . strtoupper($lista["nombre"]) . '</option>';
             }
         }
+
         $html .= '</select></div>
                 </div>
                 <div class="row space-div">
@@ -2146,28 +2147,18 @@ function formulario_detalle_tipo_solicitud() {//Guadalupe
                    </div>'
                 . '</div>'
                 . '<div class="col-md-2" style="margin-bottom: 0px;">'
-                . '</div>'; //Guadalupe
-
-        $html .= '<div class="col-md-5" style="margin-bottom: 0px;">'
+                . '</div>';
+                $html .= '<div class="col-md-5" style="margin-bottom: 0px;">'
                 . '<div id="signature-pad-entrevistador" class="signature-pad" >
                     <div class="description">Firma del entrevistador</div>';
-        $imagen_perfil = "";
-        $data_firma = fnc_ultima_firma_usuario($conexion, p_usuario);
-        $html .= '<input type="hidden" id="txtCantiFirma" value="' . count($data_firma) . '"';
+		$imagen_perfil = "";
         if (p_perfil === '3') {
+            $data_firma = fnc_ultima_firma_usuario($conexion, p_usuario);
             if (count($data_firma) > 0) {
                 $imagen_perfil = $data_firma[0]["imagen"];
                 $html .= '<div class="signature-pad--body">
                         <img id="canvas2_img" src="./php/' . $imagen_perfil . '" style="width: 80%;cursor:pointer;border: 1px black solid;" height="152">
                     </div>';
-            } else {
-                $html .= '<div class="signature-pad--body">
-                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas2"></canvas>
-                    </div>
-                    <div>
-                        <button type="button" class="btn btn-default" onclick="iniciar_firma_2()">Iniciar</button>&nbsp;&nbsp;
-                        <button type="button" class="btn btn-default" onclick="limpiar_firma_entrevistador();">Limpiar firma</button>
-                   </div>';
             }
         } else {
             $html .= '<div class="signature-pad--body">
@@ -2324,22 +2315,31 @@ function formulario_detalle_tipo_solicitud() {//Guadalupe
                    </div>'
                 . '</div>'
                 . '<div class="col-md-2" style="margin-bottom: 0px;">'
-                . '</div>'; //Guadalupe
-
-        $html .= '<div class="col-md-5" style="margin-bottom: 0px;">'
+                . '</div>';
+                $html .= '<div class="col-md-5" style="margin-bottom: 0px;">'
                 . '<div id="signature-pad-entrevistador" class="signature-pad" >
                     <div class="description">Firma del entrevistador</div>';
-
-        $html .= '<div class="signature-pad--body">
-                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas2"></canvas>
-                    </div>
-                    <div>
-                        <button type="button" class="btn btn-default" onclick="iniciar_firma_2()">Iniciar</button>&nbsp;&nbsp;
-                        <button type="button" class="btn btn-default" onclick="limpiar_firma_entrevistador();">Limpiar firma</button>
-                   </div>';
-        $html .= '<div style="margin-left: 20px;">
-                       <label>' . strtoupper($usuario_data[0]["usuariodata"]) . '<br/>' . $usuario_data[0]["usuarioDni"] . '<label/>
-                   </div>'
+                $imagen_perfil = "";
+				if (p_perfil === '3') {
+					$data_firma = fnc_ultima_firma_usuario($conexion, p_usuario);
+					if (count($data_firma) > 0) {
+						$imagen_perfil = $data_firma[0]["imagen"];
+						$html .= '<div class="signature-pad--body">
+								<img id="canvas2_img" src="./php/' . $imagen_perfil . '" style="width: 80%;cursor:pointer;border: 1px black solid;" height="152">
+							</div>';
+					}
+				} else {
+					$html .= '<div class="signature-pad--body">
+								<canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas2"></canvas>
+							</div>
+							<div>
+								<button type="button" class="btn btn-default" onclick="iniciar_firma_2()">Iniciar</button>&nbsp;&nbsp;
+								<button type="button" class="btn btn-default" onclick="limpiar_firma_entrevistador();">Limpiar firma</button>
+						   </div>';
+				}
+				$html .= '<div style="margin-left: 20px;">
+							   <label>' . strtoupper($usuario_data[0]["usuariodata"]) . '<br/>' . $usuario_data[0]["usuarioDni"] . '<label/>
+						   </div>'
                 . ' </div>'
                 . '</div>';
     }
@@ -2785,7 +2785,7 @@ function operacion_buscar_semaforo_docentes() {
     $lista = fnc_buscar_semaforo_docentes($conexion, $s_sede, $s_semaforo, $s_bimestre, $s_nivel, $s_grado, $s_seccion, $s_docente);
     $html = "";
     $aux = 1;
-    $color = "";
+	$color = "";
     if (count($lista) > 0) {
         foreach ($lista as $value) {
             if ($value["color"] == "Rojo") {
@@ -2798,7 +2798,7 @@ function operacion_buscar_semaforo_docentes() {
             $html .= "<tr >"
                     . "<td>$aux</td>"
                     . "<td>" . $value["sede"] . "</td>"
-                    . "<td>" . $value["perfil"] . "</td>"
+					. "<td >" . $value["perfil"] . "</td>"
                     . "<td >" . $value["docente"] . "</td>"
                     //. "<td>" . $value["grado"] . "</td>"
                     . "<td style='text-align:center'>" . $value["cantidad"] . "</td>"
@@ -2888,7 +2888,7 @@ function formulario_nueva_subsolicitud() {
     echo $html;
 }
 
-function formulario_detalle_tipo_solicitud_sub() {//Guadalupe
+function formulario_detalle_tipo_solicitud_sub() {
     $con = new DB(1111);
     $conexion = $con->connect();
     $sm_tipo_sol = strip_tags(trim($_POST["sol_tipo"]));
@@ -2901,7 +2901,7 @@ function formulario_detalle_tipo_solicitud_sub() {//Guadalupe
     $sm_sol_alumno = $arreglo_alu[1];
     $matricula = fnc_alumno_matricula_detalle($conexion, $sm_sol_matricula);
     $html = '<input type="hidden" id="txt_sede_sub" value="' . $matricula[0]["sedeId"] . '">';
-    $html .= '<input type="hidden" id="txt_perfil_sub" value="' . p_perfil . '">'; //Guadalupe
+	$html .= '<input type="hidden" id="txt_perfil_sub" value="' . p_perfil . '">'; 
     if ($sm_tipo_sol === "1") {
         $html .= '<div class="card-header">
                 <h3 class="card-title">FICHA DE ENTREVISTA A ESTUDIANTE</h3>
@@ -3004,11 +3004,11 @@ function formulario_detalle_tipo_solicitud_sub() {//Guadalupe
                    </div>'
                 . '</div>'
                 . '<div class="col-md-2" style="margin-bottom: 0px;">'
-                . '</div>';
-        $html .= '<div class="col-md-5" style="margin-bottom: 0px;">'
+                . '</div>'
+                . '<div class="col-md-5" style="margin-bottom: 0px;">'
                 . '<div id="signature-pad-entrevistador-sub" class="signature-pad" >
                     <div class="description">Firma del entrevistador</div>';
-        $imagen_perfil = "";
+                    $imagen_perfil = "";
         if (p_perfil === '3') {
             $data_firma = fnc_ultima_firma_usuario($conexion, p_usuario);
             if (count($data_firma) > 0) {
@@ -3030,7 +3030,7 @@ function formulario_detalle_tipo_solicitud_sub() {//Guadalupe
                        <label>' . strtoupper($usuario_data[0]["usuariodata"]) . '<br/>' . $usuario_data[0]["usuarioDni"] . '<label/>
                    </div>'
                 . ' </div>'
-                . '</div>'; //Guadalupe
+                . '</div>';
     } elseif ($sm_tipo_sol === "2") {
         $lista_apoderados = fnc_lista_apoderados_de_alumno($conexion, $matricula[0]["aluId"], "");
         $html .= '<div class="card-header">
@@ -3175,13 +3175,24 @@ function formulario_detalle_tipo_solicitud_sub() {//Guadalupe
         $html .= '<div class="col-md-5" style="margin-bottom: 0px;">'
                 . '<div id="signature-pad-entrevistador-sub" class="signature-pad" >
                     <div class="description">Firma del entrevistador</div>';
-        $html .= '<div class="signature-pad--body">
-                    <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas2_sub"></canvas>
-                  </div>
-                  <div>
-                    <button type="button" class="btn btn-default" onclick="iniciar_firma_sub_2()">Iniciar</button>&nbsp;&nbsp;
-                    <button type="button" class="btn btn-default" onclick="limpiar_firma_entrevistador_sub();">Limpiar firma</button>
-                  </div>';
+        $imagen_perfil = "";
+        if (p_perfil === '3') {
+            $data_firma = fnc_ultima_firma_usuario($conexion, p_usuario);
+            if (count($data_firma) > 0) {
+                $imagen_perfil = $data_firma[0]["imagen"];
+                $html .= '<div class="signature-pad--body">
+                        <img id="canvas2_img_edi" src="./php/' . $imagen_perfil . '" style="width: 80%;cursor:pointer;border: 1px black solid;" height="152">
+                    </div>';
+            }
+        } else {
+            $html .= '<div class="signature-pad--body">
+                        <canvas style="width: 80%;cursor:pointer;border: 1px black solid; " id="canvas2_sub"></canvas>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-default" onclick="iniciar_firma_sub_2()">Iniciar</button>&nbsp;&nbsp;
+                        <button type="button" class="btn btn-default" onclick="limpiar_firma_entrevistador_sub();">Limpiar firma</button>
+                   </div>';
+        }
         $html .= '<div style="margin-left: 20px;">
                        <label>' . strtoupper($usuario_data[0]["usuariodata"]) . '<br/>' . $usuario_data[0]["usuarioDni"] . '<label/>
                    </div>'
@@ -3309,7 +3320,7 @@ function formulario_editar_apoderado_sub() {
     echo $html;
 }
 
-function operacion_editar_apoderado_sub() {
+function operacion_editar_apoderado_sub() {//jesucito
     $con = new DB(1111);
     $conexion = $con->connect();
     $alumnoCod = strip_tags(trim($_POST["a_txtAlumnCodigo_sub"]));
@@ -3446,7 +3457,7 @@ function formulario_nuevo_apoderado_sub() {
     echo $html;
 }
 
-function operacion_registrar_apoderado_sub() {
+function operacion_registrar_apoderado_sub() {//jesucito
     $con = new DB(1111);
     $conexion = $con->connect();
     $codigo = strip_tags(trim($_POST["a_txtAlumnoCodiN_sub"]));
@@ -3522,7 +3533,7 @@ function formulario_editar_solicitud() {
     echo $html;
 }
 
-function formulario_carga_solicitudes() {//Guadalupe
+function formulario_carga_solicitudes() {
     $con = new DB(1111);
     $conexion = $con->connect();
     $s_solicitud = strip_tags(trim($_POST["sol_cod"]));
@@ -3631,7 +3642,6 @@ function formulario_carga_solicitudes() {//Guadalupe
         $html .= '</div><input type="hidden" id="txt_sede_edi" value="' . $lista_solicitud[0]["sedeId"] . '">
         </div>';
         $html .= '<div class="card card-warning" id="divSubEntrevista_edi">';
-        $html .= '<input type="hidden" id="txt_perfil" value="' . p_perfil . '">';
         if ($lista_solicitud[0]["ent_id"] === "1") {
             $html .= '<div class="card-header">
                 <h3 class="card-title">FICHA DE ENTREVISTA A ESTUDIANTE</h3>
@@ -3795,20 +3805,20 @@ function formulario_carga_solicitudes() {//Guadalupe
             }
             $html .= '<canvas style = "width: 80%;cursor:pointer;border: 1px black solid;display:none" id = "canvas2_edi" height = "152" width = "531"></canvas>
             <br/>
-            </div>'; //Guadalupe
-            if ($lista_solicitud[0]["usuCodi"] === p_usuario && $lista_solicitud[0]["perfil"] === p_perfil && p_perfil === "3") {
+            </div>
+            <div>';
+			if ($lista_solicitud[0]["usuCodi"] === p_usuario && $lista_solicitud[0]["perfil"] === p_perfil && p_perfil === "3") {
                 $html .= '';
             } else {
-                $html .= '<div>
-            <button type="button" class="btn btn-default" onclick="iniciar_firma_edi2()" ' . $campos_disabled . '>Iniciar</button>&nbsp;&nbsp;
+				$html .= '<button type="button" class="btn btn-default" onclick="iniciar_firma_edi2()" ' . $campos_disabled . '>Iniciar</button>&nbsp;&nbsp;
             <button type = "button" class = "btn btn-default" id="btnLimpiarFirma2" onclick="limpiar_firma_entrevistador_edi();" disabled>Limpiar firma</button>
             </div>';
-            }
+			}
             $html .= '<div style = "margin-left: 20px;">
             <label>' . strtoupper($lista_solicitud[0]["usuario"]) . '<br/>' . $lista_solicitud[0]["dni"] . '<label/>
             </div>'
                     . ' </div>'
-                    . '</div>'; //Guadalupe
+                    . '</div>';
         } elseif ($lista_solicitud[0]["ent_id"] === "2") {
             $lista_apoderados = fnc_lista_apoderados_de_alumno($conexion, $lista_solicitud[0]["aluId"], "");
             $apoderado = fnc_lista_apoderados_de_alumno($conexion, $lista_solicitud[0]["aluId"], $lista_solicitud[0]["apoderado"]);
@@ -4022,13 +4032,16 @@ function formulario_carga_solicitudes() {//Guadalupe
             }
             $html .= '<canvas style = "width: 80%;cursor:pointer;border: 1px black solid;display:none" id = "canvas2_edi" height = "152" width = "531"></canvas>
             <br/>
-            </div>'; //Guadalupe
-            $html .= '<div>
+            </div>';
+			if ($lista_solicitud[0]["usuCodi"] === p_usuario && $lista_solicitud[0]["perfil"] === p_perfil && p_perfil === "3") {
+                $html .= '';
+            } else {
+				$html .= '<div>
             <button type = "button" class = "btn btn-default" onclick = "iniciar_firma_edi2()" ' . $campos_disabled . '>Iniciar</button>&nbsp;
             &nbsp;
             <button type = "button" class = "btn btn-default" id = "btnLimpiarFirma2" onclick = "limpiar_firma_entrevistador_edi();" disabled>Limpiar firma</button>
             </div>';
-
+			}
             $html .= '<div style = "margin-left: 20px;">
             <label>' . strtoupper($lista_solicitud[0]["usuario"]) . '<br/>' . $lista_solicitud[0]["dni"] . '<label/>
             </div>'
@@ -5266,22 +5279,22 @@ function mostrar_busqueda_entrevistas() {
                     <td>" . $str_motivo . "</td>
                     <td>" . $lista["estado"] . "</td>
                     <td align='center' style='width:100px'>";
-            if ($perfil !== "9") {
+			if ($perfil !== "9") {		
                 $html .= "<i class='nav-icon fas fa-plus green' title='Nueva Subentrevista' data-toggle='modal' data-target='#modal-subentrevista' data-backdrop='static' data-entrevista='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;";
-            }
+			}
             $html .= "<i class='nav-icon fas fa-file-pdf rojo' title='Descargar' data-toggle='modal' data-target='#modal-descargar' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"
                     . "<i class='nav-icon fas fa-info-circle celeste' title='Detalle' data-toggle='modal' data-target='#modal-detalle-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "' data-grupo_nombre='" . $lista["id"] . "'></i>&nbsp;&nbsp;&nbsp;";
-            if ($perfil !== "9") {
+			if ($perfil !== "9") {		
                 $html .= "<i class='nav-icon fas fa-edit naranja' title='Editar' data-toggle='modal' data-target='#modal-editar-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;";
-            }
+			}
             if ($perfil === "1" || $perfil === "5") {
                 $html .= "<i class='nav-icon fas fa-trash rojo' title='Eliminar' data-toggle='modal' data-target='#modal-eliminar-solicitud-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;";
             }
-            if ($perfil !== "9") {
-                $html .= "<i class='nav-icon fas fa-paper-plane azul' title='Enviar al correo' data-toggle='modal' data-target='#modal-enviar-solicitud' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;";
+			if ($perfil !== "9") {
+				$html .= "<i class='nav-icon fas fa-paper-plane azul' title='Enviar al correo' data-toggle='modal' data-target='#modal-enviar-solicitud' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;";
             }
-            $html .= "<i class='nav-icon fas fa-upload negro' title='Cargar archivo(s)' data-toggle='modal' data-target='#modal-cargar-archivos' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;";
-            $html .= "</td>"
+            $html .= "<i class='nav-icon fas fa-upload negro' title='Cargar archivo(s)' data-toggle='modal' data-target='#modal-cargar-archivos' data-backdrop='static' data-solicitud='" . $solicitudCod . "'></i>&nbsp;&nbsp;&nbsp;"; 
+			$html .= "</td>"
                     . "</tr>";
             $num++;
         }
@@ -5400,7 +5413,7 @@ function operacion_entrevistas_alumnos() {
     $aux = 1;
     if (count($lista_entrevistas) > 0) {
         foreach ($lista_entrevistas as $lista) {
-            $solicitudCod = fnc_generate_random_string(6) . "*" . $lista["tipoId"] . "*" . fnc_generate_random_string(6);
+			$solicitudCod = fnc_generate_random_string(6) . "*" . $lista["tipoId"] . "*" . fnc_generate_random_string(6);
             $html .= "<tr>
                                         <td>" . $num . "</td>
                                         <td>" . $lista["tipo"] . "</td>
@@ -5418,7 +5431,7 @@ function operacion_entrevistas_alumnos() {
                     "<td>" . $lista["subcategoria"] . "</td>" .
                     "<td>" . $lista["duracion"] . "</td>" .
                     "<td>" . $lista["estado"] . "</td>" .
-                    "<td><i class='nav-icon fas fa-info-circle celeste' title='Detalle' data-toggle='modal' data-target='#modal-detalle-solicitudes-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "' ></i></td>" .
+					"<td><i class='nav-icon fas fa-info-circle celeste' title='Detalle' data-toggle='modal' data-target='#modal-detalle-solicitudes-alumno' data-backdrop='static' data-solicitud='" . $solicitudCod . "' ></i></td>" .
                     "</tr>";
             $num++;
         }
@@ -6483,8 +6496,7 @@ function proceso_editar_bimestres() {
 function formulario_registro_nuevo_semaforo() {
     $con = new DB(1111);
     $conexion = $con->connect();
-    //$lista_anios = fnc_lista_anios_semaforos($conexion);//
-    $lista_bimestres = fnc_lista_semaforo_bimestre($conexion, "", "");
+	$lista_bimestres = fnc_lista_semaforo_bimestre($conexion, "", "");
     ?>
     <div class="row space-div">
         <div class="col-md-4" style="margin-bottom: 0px;">
@@ -7072,7 +7084,6 @@ function mostrar_tabla_mis_aulas() {
     echo $html;
 }
 
-//marita
 function operacion_cantidad_entrevistas_subentrevitas() {
     $con = new DB(1111);
     $conexion = $con->connect();
@@ -7113,7 +7124,7 @@ function operacion_cantidad_entrevistas_subentrevitas() {
         foreach ($lista_cantidad_entrevistas as $lista) {
             $html .= "<tr>
                 <td>" . $num . "</td>
-                <td>" . $lista["sede"] . "</td>
+				<td>" . $lista["sede"] . "</td>
                 <td>" . $lista["categoria"] . "</td>
                 <td >" . $lista["subcategoria"] . "</td>
                 <td style='text-align:center'>" . $lista["cantidad_entrevista"] . "</td>
@@ -7188,7 +7199,7 @@ function operacion_reporte_semanal() {
         foreach ($lista_reporte_semanal as $lista) {
             $html .= "<tr>
                 <td>" . $num . "</td>
-                <td>" . $lista["sede"] . "</td>
+				<td>" . $lista["sede"] . "</td>
                 <td>" . $lista["nivel"] . "</td>
                 <td >" . $lista["grado"] . "</td>
                 <td >" . $lista["seccion"] . "</td>
@@ -7257,13 +7268,13 @@ function formulario_cargar_archivos() {
                     <td style="text-align:center">' . $lista["estado"] . '</td>
                     <td style="text-align:center">
                         <a href="php/aco_archivos/' . $lista["nombre"] . '" download><i class="nav-icon fas fa-download azul" title="Descargar"></i></a>&nbsp;&nbsp;&nbsp;';
-            if ($perfil === "1" || $perfil === "5") {
-                if ($lista["estado"] == "Activo") {
-                    $html .= '<i class="nav-icon fas fa-trash rojo" title="Eliminar" data-toggle="modal" data-target="#modal-eliminar-archivo" data-backdrop="static" data-solicitud="' . $s_solicitud . '" data-archivo="' . $lista["codigo"] . '"></i>';
-                } else {
-                    $html .= '<i class="nav-icon fas fa-undo green" title="Activar" data-toggle="modal" data-target="#modal-activar-archivo" data-backdrop="static" data-solicitud="' . $s_solicitud . '" data-archivo="' . $lista["codigo"] . '"></i>';
-                }
-            }
+			if ($perfil === "1" || $perfil === "5") {			
+				if ($lista["estado"] == "Activo") {
+					$html .= '<i class="nav-icon fas fa-trash rojo" title="Eliminar" data-toggle="modal" data-target="#modal-eliminar-archivo" data-backdrop="static" data-solicitud="' . $s_solicitud . '" data-archivo="' . $lista["codigo"] . '"></i>';
+				} else {
+					$html .= '<i class="nav-icon fas fa-undo green" title="Activar" data-toggle="modal" data-target="#modal-activar-archivo" data-backdrop="static" data-solicitud="' . $s_solicitud . '" data-archivo="' . $lista["codigo"] . '"></i>';
+				}
+			}
             $html .= '</td>
                 </tr>';
             $num++;
@@ -7907,7 +7918,7 @@ function formulario_editar_gradoseccion() {
                                 $lista_nombres = fnc_lista_nombre_secciones();
                                 $index = array_search($ultimo_seccion, $lista_nombres, true) + 1;
                                 ?>
-                                <!--<li><label>Secci&oacute;n <?php //echo $lista_nombres[$index];                                    ?></label> <a onclick="eliminar_elemento(this);">&times;</a></li>-->
+                                <!--<li><label>Secci&oacute;n <?php //echo $lista_nombres[$index];      ?></label> <a onclick="eliminar_elemento(this);">&times;</a></li>-->
                             </div>
                             <br>
                         </div>
@@ -8123,21 +8134,3 @@ function formulario_selector_seccion_docente() {
     }
     echo $html;
 }
-
-function formulario_cargar_semaforo_bimestre(){
-    $con = new DB(1111);
-    $conexion = $con->connect();
-    $s_bimestre = strip_tags(trim($_POST["s_bimestre"]));
-    $html = "";
-    $lista_semaforo = fnc_lista_semaforo($conexion, $s_bimestre, '1');
-    if (count($lista_semaforo) > 0) {
-        $html .= '<option value="0">-- Todos --</option>';
-        foreach ($lista_semaforo as $semaforo) {
-            $html .= "<option value='" . $semaforo["id"] . "' >" . $semaforo["nombre"] . "</option>";
-        }
-    } else {
-        $html .= '<option value="0">-- Todos --</option>';
-    }
-    echo $html;
-}
-?>

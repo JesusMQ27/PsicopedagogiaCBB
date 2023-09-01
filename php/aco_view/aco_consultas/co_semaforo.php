@@ -37,7 +37,6 @@ if ($userData[0]["sedeId"] == "1" && ($perfilId === "1" || $perfilId === "5")) {
     }
 }
 
-$lista_semaforo = fnc_lista_semaforo($conexion, '', '1');
 $lista_bimestre = fnc_lista_bimestre($conexion, '', '1');
 $lista_niveles = fnc_lista_niveles($conexion, '', '1');
 $bimestre_select_id = "";
@@ -93,7 +92,7 @@ $bimestre_select_id = "";
                         <div class="form-group" style="margin-bottom: 0px;">
                             <label> Bimestre: </label>
                         </div>
-                        <select id="cbbBimestre" data-show-content="true" class="form-control" style="width: 100%">
+                        <select id="cbbBimestre" data-show-content="true" class="form-control" style="width: 100%" onchange="cargar_semaforo_x_bimestre(this)">
                             <?php
                             $selected_bimes = "";
                             foreach ($lista_bimestre as $bimestre) {
@@ -116,7 +115,7 @@ $bimestre_select_id = "";
                             <div class="input-group-addon">
                                 <i class="fa fa-calendar"></i>
                             </div>&nbsp;
-                            <input type="text" class="form-control pull-right" id="fecha1" value="<?php echo $fechas[0]["ayer"]; ?>" readonly >
+                            <input type="text" class="form-control pull-right" id="fecha1" value="<?php //echo $fechas[0]["ayer"];  ?>" readonly >
                         </div>
                     </div>
                     <div class="col-lg-2 col-md-4 col-sm-6 col-12">
@@ -127,13 +126,16 @@ $bimestre_select_id = "";
                             <div class="input-group-addon">
                                 <i class="fa fa-calendar"></i>
                             </div>&nbsp;
-                            <input type="text" class="form-control pull-right" id="fecha2" value="<?php echo $fechas[0]["hoy"]; ?>" readonly >
+                            <input type="text" class="form-control pull-right" id="fecha2" value="<?php //echo $fechas[0]["hoy"];  ?>" readonly >
                         </div>
                     </div>-->
                     <div class="col-lg-3 col-md-3 col-sm-6 col-12">
                         <div class="form-group" style="margin-bottom: 0px;">
                             <label> Semaforo - Color: </label>
                         </div>
+                        <?php
+                        $lista_semaforo = fnc_lista_semaforo($conexion, $bimestre_select_id, '1');
+                        ?>
                         <select id="cbbSemaforo" data-show-content="true" class="form-control" style="width: 100%">
                             <option value="0">-- Todos --</option>
                             <?php

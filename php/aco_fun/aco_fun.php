@@ -1954,4 +1954,16 @@ function fnc_eliminar_grado_auditoria($id) {
     $sql = con_eliminar_grado($id);
     return $sql;
 }
+
+function fnc_ultima_firma_usuario($conexion, $usuario) {//Guadalupe
+    $arreglo = array();
+    $sql = con_ultima_firma_usuario($usuario);
+    $stmt = $conexion->query($sql);
+    foreach ($stmt as $data) {
+        array_push($arreglo, $data);
+    }
+    return $arreglo;
+}
+
+
 ?>
