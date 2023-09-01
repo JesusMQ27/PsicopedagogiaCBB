@@ -9,7 +9,7 @@ require_once '../../php/aco_fun/aco_fun.php';
 
 session_start();
 $psi_usuario = $_SESSION["psi_user"]["id"];
-
+$perfil = $_SESSION["psi_user"]["perfCod"]; //Guadalupe
 $con = new DB(1111);
 $conexion = $con->connect();
 $sm_codigo = strip_tags(trim($_POST["sm_codigo"]));
@@ -110,25 +110,36 @@ try {
                 }
             }
         }
+        if ($perfil == "3" && $s_solicitud_tipo === "1") {//Guadalupe
+            $file2 = str_replace("./php/", "../", $s_img2);
+            $cadena_imag2 = "('" . $solicitud_id . "','" . $s_matricula . "','" . $psi_usuario . "','" . $s_apoderado .
+                    "','" . $file2 . "',NOW(),'2','1')";
+            $insertar_firma2 = fnc_registrar_solicitud_firmas($conexion, $cadena_imag2);
+            if (count($submenu) > 0 && $insertar_firma2) {
+                $sql_auditoria = fnc_registrar_solicitud_firmas_auditoria($cadena_imag2);
+                $sql = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "psi_registrar_entrevista.php" . '", "' . "fnc_registrar_solicitud_firmas" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_solicitudes_firmas" . '","' . $psi_usuario . '",NOW(),"1"';
+                fnc_registrar_auditoria($conexion, $sql);
+            }
+        } else {
+            if (strpos($s_img2, 'data:image/png;base64') === 0) {
+                $s_img2 = str_replace('data:image/png;base64,', '', $s_img2);
+                $s_img2 = str_replace(' ', '+', $s_img2);
+                $data2 = base64_decode($s_img2);
+                $file2 = '../aco_firmas/img_' . $psi_usuario . "_" . uniqid() . '.png';
 
-        if (strpos($s_img2, 'data:image/png;base64') === 0) {
-            $s_img2 = str_replace('data:image/png;base64,', '', $s_img2);
-            $s_img2 = str_replace(' ', '+', $s_img2);
-            $data2 = base64_decode($s_img2);
-            $file2 = '../aco_firmas/img_' . $psi_usuario . "_" . uniqid() . '.png';
-
-            if (file_put_contents($file2, $data2)) {
-                $cadena_imag2 = "('" . $solicitud_id . "','" . $s_matricula . "','" . $psi_usuario . "','" . $s_apoderado .
-                        "','" . $file2 . "',NOW(),'2','1')";
-                $insertar_firma2 = fnc_registrar_solicitud_firmas($conexion, $cadena_imag2);
-                if (count($submenu) > 0 && $insertar_firma2) {
-                    $sql_auditoria = fnc_registrar_solicitud_firmas_auditoria($cadena_imag2);
-                    $sql = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "psi_registrar_entrevista.php" . '", "' . "fnc_registrar_solicitud_firmas" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_solicitudes_firmas" . '","' . $psi_usuario . '",NOW(),"1"';
-                    fnc_registrar_auditoria($conexion, $sql);
+                if (file_put_contents($file2, $data2)) {
+                    $cadena_imag2 = "('" . $solicitud_id . "','" . $s_matricula . "','" . $psi_usuario . "','" . $s_apoderado .
+                            "','" . $file2 . "',NOW(),'2','1')";
+                    $insertar_firma2 = fnc_registrar_solicitud_firmas($conexion, $cadena_imag2);
+                    if (count($submenu) > 0 && $insertar_firma2) {
+                        $sql_auditoria = fnc_registrar_solicitud_firmas_auditoria($cadena_imag2);
+                        $sql = ' "' . $str_menu_id . '", "' . $str_menu_nombre . '", "' . "psi_registrar_entrevista.php" . '", "' . "fnc_registrar_solicitud_firmas" . '","' . $sql_auditoria . '","' . "INSERT" . '","' . "tb_solicitudes_firmas" . '","' . $psi_usuario . '",NOW(),"1"';
+                        fnc_registrar_auditoria($conexion, $sql);
+                    }
+                } else {
+                    echo "***0***Error al registrar la imagen del entrevistador.***<br/>";
+                    exit();
                 }
-            } else {
-                echo "***0***Error al registrar la imagen del entrevistador.***<br/>";
-                exit();
             }
         }
     }

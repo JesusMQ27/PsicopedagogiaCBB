@@ -152,6 +152,7 @@ $bimestre_select_id = "";
                             <thead>
                                 <tr>
                                     <th>Nro.</th>
+                                    <th>Sede</th>
                                     <th>Categoria</th>
                                     <th>Subcategoria</th>
                                     <th>Cantidad entrevistas</th>
@@ -168,6 +169,7 @@ $bimestre_select_id = "";
                                 foreach ($lista_cantidad_entrevistas as $lista) {
                                     $html .= "<tr>
                                         <td>" . $num . "</td>
+                                        <td>" . $lista["sede"] . "</td>
                                         <td>" . $lista["categoria"] . "</td>
                                         <td >" . $lista["subcategoria"] . "</td>
                                         <td style='text-align:center'>" . $lista["cantidad_entrevista"] . "</td>

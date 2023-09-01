@@ -170,6 +170,7 @@ $lista_auditoria = fnc_lista_auditorias($conexion, $sedeCodi, $usuarioCodi, $fec
 
 <script>
     $(function () {
+        $('body').css('overflow', 'auto');
         $("#fecha1").daterangepicker({
             autoApply: true,
             showButtonPanel: false,

@@ -31,7 +31,7 @@ if ($userData[0]["sedeId"] == "1" && ($perfil == "1" || $perfil == "5")) {
         $usuarioCodi = "";
     }
 }
-$lista_anios = fnc_lista_anio_semaforo($conexion, "", "1");
+$lista_anios = fnc_lista_bimestre_semaforo($conexion, "", "");
 ?>
 
 <section class="content-header">
@@ -69,6 +69,7 @@ $lista_anios = fnc_lista_anio_semaforo($conexion, "", "1");
                             <th>Nro.</th>
                             <th>C&oacute;digo</th>
                             <th>A&ntilde;o</th>
+                            <th>Bimestre</th>
                             <th>Semaforo</th>
                             <th>Rangos</th>
                             <th>Estado</th>
@@ -85,6 +86,7 @@ $lista_anios = fnc_lista_anio_semaforo($conexion, "", "1");
                                 <td>" . $num . "</td>
                                         <td align='center'>" . $lista["codigo"] . "</td>
                                         <td align='center'>" . $lista["nombre"] . "</td>
+                                        <td align='center'>" . $lista["bimestre"] . "</td>
                                         <td align='center'>" . str_replace(",", "<br/>", $lista["semaforo"]) . "</td>
                                         <td align='center'>" . str_replace(",", "<br/>", $lista["rango"]) . "</td>
                                         <td align='center'>" . $lista["estado"] . "</td>
@@ -106,7 +108,7 @@ $lista_anios = fnc_lista_anio_semaforo($conexion, "", "1");
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Registrar Semaforo por a&ntilde;o</h4>
+                <h4 class="modal-title">Registrar Semaforo por bimestre</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -151,7 +153,7 @@ $lista_anios = fnc_lista_anio_semaforo($conexion, "", "1");
 
 <script>
     $(function () {
-
+        $('body').css('overflow', 'auto');
         /*Modales de Administrar Menus*/
         $('#modal-nuevo-semaforo').on('show.bs.modal', function (event) {
             var modal = $(this);

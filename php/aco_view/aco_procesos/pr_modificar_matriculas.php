@@ -133,7 +133,7 @@ $lista_anios = fnc_lista_anios($conexion);
 
 <script>
     $(function () {
-
+        $('body').css('overflow', 'auto');
         /*Modales de Administrar Menus*/
         $('#modal-modificar-matriculas').on('show.bs.modal', function (event) {
             var modal = $(this);

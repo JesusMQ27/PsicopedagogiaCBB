@@ -81,6 +81,7 @@ if ($sedeCodigo == "1" && ($perfil == "1" || $perfil == "5")) {
 
 <script>
     $(function () {
+        $('body').css('overflow', 'auto');
         $('input#searchAlumnoH').typeahead({
             hint: true,
             highlight: true,

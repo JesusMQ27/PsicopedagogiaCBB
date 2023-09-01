@@ -151,7 +151,7 @@ $lista_anios = fnc_lista_anio_bimestres($conexion, "", "1");
 
 <script>
     $(function () {
-
+        $('body').css('overflow', 'auto');
         /*Modales de Administrar Menus*/
         $('#modal-nuevos-bimestres').on('show.bs.modal', function (event) {
             var modal = $(this);

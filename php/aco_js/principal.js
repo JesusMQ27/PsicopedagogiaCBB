@@ -2543,7 +2543,7 @@ function buscar_entrevistas() {
     });
 }
 
-function registrar_solicitud() {
+function registrar_solicitud_jesus() {
     $("#btnRegistrarSolicitud").attr("disabled", true);
     var Toast = Swal.mixin({
         toast: true,
@@ -2574,7 +2574,7 @@ function registrar_solicitud() {
     var wrapper_entrevistador = document.getElementById("signature-pad-entrevistador");
     var canvas_2 = wrapper_entrevistador.querySelector("canvas");
     var blank = isCanvasBlank(document.getElementById('canvas1'));
-    var blank2 = isCanvasBlank(document.getElementById('canvas2'));
+    //var blank2 = isCanvasBlank(document.getElementById('canvas2'));
     SetTabletState(0, tmr, 0);
     SetTabletState(0, tmr2, 0);
     clearInterval(tmr);
@@ -2701,14 +2701,278 @@ function registrar_solicitud() {
         $("#btnRegistrarSolicitud").attr("disabled", false);
     } else {
         var codSMenu = $("#hdnCodiSR");
+        var txt_perfil = $("#txt_perfil").val();
         var canvas1 = document.getElementById('canvas1');
         var dataURL1 = canvas1.toDataURL();
-        var canvas2 = document.getElementById('canvas2');
-        var dataURL2 = canvas2.toDataURL();
+        var dataURL2 = "";
+        if (txt_perfil === "3") {
+            dataURL2 = document.getElementById('canvas2_img').getAttribute('src');
+        } else {
+            var canvas2 = document.getElementById('canvas2');
+            dataURL2 = canvas2.toDataURL();
+        }
         var dataURL1_1 = "aaa";
         if (blank === true) {
             dataURL1_1 = "";
         }
+        $.ajax({
+            url: "php/aco_php/psi_registrar_entrevista.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                sm_codigo: $.trim(codSMenu.val()),
+                s_docAlumno: $.trim(docAlumno[0]),
+                s_solicitud_tipo: solicitud_tipo,
+                s_matricula: matricula,
+                s_sede: sede,
+                s_categoria: categoria,
+                s_subcategoria: subcategoria,
+                s_sexo: sexo_estu,
+                s_motivo: txtMotivo,
+                s_planEstudiante: planEstudiante,
+                s_planEntrevistador: planEntrevistador,
+                s_acuerdos: acuerdos,
+                s_informe: informe,
+                s_planPadre: planPadre,
+                s_planDocente: planDocente,
+                s_acuerdosPadres: acuerdosPadres,
+                s_acuerdosColegio: acuerdosColegio,
+                s_apoderado: apoderado,
+                s_privacidad: privacidad_value,
+                s_dataURL1: dataURL1,
+                s_dataURL2: dataURL2,
+                dataURL1_1: dataURL1_1,
+                s_hora_total: hora_total
+            },
+            beforeSend: function (objeto) {
+                $("#modal-nueva-solicitud").find('.modal-footer div label').html("");
+                $("#modal-nueva-solicitud").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                var resp = datos.split("***");
+                if (resp[1] === "1") {
+                    var lista_sm = resp[3].split("--");
+                    $("#modal-nueva-solicitud").find('.modal-footer div label').html('');
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $('#modal-nueva-solicitud').modal('hide');
+                        $("#btnRegistrarSolicitud").attr("disabled", false);
+                        $('.modal-backdrop').remove();
+                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                    }, 4500);
+                } else {
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $("#btnRegistrarSolicitud").attr("disabled", false);
+                    }, 4500);
+                }
+            }
+        });
+    }
+
+}
+
+function registrar_solicitud() {//Guadalupe
+    $("#btnRegistrarSolicitud").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var solicitud_tipo = $("#cbbTipoSolicitud").val();
+    var docAlumno = $("#dataAlumno").html().split(" - ");
+    var matricula = $("#matric").val();
+    var sede = $("#txt_sede").val();
+    var categoria = $("#cbbCategoria").select().val();
+    var subcategoria = $("#cbbSubcategoria").select().val();
+    var sexo_estu = $("#cbbSexo").select().val();
+    var txtMotivo = "";
+    var planEstudiante = "";
+    var planEntrevistador = "";
+    var acuerdos = "";
+    var informe = "";
+    var planPadre = "";
+    var planDocente = "";
+    var acuerdosPadres = "";
+    var acuerdosColegio = "";
+    var apoderado = "";
+    var mensaje = "";
+    var txt_perfil = $("#txt_perfil").val();
+    var txtCantiFirma = $("#txtCantiFirma").val();
+    var wrapper = document.getElementById("signature-pad");
+    var canvas_1 = wrapper.querySelector("canvas");
+    var wrapper_entrevistador = document.getElementById("signature-pad-entrevistador");
+    var canvas_2 = wrapper_entrevistador.querySelector("canvas");
+    var blank = isCanvasBlank(document.getElementById('canvas1'));
+    var blank2 = "";
+    if (txt_perfil === "3" && solicitud_tipo === "1" && txtCantiFirma > 0) {
+        blank2 = "";
+    } else {
+        blank2 = isCanvasBlank(document.getElementById('canvas2'));
+    }
+    SetTabletState(0, tmr, 0);
+    SetTabletState(0, tmr2, 0);
+    clearInterval(tmr);
+    clearInterval(tmr2);
+    var checkPrivacidad = $("#checkPrivacidad").is(':checked');
+    var hora = $("#hora");
+    var minuto = $("#minuto");
+    var segundo = $("#segundo");
+    var hora_total = "";
+    if (hora.hasClass('parpadea')) {//paso los 40 min
+        hora_total = sumarFechas(minutos_a_hora(timeLimit), hora.html(), minuto.html(), segundo.html());
+    } else {//esta dentro los 40 min establecidos
+        var res_horas = restarFechas(minutos_a_hora(timeLimit), $.trim(hora.html()), $.trim(minuto.html()), $.trim(segundo.html()));
+        hora_total = res_horas;
+    }
+    var privacidad_value = "";
+    if (checkPrivacidad) {
+        privacidad_value = "1";
+    } else {
+        privacidad_value = "0";
+    }
+    if (categoria === "") {
+        mensaje += "*Seleccione la categoria<br>";
+        $("#cbbCategoria").addClass("is-invalid");
+    }
+    if (subcategoria === "") {
+        mensaje += "*Seleccione la subcategoria<br>";
+        $("#cbbSubcategoria").addClass("is-invalid");
+    }
+    if ($.trim(sexo_estu) === "0") {
+        mensaje += "*Seleccione el sexo<br>";
+        $("#cbbSexo").addClass("is-invalid");
+    }
+    if (solicitud_tipo === "1") {
+        txtMotivo = $("#txtMotivo").val();
+        planEstudiante = $("#txtPlanEstudiante").val();
+        planEntrevistador = $("#txtPlanEntrevistador").val();
+        acuerdos = $("#txtAcuerdos").val();
+        informe = "";
+        planPadre = "";
+        planDocente = "";
+        acuerdosPadres = "";
+        acuerdosColegio = "";
+        apoderado = "";
+        if ($.trim(txtMotivo) == "") {
+            mensaje += "*Ingrese el motivo de solicitud<br>";
+            $("#txtMotivo").addClass("is-invalid");
+        }
+        if ($.trim(planEstudiante) == '') {
+            mensaje += "*Ingrese el Planteamiento del estudiante<br>";
+            $("#txtPlanEstudiante").addClass("is-invalid");
+        }
+        if ($.trim(planEntrevistador) == '') {
+            mensaje += "*Ingrese el Planteamiento del entrevistador(a)<br>";
+            $("#txtPlanEntrevistador").addClass("is-invalid");
+        }
+        if ($.trim(acuerdos) == '') {
+            mensaje += "*Ingrese los Acuerdos<br>";
+            $("#txtAcuerdos").addClass("is-invalid");
+        }
+        //if (signaturePad.isEmpty()) {
+        //    mensaje += "*Ingrese la firma del estudiante<br>";
+        //    canvas_1.style.border = '1px solid #dc3545';
+        //}
+        if (txtCantiFirma===0 && txt_perfil===3) {
+            if (blank2 == true) {
+                mensaje += "*Ingrese la firma del entrevistador<br>";
+                canvas_2.style.border = '1px solid #dc3545';
+            }
+        } else if(txt_perfil!==3){
+            if (blank2 == true) {
+                mensaje += "*Ingrese la firma del entrevistador<br>";
+                canvas_2.style.border = '1px solid #dc3545';
+            }
+        }
+    } else {
+        txtMotivo = $("#txtMotivo").val();
+        planEstudiante = "";
+        planEntrevistador = "";
+        acuerdos = "";
+        informe = $("#txtInforme").val();
+        planPadre = $("#txtPlanPadre").val();
+        planDocente = $("#txtPlanDocente").val();
+        acuerdosPadres = $("#txtAcuerdosPadres").val();
+        acuerdosColegio = $("#txtAcuerdosColegio").val();
+        apoderado = $("#cbbTipoApoderado").select().val();
+        if ($.trim(apoderado) < 0 || $.trim(apoderado) === "") {
+            mensaje += "*Seleccione el apoderado<br>";
+            $("#cbbTipoApoderado").addClass("is-invalid");
+        }
+        if ($.trim(txtMotivo) == "") {
+            mensaje += "*Ingrese el motivo de solicitud<br>";
+            $("#txtMotivo").addClass("is-invalid");
+        }
+        if ($.trim(informe) == '') {
+            mensaje += "*Ingrese el Informe<br>";
+            $("#txtInforme").addClass("is-invalid");
+        }
+        if ($.trim(planPadre) == '') {
+            mensaje += "*Ingrese el Planteamiento del padre, madre <br>";
+            $("#txtPlanPadre").addClass("is-invalid");
+        }
+        if ($.trim(planDocente) == '') {
+            mensaje += "*Ingrese el Planteamiento del docente<br>";
+            $("#txtPlanDocente").addClass("is-invalid");
+        }
+        if ($.trim(acuerdosPadres) == '') {
+            mensaje += "*Ingrese las acciones a realizar por los padres<br>";
+            $("#txtAcuerdosPadres").addClass("is-invalid");
+        }
+        if ($.trim(acuerdosColegio) == '') {
+            mensaje += "*Ingrese las acciones a realizar por el colegio<br>";
+            $("#txtAcuerdosColegio").addClass("is-invalid");
+        }
+//if (signaturePad.isEmpty()) {
+//mensaje += "Ingrese la firma del padre, madre o apoderado<br>";
+//canvas.style.border = '1px solid #dc3545';
+//}
+        //if (txt_perfil !== "3" && solicitud_tipo !== "1") {
+            if (blank2 === true) {
+                mensaje += "*Ingrese la firma del entrevistador<br>";
+                canvas_2.style.border = '1px solid #dc3545';
+            }
+        //}
+    }
+    if (mensaje !== "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: mensaje,
+            showConfirmButton: false
+        });
+        $("#btnRegistrarSolicitud").attr("disabled", false);
+    } else {
+        var codSMenu = $("#hdnCodiSR");
+        var canvas1 = document.getElementById('canvas1');
+        var dataURL1 = canvas1.toDataURL();
+        var dataURL2 = "";
+        if (txt_perfil === "3" && solicitud_tipo === "1" && txtCantiFirma > 0) {
+            dataURL2 = document.getElementById('canvas2_img').getAttribute('src');
+        } else {
+            var canvas2 = document.getElementById('canvas2');
+            dataURL2 = canvas2.toDataURL();
+        }
+        var dataURL1_1 = "aaa";
+        if (blank === true) {
+            dataURL1_1 = "";
+        }
+
         $.ajax({
             url: "php/aco_php/psi_registrar_entrevista.php",
             dataType: "html",
@@ -3213,7 +3477,7 @@ function mostrar_tipo_solicitud_sub(dato) {
  signaturePad_entrevistador_sub.clear();
  }*/
 
-function registrar_sub_solicitud() {
+function registrar_sub_solicitud_jesus() {
     $("#btnRegistrarSubSolicitud").attr("disabled", true);
     var Toast = Swal.mixin({
         toast: true,
@@ -3373,10 +3637,269 @@ function registrar_sub_solicitud() {
         $("#btnRegistrarSubSolicitud").attr("disabled", false);
     } else {
         var codSMenu = $("#hdnCodiSR");
+        var txt_perfil = $("#txt_perfil_sub").val();
         var canvas1 = document.getElementById('canvas1_sub');
         var dataURL1 = canvas1.toDataURL();
-        var canvas2 = document.getElementById('canvas2_sub');
-        var dataURL2 = canvas2.toDataURL();
+        var dataURL2 = "";
+        if (txt_perfil === "3") {
+            dataURL2 = document.getElementById('canvas2_img_edi').getAttribute('src');
+        } else {
+            var canvas2 = document.getElementById('canvas2_sub');
+            dataURL2 = canvas2.toDataURL();
+        }
+        var dataURL1_1 = "aaa";
+        if (blank === true) {
+            dataURL1_1 = "";
+        }
+        $.ajax({
+            url: "php/aco_php/psi_registrar_sub_entrevista.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                sm_codigo: $.trim(codSMenu.val()),
+                s_codi_entre_sub: codi_entre_sub,
+                s_docAlumno: $.trim(docAlumno[0]),
+                s_solicitud_tipo: solicitud_tipo,
+                s_matricula: matricula,
+                s_sede: sede,
+                s_categoria: categoria,
+                s_subcategoria: subcategoria,
+                s_sexo: sexo,
+                s_motivo: txtMotivo,
+                s_planEstudiante: planEstudiante,
+                s_planEntrevistador: planEntrevistador,
+                s_acuerdos: acuerdos,
+                s_informe: informe,
+                s_planPadre: planPadre,
+                s_planDocente: planDocente,
+                s_acuerdosPadres: acuerdosPadres,
+                s_acuerdosColegio: acuerdosColegio,
+                s_apoderado: apoderado,
+                s_privacidad: privacidad_value,
+                s_dataURL1_sub: dataURL1,
+                s_dataURL2_sub: dataURL2,
+                dataURL1_sub1: dataURL1_1,
+                s_hora_total_sub: hora_total
+            },
+            beforeSend: function (objeto) {
+                $("#modal-subentrevista").find('.modal-footer div label').html("");
+                $("#modal-subentrevista").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                var resp = datos.split("***");
+                if (resp[1] === "1") {
+                    var lista_sm = resp[3].split("--");
+                    $("#modal-subentrevista").find('.modal-footer div label').html('');
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $('#modal-subentrevista').modal('hide');
+                        $("#btnRegistrarSubSolicitud").attr("disabled", false);
+                        $('.modal-backdrop').remove();
+                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                    }, 4500);
+                } else {
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $("#btnRegistrarSubSolicitud").attr("disabled", false);
+                    }, 4500);
+                }
+            }
+        });
+    }
+}
+
+function registrar_sub_solicitud() {//Guadalupe
+    $("#btnRegistrarSubSolicitud").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codi_entre_sub = $("#codi_entre_sub").val();
+    var solicitud_tipo = $("#cbbTipoSolicitud_sub").val();
+    var docAlumno = $("#dataAlumno_sub").html().split(" - ");
+    var matricula = $("#matric_sub").val();
+    var sede = $("#txt_sede_sub").val();
+    var categoria = $("#cbbCategoria_sub").select().val();
+    var subcategoria = $("#cbbSubcategoria_sub").select().val();
+    var sexo = $("#cbbSexo_sub").select().val();
+    var txtMotivo = "";
+    var planEstudiante = "";
+    var planEntrevistador = "";
+    var acuerdos = "";
+    var informe = "";
+    var planPadre = "";
+    var planDocente = "";
+    var acuerdosPadres = "";
+    var acuerdosColegio = "";
+    var apoderado = "";
+    var mensaje = "";
+    var txt_perfil = $("#txt_perfil_sub").val();
+    var wrapper = document.getElementById("signature-pad-sub");
+    var canvas_1 = wrapper.querySelector("canvas");
+    var wrapper_entrevistador = document.getElementById("signature-pad-entrevistador-sub");
+    var canvas_2 = wrapper_entrevistador.querySelector("canvas");
+    var blank = isCanvasBlank(document.getElementById('canvas1_sub'));
+    var blank2 = "";
+    if (txt_perfil === "3" && solicitud_tipo === "1") {
+        blank2 = "";
+    } else {
+        blank2 = isCanvasBlank(document.getElementById('canvas2_sub'));
+    }
+    SetTabletState(0, tmr_sub, 0);
+    SetTabletState(0, tmr_sub2, 0);
+    clearInterval(tmr_sub);
+    clearInterval(tmr_sub2);
+    var checkPrivacidad = $("#checkPrivacidad_sub").is(':checked');
+    var privacidad_value = "";
+    var hora = $("#hora_s");
+    var minuto = $("#minuto_s");
+    var segundo = $("#segundo_s");
+    var hora_total = "";
+    if (hora.hasClass('parpadea_s')) {//paso los 40 min
+        hora_total = sumarFechas(minutos_a_hora(timeLimit), hora.html(), minuto.html(), segundo.html());
+    } else {//esta dentro los 40 min establecidos
+        var res_horas = restarFechas(minutos_a_hora(timeLimit), $.trim(hora.html()), $.trim(minuto.html()), $.trim(segundo.html()));
+        hora_total = res_horas;
+    }
+    if (checkPrivacidad) {
+        privacidad_value = "1";
+    } else {
+        privacidad_value = "0";
+    }
+    if (categoria === "") {
+        mensaje += "*Seleccione la categoria<br>";
+        $("#cbbCategoria_sub").addClass("is-invalid");
+    }
+    if (subcategoria === "") {
+        mensaje += "*Seleccione la subcategoria<br>";
+        $("#cbbSubcategoria_sub").addClass("is-invalid");
+    }
+    if (sexo === "0") {
+        mensaje += "*Seleccione el sexo<br>";
+        $("#cbbSexo_sub").addClass("is-invalid");
+    }
+
+    if (solicitud_tipo === "1") {
+        txtMotivo = $("#txtMotivo_sub").val();
+        planEstudiante = $("#txtPlanEstudiante_sub").val();
+        planEntrevistador = $("#txtPlanEntrevistador_sub").val();
+        acuerdos = $("#txtAcuerdos_sub").val();
+        informe = "";
+        planPadre = "";
+        planDocente = "";
+        acuerdosPadres = "";
+        acuerdosColegio = "";
+        apoderado = "";
+        if ($.trim(txtMotivo) == "") {
+            mensaje += "*Ingrese el motivo de solicitud<br>";
+            $("#txtMotivo_sub").addClass("is-invalid");
+        }
+        if ($.trim(planEstudiante) == '') {
+            mensaje += "*Ingrese el Planteamiento del estudiante<br>";
+            $("#txtPlanEstudiante_sub").addClass("is-invalid");
+        }
+        if ($.trim(planEntrevistador) == '') {
+            mensaje += "*Ingrese el Planteamiento del entrevistador(a)<br>";
+            $("#txtPlanEntrevistador_sub").addClass("is-invalid");
+        }
+        if ($.trim(acuerdos) == '') {
+            mensaje += "*Ingrese los Acuerdos<br>";
+            $("#txtAcuerdos_sub").addClass("is-invalid");
+        }
+        //if (signaturePad_sub.isEmpty()) {
+        //    mensaje += "*Ingrese la firma del estudiante<br>";
+        //    canvas_1.style.border = '1px solid #dc3545';
+        //}
+        if (txt_perfil !== "3" && solicitud_tipo !== "1") {
+            if (blank2 == true) {
+                mensaje += "*Ingrese la firma del entrevistador<br>";
+                canvas_2.style.border = '1px solid #dc3545';
+            }
+        }
+    } else {
+        txtMotivo = $("#txtMotivo_sub").val();
+        planEstudiante = "";
+        planEntrevistador = "";
+        acuerdos = "";
+        informe = $("#txtInforme_sub").val();
+        planPadre = $("#txtPlanPadre_sub").val();
+        planDocente = $("#txtPlanDocente_sub").val();
+        acuerdosPadres = $("#txtAcuerdosPadres_sub").val();
+        acuerdosColegio = $("#txtAcuerdosColegio_sub").val();
+        apoderado = $("#cbbTipoApoderado_sub").select().val();
+        if ($.trim(apoderado) < 0 || $.trim(apoderado) === "") {
+            mensaje += "*Seleccione el apoderado<br>";
+            $("#cbbTipoApoderado_sub").addClass("is-invalid");
+        }
+        if ($.trim(txtMotivo) == "") {
+            mensaje += "*Ingrese el motivo de solicitud<br>";
+            $("#txtMotivo_sub").addClass("is-invalid");
+        }
+        if ($.trim(informe) == '') {
+            mensaje += "*Ingrese el Informe<br>";
+            $("#txtInforme_sub").addClass("is-invalid");
+        }
+        if ($.trim(planPadre) == '') {
+            mensaje += "*Ingrese el Planteamiento del padre, madre <br>";
+            $("#txtPlanPadre_sub").addClass("is-invalid");
+        }
+        if ($.trim(planDocente) == '') {
+            mensaje += "*Ingrese el Planteamiento del docente<br>";
+            $("#txtPlanDocente_sub").addClass("is-invalid");
+        }
+        if ($.trim(acuerdosPadres) == '') {
+            mensaje += "*Ingrese las acciones a realizar por los padres<br>";
+            $("#txtAcuerdosPadres_sub").addClass("is-invalid");
+        }
+        if ($.trim(acuerdosColegio) == '') {
+            mensaje += "*Ingrese las acciones a realizar por el colegio<br>";
+            $("#txtAcuerdosColegio_sub").addClass("is-invalid");
+        }
+        /*if (signaturePad.isEmpty()) {
+         mensaje += "Ingrese la firma del padre, madre o apoderado<br>";
+         canvas.style.border = '1px solid #dc3545';
+         }*/
+        //if (txt_perfil !== "3" && solicitud_tipo !== "1") {
+        if (blank2 === true) {
+            mensaje += "*Ingrese la firma del entrevistador<br>";
+            canvas_2.style.border = '1px solid #dc3545';
+        }
+        //}
+    }
+    if (mensaje !== "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: mensaje,
+            showConfirmButton: false
+        });
+        $("#btnRegistrarSubSolicitud").attr("disabled", false);
+    } else {
+        var codSMenu = $("#hdnCodiSR");
+        var canvas1 = document.getElementById('canvas1_sub');
+        var dataURL1 = canvas1.toDataURL();
+        var dataURL2 = "";
+        if (txt_perfil === "3" && solicitud_tipo === "1") {
+            dataURL2 = document.getElementById('canvas2_img_edi').getAttribute('src');
+        } else {
+            var canvas2 = document.getElementById('canvas2_sub');
+            dataURL2 = canvas2.toDataURL();
+        }
         var dataURL1_1 = "aaa";
         if (blank === true) {
             dataURL1_1 = "";
@@ -4387,7 +4910,7 @@ function registrar_nuevo_apoderado_edi() {
     }
 }
 
-function editar_solicitud() {
+function editar_solicitud_jesus() {
     var Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
@@ -4555,6 +5078,287 @@ function editar_solicitud() {
               $("#ruta_img2").css("border", "1px solid #dc3545");
               }
               }*/
+        }
+        if (mensaje !== "") {
+            Toast.fire({
+                position: 'top-end',
+                icon: 'error',
+                title: mensaje,
+                showConfirmButton: false
+            });
+            $("#btnEditarSolicitud").attr("disabled", false);
+        } else {
+            var codSMenu = $("#hdnCodiSR");
+            var canvas1 = {};
+            var dataURL1 = {};
+            var canvas2 = {};
+            var dataURL2 = {};
+            var dataURL1_1 = "aaa";
+            if (blank === true) {
+                dataURL1_1 = "";
+            }
+            if (ruta_img1 == false) {
+                canvas1 = document.getElementById('canvas1_edi');
+                dataURL1 = canvas1.toDataURL();
+            } else {
+                dataURL1 = $("#ruta_img1").attr("src");
+            }
+
+            if (ruta_img2 == false) {
+                canvas2 = document.getElementById('canvas2_edi');
+                dataURL2 = canvas2.toDataURL();
+            } else {
+                dataURL2 = $("#ruta_img2").attr("src");
+            }
+
+            $.ajax({
+                url: "php/aco_php/psi_editar_entrevista.php",
+                dataType: "html",
+                type: "POST",
+                data: {
+                    sm_codigo: $.trim(codSMenu.val()),
+                    s_codi_solicitud: $.trim(codi_solicitud),
+                    s_docAlumno: $.trim(docAlumno[0]),
+                    s_solicitud_tipo: solicitud_tipo,
+                    s_matricula: matricula,
+                    s_sede: sede,
+                    s_categoria: categoria,
+                    s_subcategoria: subcategoria,
+                    s_sexo_alu: sexo_alu,
+                    s_motivo: txtMotivo,
+                    s_planEstudiante: planEstudiante,
+                    s_planEntrevistador: planEntrevistador,
+                    s_acuerdos: acuerdos,
+                    s_informe: informe,
+                    s_planPadre: planPadre,
+                    s_planDocente: planDocente,
+                    s_acuerdosPadres: acuerdosPadres,
+                    s_acuerdosColegio: acuerdosColegio,
+                    s_apoderado: apoderado,
+                    s_privacidad: privacidad_value,
+                    s_dataURL1: dataURL1,
+                    s_dataURL2: dataURL2,
+                    s_dataURL1_1: dataURL1_1
+                },
+                beforeSend: function (objeto) {
+                    $("#modal-editar-solicitud-alumno").find('.modal-footer div label').html("");
+                    $("#modal-editar-solicitud-alumno").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    //$("#contentMenu").html(xhr.responseText);
+                },
+                success: function (datos) {
+                    var resp = datos.split("***");
+                    if (resp[1] === "1") {
+                        var lista_sm = resp[3].split("--");
+                        $("#modal-editar-solicitud-alumno").find('.modal-footer div label').html('');
+                        Toast.fire({
+                            position: 'top-end',
+                            icon: 'success',
+                            title: resp[2],
+                            showConfirmButton: false
+                        });
+                        setTimeout(function () {
+                            $('#modal-editar-solicitud-alumno').modal('hide');
+                            $("#btnEditarSolicitud").attr("disabled", false);
+                            $('.modal-backdrop').remove();
+                            cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                        }, 4500);
+                    } else {
+                        Toast.fire({
+                            position: 'top-end',
+                            icon: 'error',
+                            title: resp[2],
+                            showConfirmButton: false
+                        });
+                        setTimeout(function () {
+                            $("#btnEditarSolicitud").attr("disabled", false);
+                        }, 4500);
+                    }
+                }
+            });
+        }
+    }
+}
+
+function editar_solicitud() {//Guadalupe
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var cbbTipoSolicitudCodis = $("#cbbTipoSolicitudCodisEdi").select().val();
+    if (cbbTipoSolicitudCodis === "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: 'Seleccione la Entrevista / Subentrevista',
+            showConfirmButton: false
+        });
+        $("#cbbTipoSolicitudCodisEdi").addClass("is-invalid");
+    } else {
+        $("#btnEditarSolicitud").attr("disabled", true);
+        var codi_solicitud = $("#cod_solicitud_edi").val();
+        var solicitud_tipo = $("#cbbTipoSolicitud_edi").val();
+        var docAlumno = $("#dataAlumno_edi").html().split(" - ");
+        var matricula = $("#matric_edi").val();
+        var sede = $("#txt_sede_edi").val();
+        var categoria = $("#cbbCategoria_edi").select().val();
+        var subcategoria = $("#cbbSubcategoria_edi").select().val();
+        var sexo_alu = $("#cbbSexo_edi").select().val();
+        var txtMotivo = "";
+        var planEstudiante = "";
+        var planEntrevistador = "";
+        var acuerdos = "";
+        var informe = "";
+        var planPadre = "";
+        var planDocente = "";
+        var acuerdosPadres = "";
+        var acuerdosColegio = "";
+        var apoderado = "";
+        var mensaje = "";
+        var txt_perfil = $("#txt_perfil").val();
+        var ruta_img1 = $("#ruta_img1").is(':visible');
+        var ruta_img2 = $("#ruta_img2").is(':visible');
+        var canvas_1 = document.getElementById("canvas1_edi");
+        var canvas_2 = document.getElementById("canvas2_edi");
+        var blank = isCanvasBlank(document.getElementById('canvas1_edi'));
+        var blank2 = "";
+        if (txt_perfil === "3" && solicitud_tipo === "1") {
+            blank2 = "";
+        } else {
+            blank2 = isCanvasBlank(document.getElementById('canvas2_edi'));
+        }
+        SetTabletState(0, tmr, 0);
+        SetTabletState(0, tmr2, 0);
+        clearInterval(tmr);
+        clearInterval(tmr2);
+        var checkPrivacidad = $("#checkPrivacidad_edi").is(':checked');
+        var privacidad_value = "";
+        if (checkPrivacidad) {
+            privacidad_value = "1";
+        } else {
+            privacidad_value = "0";
+        }
+        if (categoria === "") {
+            mensaje += "*Seleccione la categoria<br>";
+            $("#cbbCategoria_edi").addClass("is-invalid");
+        }
+        if (subcategoria === "") {
+            mensaje += "*Seleccione la subcategoria<br>";
+            $("#cbbSubcategoria_edi").addClass("is-invalid");
+        }
+        if (sexo_alu === "0") {
+            mensaje += "*Seleccione el sexo<br>";
+            $("#cbbSexo_edi").addClass("is-invalid");
+        }
+        if (solicitud_tipo === "1") {
+            txtMotivo = $("#txtMotivo_edi").val();
+            planEstudiante = $("#txtPlanEstudiante_edi").val();
+            planEntrevistador = $("#txtPlanEntrevistador_edi").val();
+            acuerdos = $("#txtAcuerdos_edi").val();
+            informe = "";
+            planPadre = "";
+            planDocente = "";
+            acuerdosPadres = "";
+            acuerdosColegio = "";
+            apoderado = "";
+            if ($.trim(txtMotivo) == "") {
+                mensaje += "*Ingrese el motivo de solicitud<br>";
+                $("#txtMotivo_edi").addClass("is-invalid");
+            }
+            if ($.trim(planEstudiante) == '') {
+                mensaje += "*Ingrese el Planteamiento del estudiante<br>";
+                $("#txtPlanEstudiante_edi").addClass("is-invalid");
+            }
+            if ($.trim(planEntrevistador) == '') {
+                mensaje += "*Ingrese el Planteamiento del entrevistador(a)<br>";
+                $("#txtPlanEntrevistador_edi").addClass("is-invalid");
+            }
+            if ($.trim(acuerdos) == '') {
+                mensaje += "*Ingrese los Acuerdos<br>";
+                $("#txtAcuerdos_edi").addClass("is-invalid");
+            }
+            //if (ruta_img1 == false) {
+            //    if (signaturePad_edi.isEmpty()) {
+            //        mensaje += "*Ingrese la firma del estudiante<br>";
+            //        canvas_1.style.border = '1px solid #dc3545';
+            //    }
+            //}
+            if (ruta_img2 == false) {
+                if (txt_perfil !== "3" && solicitud_tipo !== "1") {
+                    if (blank2 == true) {
+                        mensaje += "*Ingrese la firma del entrevistador<br>";
+                        canvas_2.style.border = '1px solid #dc3545';
+                        $("#ruta_img2").css("border", "1px solid #dc3545");
+                    }
+                }
+            } /*else {
+             if (blank2 == true) {
+             mensaje += "*Ingrese la firma del entrevistador<br>";
+             canvas_2.style.border = '1px solid #dc3545';
+             $("#ruta_img2").css("border", "1px solid #dc3545");
+             }
+             }*/
+        } else {
+            txtMotivo = $("#txtMotivo_edi").val();
+            planEstudiante = "";
+            planEntrevistador = "";
+            acuerdos = "";
+            informe = $("#txtInforme_edi").val();
+            planPadre = $("#txtPlanPadre_edi").val();
+            planDocente = $("#txtPlanDocente_edi").val();
+            acuerdosPadres = $("#txtAcuerdosPadres_edi").val();
+            acuerdosColegio = $("#txtAcuerdosColegio_edi").val();
+            apoderado = $("#cbbTipoApoderado_edi").select().val();
+            if ($.trim(apoderado) < 0 || $.trim(apoderado) === "") {
+                mensaje += "*Seleccione el apoderado<br>";
+                $("#cbbTipoApoderado_edi").addClass("is-invalid");
+            }
+            if ($.trim(txtMotivo) == "") {
+                mensaje += "*Ingrese el motivo de solicitud<br>";
+                $("#txtMotivo_edi").addClass("is-invalid");
+            }
+            if ($.trim(informe) == '') {
+                mensaje += "*Ingrese el Informe<br>";
+                $("#txtInforme_edi").addClass("is-invalid");
+            }
+            if ($.trim(planPadre) == '') {
+                mensaje += "*Ingrese el Planteamiento del padre, madre <br>";
+                $("#txtPlanPadre_edi").addClass("is-invalid");
+            }
+            if ($.trim(planDocente) == '') {
+                mensaje += "*Ingrese el Planteamiento del docente<br>";
+                $("#txtPlanDocente_edi").addClass("is-invalid");
+            }
+            if ($.trim(acuerdosPadres) == '') {
+                mensaje += "*Ingrese las acciones a realizar por los padres<br>";
+                $("#txtAcuerdosPadres_edi").addClass("is-invalid");
+            }
+            if ($.trim(acuerdosColegio) == '') {
+                mensaje += "*Ingrese las acciones a realizar por el colegio<br>";
+                $("#txtAcuerdosColegio_edi").addClass("is-invalid");
+            }
+            /*if (signaturePad.isEmpty()) {
+             mensaje += "Ingrese la firma del padre, madre o apoderado<br>";
+             canvas.style.border = '1px solid #dc3545';
+             }*/
+            if (ruta_img2 == false) {
+                //if (txt_perfil !== "3" && solicitud_tipo !== "1") {
+                if (blank2 == true) {
+                    mensaje += "*Ingrese la firma del entrevistador<br>";
+                    canvas_2.style.border = '1px solid #dc3545';
+                    $("#ruta_img2").css("border", "1px solid #dc3545");
+                }
+                //}
+            } /*else {
+             if (blank2 == true) {
+             mensaje += "*Ingrese la firma del entrevistador<br>";
+             canvas_2.style.border = '1px solid #dc3545';
+             $("#ruta_img2").css("border", "1px solid #dc3545");
+             }
+             }*/
         }
         if (mensaje !== "") {
             Toast.fire({
@@ -7209,7 +8013,7 @@ function registrar_semaforo() {
         timer: 4000
     });
     var hdnCodiBi = $("#hdnCodiSema").val();
-    var anio = $("#cbbAnios").select().val();
+    var bimestres = $("#cbbBimestres").select().val();
     var valor11 = $("#valor11").val();
     var valor12 = $("#valor12").val();
     var valor21 = $("#valor21").val();
@@ -7244,7 +8048,7 @@ function registrar_semaforo() {
             data: {
                 opcion: "proceso_registrar_semaforo",
                 sm_codigo: $.trim(hdnCodiBi),
-                s_anio: anio,
+                s_bimestre: bimestres,
                 s_valor11: $.trim(valor11),
                 s_valor12: $.trim(valor12),
                 s_valor21: $.trim(valor21),
@@ -7379,7 +8183,7 @@ function editar_semaforo() {
     });
     var hdnCodiSema = $("#hdnCodiSema").val();
     var codi_edi = $("#codi_edi").val();
-    var anio = $("#cbbAnios_edi").select().val();
+    var bimestre = $("#cbbBimestre_edi").select().val();
     var valor11 = $("#valor11_edi").val();
     var valor12 = $("#valor12_edi").val();
     var valor21 = $("#valor21_edi").val();
@@ -7416,7 +8220,7 @@ function editar_semaforo() {
                 opcion: "proceso_editar_semaforo",
                 sm_codigo: $.trim(hdnCodiSema),
                 s_codi_edi: $.trim(codi_edi),
-                s_anio: anio,
+                s_bimestre: bimestre,
                 s_valor11: $.trim(valor11),
                 s_valor12: $.trim(valor12),
                 s_valor21: $.trim(valor21),
@@ -7852,6 +8656,16 @@ function solo_letras(e) {
         return true;
     }
     patron = /^[a-zA-Z.\x09\xD1\xF1\s]+$/;
+    te = String.fromCharCode(tecla);
+    return patron.test(te);
+}
+
+function solo_letras_v(e) {
+    tecla = (document.all) ? e.keyCode : e.which;
+    if (tecla == 8 || tecla == 0) {
+        return true;
+    }
+    patron = /^[a-zA-Z_.\x09\xD1\xF1\s]+$/;
     te = String.fromCharCode(tecla);
     return patron.test(te);
 }
@@ -8401,17 +9215,17 @@ function buscar_cantidad_entrevistas_subentrevistas() {
                     {
                         extend: 'csv',
                         text: 'CSV',
-                        title: 'Lista de auditoria del sistema'//marita
+                        title: 'Lista de cantidad de entrevistas y subentrevistas'
                     },
                     {
                         extend: 'excel',
                         text: 'Excel',
-                        title: 'Lista de auditoria del sistema'//marita
+                        title: 'Lista de cantidad de entrevistas y subentrevistas'
                     },
                     {
                         extend: 'print',
                         text: 'Imprimir',
-                        title: 'Lista de auditoria del sistema'//marita
+                        title: 'Lista de cantidad de entrevistas y subentrevistas'
                     }, "colvis"]
                         //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
                         //"buttons": ["new", "colvis"]
@@ -8501,64 +9315,79 @@ function cargar_rango_fechas(bimestre) {
 }
 
 function buscar_reporte_semanal() {
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
     var sede = $("#cbbSedes").select().val();
-    var bimestre = $("#cbbBimestre").val();
+    var bimestre = $("#cbbBimestre").select().val();
     var fecha_ini = $("#fecha1").val();
     var fecha_fin = $("#fecha2").val();
     var nivel = $("#cbbNivel").val();
     var grado = $("#cbbGrado").val();
     var seccion = $("#cbbSeccion").val();
-    $.ajax({
-        url: "php/aco_php/controller.php",
-        dataType: "html",
-        type: "POST",
-        data: {
-            opcion: "operacion_reporte_semanal",
-            s_sede: sede,
-            s_bimestre: bimestre,
-            s_fecha_ini: fecha_ini,
-            s_fecha_fin: fecha_fin,
-            s_nivel: nivel,
-            s_grado: grado,
-            s_seccion: seccion
-        },
-        beforeSend: function (objeto) {
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            //$("#contentMenu").html(xhr.responseText);
-        },
-        success: function (datos) {
-            $("#tableCantidadEntrevistas").DataTable().destroy();
-            $("#tableCantidadEntrevistas tbody").html(datos);
-            $("#tableCantidadEntrevistas").DataTable({
-                "responsive": true,
-                "lengthChange": true,
-                "autoWidth": true,
-                "paging": true,
-                "searching": true,
-                "ordering": true,
-                "info": true,
-                "buttons": ["copy",
-                    {
-                        extend: 'csv',
-                        text: 'CSV',
-                        title: 'Lista de auditoria del sistema'//marita
-                    },
-                    {
-                        extend: 'excel',
-                        text: 'Excel',
-                        title: 'Lista de auditoria del sistema'//marita
-                    },
-                    {
-                        extend: 'print',
-                        text: 'Imprimir',
-                        title: 'Lista de auditoria del sistema'//marita
-                    }, "colvis"]
-                        //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
-                        //"buttons": ["new", "colvis"]
-            }).buttons().container().appendTo('#tableCantidadEntrevistas_wrapper .col-md-6:eq(0)');
-        }
-    });
+    if (bimestre === "0") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: '*Seleccione el Bimestre',
+            showConfirmButton: false
+        });
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "operacion_reporte_semanal",
+                s_sede: sede,
+                s_bimestre: bimestre,
+                s_fecha_ini: fecha_ini,
+                s_fecha_fin: fecha_fin,
+                s_nivel: nivel,
+                s_grado: grado,
+                s_seccion: seccion
+            },
+            beforeSend: function (objeto) {
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                $("#tableCantidadEntrevistas").DataTable().destroy();
+                $("#tableCantidadEntrevistas tbody").html(datos);
+                $("#tableCantidadEntrevistas").DataTable({
+                    "responsive": true,
+                    "lengthChange": true,
+                    "autoWidth": true,
+                    "paging": true,
+                    "searching": true,
+                    "ordering": true,
+                    "info": true,
+                    "buttons": ["copy",
+                        {
+                            extend: 'csv',
+                            text: 'CSV',
+                            title: 'Lista de reporte semanal de ' + fecha_ini + ' a ' + fecha_fin
+                        },
+                        {
+                            extend: 'excel',
+                            text: 'Excel',
+                            title: 'Lista de reporte semanal de ' + fecha_ini + ' a ' + fecha_fin
+                        },
+                        {
+                            extend: 'print',
+                            text: 'Imprimir',
+                            title: 'Lista de reporte semanal de ' + fecha_ini + ' a ' + fecha_fin
+                        }, "colvis"]
+                            //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+                            //"buttons": ["new", "colvis"]
+                }).buttons().container().appendTo('#tableCantidadEntrevistas_wrapper .col-md-6:eq(0)');
+            }
+        });
+    }
 }
 
 function limpiar_reporte_semanal() {
@@ -8572,7 +9401,1108 @@ function limpiar_reporte_semanal() {
     $('#cbbSeccion option[value=0]').attr('selected', 'selected');
     buscar_reporte_semanal();
 }
-/*marita*/
+
+function mostrar_cargar_archivos(modal, solicitud) {
+    mostrar_cargar_archivos_2(modal, solicitud);
+}
+
+function mostrar_cargar_archivos_2(modal, solicitud) {
+    var hdnCodiSR = $("#hdnCodiSR").val();
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_cargar_archivos", //aqui
+            s_solicitud: solicitud
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);formulario_editar_submenu
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+            $("#upload_form").on('submit', function (event) {
+                $("#upload").attr("disabled", true);
+                event.preventDefault();
+                var data_form = new FormData(this);
+                data_form.append("solicitud", solicitud);
+                data_form.append("sm_codigo", hdnCodiSR);
+                $.ajax({
+                    url: "php/aco_php/loadCargarArchivos.php",
+                    method: "POST",
+                    data: data_form,
+                    dataType: "JSON",
+                    contentType: false,
+                    cache: false,
+                    processData: false,
+                    beforeSend: function (objeto) {
+                        $("#messageFile").append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+                        $("#messageFile").css("display", "block");
+                        $("#messageFile").removeClass("alert alert-danger-color");
+                        $("#messageFile").addClass("alert alert-info-color");
+                    },
+                    success: function (data) {
+                        $("#messageFile").css("display", "block");
+                        $("#messageFile").removeClass("alert-info-color");
+                        $("#messageFile").removeClass("alert-success-color");
+                        $("#messageFile").removeClass("alert-danger-color");
+                        $("#messageFile").addClass(data.class_name);
+                        $("#messageFile").html(data.message);
+                        $("#upload").attr("disabled", false);
+                        setTimeout(function () {
+                            if (data.resp === '1') {
+                                mostrar_cargar_archivos_2($("#modal-cargar-archivos"), solicitud);
+                                $("#messageFile").removeClass("alert-success-color");
+                                $("#messageFile").html("");
+                                document.getElementById("select_file").value = "";
+                                $("#upload").attr("disabled", false);
+                            }
+                        }, 4500);
+                    }
+                });
+            });
+            $("#tableListArchivos").DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": true,
+                "paging": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+                //"buttons": ["new", "colvis"]
+            }).buttons().container().appendTo('#tableListArchivos_wrapper .col-md-6:eq(0)');
+        }
+    });
+}
+
+
+
+function cargar_tabla_archivos(solicitud) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_cargar_tabla_archivos",
+            s_solicitud: solicitud
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#tableListArchivos tbody").html(datos);
+            if ($.fn.dataTable.isDataTable('#tableListArchivos')) {
+                table = $('#tableListArchivos').DataTable();
+            } else {
+                table = $('#tableListArchivos').DataTable({
+                    paging: false
+                });
+            }
+        }
+    });
+
+}
+
+function mostrar_eliminar_archivo(modal, solicitud, archivo) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_eliminar_archivo",
+            s_solicitud: solicitud,
+            s_archivo: archivo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);formulario_editar_submenu
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+        }
+    });
+}
+
+function eliminar_archivo() {
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    $("#btnEliminarArchivo").attr("disabled", true);
+    var hdnCodiSR = $("#hdnCodiSR").val();
+    var hdnCodiSolicitud = $("#hdnCodiSolicitud");
+    var hdnCodiArchivo = $("#hdnCodiArchivo");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_eliminar_archivo",
+            sm_codigo: hdnCodiSR,
+            u_codiArchivo: $.trim(hdnCodiArchivo.val())
+        },
+        beforeSend: function (objeto) {
+            $("#modal-eliminar-archivo").find('.modal-footer div label').html("");
+            $("#modal-eliminar-archivo").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            var resp = datos.split("***");
+            if (resp[1] === "1") {
+                $("#modal-eliminar-archivo").find('.modal-footer div label').html('');
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $('#modal-eliminar-archivo').modal('hide');
+                    $("#btnEliminarArchivo").attr("disabled", false);
+                    //$('.modal-backdrop').remove();
+                    mostrar_cargar_archivos_2($("#modal-cargar-archivos"), hdnCodiSolicitud.val());
+                }, 4500);
+            } else {
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'error',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $("#btnEliminarArchivo").attr("disabled", false);
+                }, 4500);
+            }
+        }
+    });
+}
+
+function mostrar_activar_archivo(modal, solicitud, archivo) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_activar_archivo",
+            s_solicitud: solicitud,
+            s_archivo: archivo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);formulario_editar_submenu
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+        }
+    });
+}
+
+function activar_archivo() {
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    $("#btnActivarArchivo").attr("disabled", true);
+    var hdnCodiSR = $("#hdnCodiSR").val();
+    var hdnCodiSolicitud = $("#hdnCodiSolicitud");
+    var hdnCodiArchivo = $("#hdnCodiArchivo");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_activar_archivo",
+            sm_codigo: hdnCodiSR,
+            u_codiArchivo: $.trim(hdnCodiArchivo.val())
+        },
+        beforeSend: function (objeto) {
+            $("#modal-activar-archivo").find('.modal-footer div label').html("");
+            $("#modal-activar-archivo").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            var resp = datos.split("***");
+            if (resp[1] === "1") {
+                $("#modal-activar-archivo").find('.modal-footer div label').html('');
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $('#modal-activar-archivo').modal('hide');
+                    $("#btnActivarArchivo").attr("disabled", false);
+                    //$('.modal-backdrop').remove();
+                    mostrar_cargar_archivos_2($("#modal-cargar-archivos"), hdnCodiSolicitud.val());
+                }, 4500);
+            } else {
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'error',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $("#btnActivarArchivo").attr("disabled", false);
+                }, 4500);
+            }
+        }
+    });
+}
+
+function mostrar_secciones_docente(dato) {
+    var mensaje = "";
+    var codSMenu = $("#hdnCodiSR");
+    var usuario = dato;
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_secciones_docente",
+            sol_usuario: usuario
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#divSecciones").html(datos);
+            $("#tablaHistorialDocente").DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": true,
+                "paging": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                //"buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+                "buttons": ["new", "colvis"]
+            }).buttons().container().appendTo('#tablaHistorialDocente_wrapper .col-md-6:eq(0)');
+        }
+    });
+}
+
+function mostrar_registra_seccion_docente(modal, docente) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_registro_seccion_docente",
+            s_docente: docente
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+        }
+    });
+}
+
+function registrar_seccion_docente() {
+    $("#btnRegistrarSeccionDocente").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiSR");
+    var docente = $("#hdnDocente");
+    var cbbNivel = $("#cbbNivel");
+    var cbbGrado = $("#cbbGrado");
+    var cbbSeccion = $("#cbbSeccion");
+    var txtSede = $("#txtSede");
+    var mensaje = "";
+    if ($.trim(cbbNivel.select().val()) == 0) {
+        mensaje += "*Seleccione el nivel<br>";
+    }
+    if ($.trim(cbbGrado.select().val()) == 0) {
+        mensaje += "*Seleccione el grado<br>";
+    }
+    if ($.trim(cbbSeccion.select().val()) == 0) {
+        mensaje += "*Seleccione la sección<br>";
+    }
+    if (mensaje !== "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: mensaje,
+            showConfirmButton: false
+        });
+        $("#btnRegistrarSeccionDocente").attr("disabled", false);
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "operacion_registro_seccion_docente",
+                sm_codigo: $.trim(codSMenu.val()),
+                s_docente: $.trim(docente.val()),
+                s_nivel: $.trim(cbbNivel.select().val()),
+                s_grado: $.trim(cbbGrado.select().val()),
+                s_seccion: $.trim(cbbSeccion.select().val()),
+                s_sede: $.trim(txtSede.val())
+            },
+            beforeSend: function (objeto) {
+                $("#modal-nueva-seccion-docente").find('.modal-footer div label').html("");
+                $("#modal-nueva-seccion-docente").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                var resp = datos.split("***");
+                if (resp[1] === "1") {
+                    var lista_sm = resp[3].split("--");
+                    $("#modal-nueva-seccion-docente").find('.modal-footer div label').html('');
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $('#modal-nueva-seccion-docente').modal('hide');
+                        $('.modal-backdrop').remove();
+                        $("#btnRegistrarSeccionDocente").attr("disabled", false);
+                        //cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                        mostrar_secciones_docente($.trim(docente.val()));
+                    }, 4500);
+                } else {
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    $("#modal-nueva-seccion-docente").find('.modal-footer div label').html('');
+                    setTimeout(function () {
+                        $("#btnRegistrarSeccionDocente").attr("disabled", false);
+                    }, 4500);
+                }
+            }
+        });
+    }
+}
+
+function mostrar_editar_seccion_docente(modal, docente, dictado) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_editar_seccion_docente",
+            s_dictado: dictado,
+            s_docente: docente
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+        }
+    });
+}
+
+function editar_seccion_docente() {
+    $("#btnEditarSeccionDocente").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiSR");
+    var dictado = $("#hdnDictadoEdi");
+    var docente = $("#hdnDocenteEdi");
+    var cbbNivel = $("#cbbNivel");
+    var cbbGrado = $("#cbbGrado");
+    var cbbSeccion = $("#cbbSeccion");
+    var cbbEstadoEdi = $("#cbbEstadoEdi");
+    var txtSede = $("#txtSedeEdi");
+    var mensaje = "";
+    if ($.trim(cbbNivel.select().val()) == 0) {
+        mensaje += "*Seleccione el nivel<br>";
+    }
+    if ($.trim(cbbGrado.select().val()) == 0) {
+        mensaje += "*Seleccione el grado<br>";
+    }
+    if ($.trim(cbbSeccion.select().val()) == 0) {
+        mensaje += "*Seleccione la sección<br>";
+    }
+    if ($.trim(cbbEstadoEdi.select().val()) == -1) {
+        mensaje += "*Seleccione el estado<br>";
+    }
+    if (mensaje !== "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: mensaje,
+            showConfirmButton: false
+        });
+        $("#btnEditarSeccionDocente").attr("disabled", false);
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "operacion_editar_seccion_docente",
+                sm_codigo: $.trim(codSMenu.val()),
+                s_docente: $.trim(docente.val()),
+                s_dictado: $.trim(dictado.val()),
+                s_nivel: $.trim(cbbNivel.select().val()),
+                s_grado: $.trim(cbbGrado.select().val()),
+                s_seccion: $.trim(cbbSeccion.select().val()),
+                s_sede: $.trim(txtSede.val()),
+                s_estado: $.trim(cbbEstadoEdi.select().val()),
+            },
+            beforeSend: function (objeto) {
+                $("#modal-editar-seccion-docente").find('.modal-footer div label').html("");
+                $("#modal-editar-seccion-docente").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                var resp = datos.split("***");
+                if (resp[1] === "1") {
+                    var lista_sm = resp[3].split("--");
+                    $("#modal-editar-seccion-docente").find('.modal-footer div label').html('');
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $('#modal-editar-seccion-docente').modal('hide');
+                        $('.modal-backdrop').remove();
+                        $("#btnEditarSeccionDocente").attr("disabled", false);
+                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                    }, 4500);
+                } else {
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    $("#modal-editar-seccion-docente").find('.modal-footer div label').html('');
+                    setTimeout(function () {
+                        $("#btnEditarSeccionDocente").attr("disabled", false);
+                    }, 4500);
+                }
+            }
+        });
+    }
+}
+
+function mostrar_eliminar_seccion_docente(modal, docente, dictado) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_eliminar_seccion_docente",
+            u_docente: docente,
+            u_dictado: dictado
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            modal.find('.modal-body').html(datos);
+        }
+    });
+}
+
+function eliminar_seccion_docente() {
+    $("#btnEliminarSeccionDocente").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiSR");
+    var hdnCodiDictado = $("#hdnCodiDictado");
+    var hdnCodiDocente = $("#hdnCodiDocente").val();
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_eliminar_seccion_docente",
+            sm_codigo: $.trim(codSMenu.val()),
+            u_hdnCodiDictado: $.trim(hdnCodiDictado.val())
+        },
+        beforeSend: function (objeto) {
+            $("#modal-eliminar-seccion-docente").find('.modal-footer div label').html("");
+            $("#modal-eliminar-seccion-docente").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            var resp = datos.split("***");
+            if (resp[1] === "1") {
+                $("#modal-eliminar-seccion-docente").find('.modal-footer div label').html('');
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $('#modal-eliminar-seccion-docente').modal('hide');
+                    $("#btnEliminarSeccionDocente").attr("disabled", false);
+                    $('.modal-backdrop').remove();
+                    mostrar_secciones_docente(hdnCodiDocente);
+                }, 4500);
+            } else {
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'error',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $("#btnEliminarSeccionDocente").attr("disabled", false);
+                }, 4500);
+            }
+        }
+    });
+}
+
+function mostrar_activar_seccion_docente(modal, docente, dictado) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_activar_seccion_docente",
+            u_docente: docente,
+            u_dictado: dictado
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            modal.find('.modal-body').html(datos);
+        }
+    });
+}
+
+function activar_seccion_docente() {
+    $("#btnActivarSeccionDocente").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiSR");
+    var hdnCodiDictado = $("#hdnCodiDictado");
+    var hdnCodiDocente = $("#hdnCodiDocente").val();
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_activar_seccion_docente",
+            sm_codigo: $.trim(codSMenu.val()),
+            u_hdnCodiDictado: $.trim(hdnCodiDictado.val())
+        },
+        beforeSend: function (objeto) {
+            $("#modal-activar-seccion-docente").find('.modal-footer div label').html("");
+            $("#modal-activar-seccion-docente").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            var resp = datos.split("***");
+            if (resp[1] === "1") {
+                $("#modal-activar-seccion-docente").find('.modal-footer div label').html('');
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $('#modal-activar-seccion-docente').modal('hide');
+                    $("#btnActivarSeccionDocente").attr("disabled", false);
+                    $('.modal-backdrop').remove();
+                    mostrar_secciones_docente(hdnCodiDocente);
+                }, 4500);
+            } else {
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'error',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $("#btnActivarSeccionDocente").attr("disabled", false);
+                }, 4500);
+            }
+        }
+    });
+}
+
+function mostrar_registra_nuevo_gradoseccion(modal) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_registro_nuevo_gradoseccion"
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+        }
+    });
+}
+
+//Función  crear elemento
+function crear_elemento() {
+    var secciones = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'L', 'K'];
+    var tamanio = $('#contenedor').find('li').length * 1;
+    $('#contenedor').append('<li><label>Sección ' + secciones[tamanio] + '</label> <a onclick="eliminar_elemento(this);">&times;</a></li>');
+}
+
+function crear_elemento_edi() {
+    var secciones = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'L', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'X'];
+    var letra = "";
+    var index = 0;
+    $('#contenedor li').each(function (index) {
+        var arreglo = $(this).find('label').text().split(' ');
+        letra = arreglo[1];
+    });
+    if (letra === "") {
+        index = $('#contenedor0').find('li').length * 1;
+    } else {
+        index = secciones.indexOf(letra) + 1;
+    }
+    $('#contenedor').append('<li><label>Sección ' + secciones[index] + '</label> <a onclick="eliminar_elemento(this);">&times;</a></li>');
+}
+
+//Función eliminar elemento
+function eliminar_elemento(valor) {
+    valor.parentNode.parentNode.removeChild(valor.parentNode);
+    var secciones = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'L', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'X'];
+    var tamanio = $('#contenedor0').find('li').length * 1;
+    var tamanio2 = $('#contenedor').find('li').length * 1;
+    var letra = "";
+    $('#contenedor li').each(function (index) {
+        $(this).find('label').text('Sección ' + secciones[index + tamanio]);
+    });
+
+}
+
+function registrar_gradoseccion() {
+    $("#btnRegistrarGradoSeccion").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiGS");
+    var codigo = $("#txtCodigo");
+    var nombre = $("#txtNombre");
+    var cbbNivel = $("#cbbNivel");
+    var contenedor = $("#contenedor");
+    var seccionesList = "";
+    var mensaje = "";
+
+    if ($.trim(codigo.val()) == "") {
+        mensaje += "*Ingrese el código del grado<br>";
+    }
+    if ($.trim(nombre.val()) == "") {
+        mensaje += "*Ingrese el nombre del grado<br>";
+    }
+    if ($.trim(cbbNivel.select().val()) == 0) {
+        mensaje += "*Seleccione el nivel<br>";
+    }
+
+    if (contenedor.find("li").length === 0) {
+        mensaje += "*Agregue al menos una sección<br>";
+    } else {
+        contenedor.find('li').each(function () {
+            var value = $(this).find('label').text();
+            seccionesList += value + "*";
+        });
+    }
+    if (mensaje !== "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: mensaje,
+            showConfirmButton: false
+        });
+        $("#btnRegistrarGradoSeccion").attr("disabled", false);
+    } else {
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "proceso_nuevo_gradoseccion",
+                sm_codigo: $.trim(codSMenu.val()),
+                s_codigo: $.trim(codigo.val()),
+                s_nombre: $.trim(nombre.val()),
+                s_nivel: $.trim(cbbNivel.val()),
+                sec_lista: $.trim(seccionesList)
+            },
+            beforeSend: function (objeto) {
+                $("#modal-nuevo-gradoseccion").find('.modal-footer div label').html("");
+                $("#modal-nuevo-gradoseccion").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                var resp = datos.split("***");
+                if (resp[1] === "1") {
+                    var lista_sm = resp[3].split("--");
+                    $("#modal-nuevo-gradoseccion").find('.modal-footer div label').html('');
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $('#modal-nuevo-gradoseccion').modal('hide');
+                        $("#btnRegistrarGradoSeccion").attr("disabled", false);
+                        $('.modal-backdrop').remove();
+                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                    }, 4500);
+                } else {
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $("#btnRegistrarGradoSeccion").attr("disabled", false);
+                    }, 4500);
+                }
+            }
+        });
+    }
+}
+
+function mostrar_editar_gradoseccion(modal, codigo) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_editar_gradoseccion",
+            u_gradoseccion: codigo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);formulario_editar_submenu
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+        }
+    });
+}
+
+function editar_gradoseccion() {
+    $("#btnEditarGradoSeccion").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiGS");
+    var cod = $("#txtCod");
+    var disable = $("#txtDisable");
+    var codigo = $("#txtCodigoEdi");
+    var nombre = $("#txtNombreEdi");
+    var cbbNivel = $("#cbbNivelEdi");
+    var cbbEstadoGraSec = $("#cbbEstadoGraSec");
+    var contenedor = $("#contenedor");
+    var seccionesList0 = "";
+    var seccionesList = "";
+    var mensaje = "";
+
+    if ($.trim(codigo.val()) == "") {
+        mensaje += "*Ingrese el código del grado<br>";
+    }
+    if ($.trim(nombre.val()) == "") {
+        mensaje += "*Ingrese el nombre del grado<br>";
+    }
+    if ($.trim(cbbNivel.select().val()) == 0) {
+        mensaje += "*Seleccione el nivel<br>";
+    }
+    if ($.trim(cbbEstadoGraSec.select().val()) == -1) {
+        mensaje += "*Seleccione el estado<br>";
+    }
+    if (mensaje !== "") {
+        Toast.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: mensaje,
+            showConfirmButton: false
+        });
+        $("#btnEditarGradoSeccion").attr("disabled", false);
+    } else {
+        $("input[name='check_seccion[]']").each(function () {
+            var estado = 0;
+            if ($(this).is(":checked") === true) {
+                estado = 1;
+            } else {
+                estado = 0;
+            }
+            seccionesList0 += $(this).val() + "-" + estado + "*";
+        });
+
+        contenedor.find('li').each(function () {
+            var value = $(this).find('label').text();
+            seccionesList += value + "*";
+        });
+        $.ajax({
+            url: "php/aco_php/controller.php",
+            dataType: "html",
+            type: "POST",
+            data: {
+                opcion: "proceso_editar_gradoseccion",
+                sm_codigo: $.trim(codSMenu.val()),
+                s_cod: $.trim(cod.val()),
+                s_disable: $.trim(disable.val()),
+                s_codigo: $.trim(codigo.val()),
+                s_nombre: $.trim(nombre.val()),
+                s_nivel: $.trim(cbbNivel.select().val()),
+                s_estado: $.trim(cbbEstadoGraSec.select().val()),
+                sec_lista_edi: $.trim(seccionesList0),
+                sec_lista_nue: $.trim(seccionesList)
+            },
+            beforeSend: function (objeto) {
+                $("#modal-editar-gradoseccion").find('.modal-footer div label').html("");
+                $("#modal-editar-gradoseccion").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //$("#contentMenu").html(xhr.responseText);
+            },
+            success: function (datos) {
+                var resp = datos.split("***");
+                if (resp[1] === "1") {
+                    var lista_sm = resp[3].split("--");
+                    $("#modal-editar-gradoseccion").find('.modal-footer div label').html('');
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'success',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $('#modal-editar-gradoseccion').modal('hide');
+                        $("#btnEditarGradoSeccion").attr("disabled", false);
+                        $('.modal-backdrop').remove();
+                        cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                    }, 4500);
+                } else {
+                    Toast.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: resp[2],
+                        showConfirmButton: false
+                    });
+                    setTimeout(function () {
+                        $("#btnEditarGradoSeccion").attr("disabled", false);
+                    }, 4500);
+                }
+            }
+        });
+    }
+}
+
+function mostrar_eliminar_gradoseccion(modal, codigo) {
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_eliminar_gradoseccion",
+            u_gradoseccion: codigo
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);formulario_editar_submenu
+        },
+        success: function (datos) {
+            modal.find('.modal-body').append('<div class="overlay" id="divRegMatri"><i class="fa fa-refresh fa-spin"></i></div>');
+            //$('.select2').select2();
+            modal.find('.modal-body').html(datos);
+        }
+    });
+}
+
+function eliminar_gradoseccion() {
+    $("#btnEliminarGradoSeccion").attr("disabled", true);
+    var Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000
+    });
+    var codSMenu = $("#hdnCodiGS");
+    var hdnCodiGrado = $("#hdnCodiGradoEli");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "operacion_eliminar_gradoseccion",
+            sm_codigo: $.trim(codSMenu.val()),
+            u_codiGrado: $.trim(hdnCodiGrado.val())
+        },
+        beforeSend: function (objeto) {
+            $("#modal-eliminar-gradoseccion").find('.modal-footer div label').html("");
+            $("#modal-eliminar-gradoseccion").find('.modal-footer div label').append('<i class="fas fa-spinner fa-pulse"></i> Cargando...&nbsp;&nbsp;&nbsp;');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            var resp = datos.split("***");
+            if (resp[1] === "1") {
+                var lista_sm = resp[3].split("--");
+                $("#modal-eliminar-gradoseccion").find('.modal-footer div label').html('');
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $('#modal-eliminar-gradoseccion').modal('hide');
+                    $("#btnEliminarGradoSeccion").attr("disabled", false);
+                    $('.modal-backdrop').remove();
+                    cargar_opcion(lista_sm[0], lista_sm[1], lista_sm[2]);
+                }, 4500);
+            } else {
+                Toast.fire({
+                    position: 'top-end',
+                    icon: 'error',
+                    title: resp[2],
+                    showConfirmButton: false
+                });
+                setTimeout(function () {
+                    $("#btnEliminarGradoSeccion").attr("disabled", false);
+                }, 4500);
+            }
+        }
+    });
+}
+
+function cargar_selector_grado_docente(nivel) {
+    var str_nivel = nivel.value;
+    $("#cbbGrado").html("");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_selector_grado_docente",
+            s_nivel: str_nivel
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#cbbGrado").html(datos);
+            $("#cbbSeccion").html('<option value="0">-- Seleccione --</option>');
+        }
+    });
+}
+
+function cargar_selector_seccion_docente(grado) {
+    var str_grado = grado.value;
+    var str_nivel = $("#cbbNivel").select().val();
+    $("#cbbSeccion").html("");
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_selector_seccion_docente",
+            s_nivel: str_nivel,
+            s_grado: str_grado
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#cbbSeccion").html(datos);
+        }
+    });
+}
+
+function cargar_semaforo_x_bimestre(bimestre){
+    var str_bimestre = bimestre.value;
+    $.ajax({
+        url: "php/aco_php/controller.php",
+        dataType: "html",
+        type: "POST",
+        data: {
+            opcion: "formulario_cargar_semaforo_bimestre",
+            s_bimestre: str_bimestre,
+        },
+        beforeSend: function (objeto) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //$("#contentMenu").html(xhr.responseText);
+        },
+        success: function (datos) {
+            $("#cbbSemaforo").html(datos);
+        }
+    });
+}
 
 function ocultar_mensaje(id) {
     $(document).ready(function () {

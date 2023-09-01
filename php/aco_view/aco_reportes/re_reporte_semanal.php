@@ -1,5 +1,5 @@
 <?php
-//marita
+//marita2
 require_once '../../aco_conect/DB.php';
 require_once '../../aco_fun/aco_fun.php';
 $con = new DB(1111);
@@ -91,6 +91,7 @@ $bimestre_select_id = "";
                             <label> Bimestre: </label>
                         </div>
                         <select id="cbbBimestre" data-show-content="true" class="form-control" style="width: 100%" onchange="cargar_rango_fechas(this)">
+                            <option value="0">-- Seleccione --</option>
                             <?php
                             $selected_bimes = "";
                             foreach ($lista_bimestre as $bimestre) {
@@ -108,10 +109,15 @@ $bimestre_select_id = "";
                     <?php
                     $fecha_ini = "";
                     $fecha_fin = "";
-                    $data_bimestre = fnc_lista_rango_fechas_bimestre($conexion, $bimestre_select_id);
-                    if (count($data_bimestre) > 0) {
-                        $fecha_ini = $data_bimestre[0]["inicio"];
-                        $fecha_fin = $data_bimestre[0]["fin"];
+                    if ($bimestre_select_id !== "") {
+                        $data_bimestre = fnc_lista_rango_fechas_bimestre($conexion, $bimestre_select_id);
+                        if (count($data_bimestre) > 0) {
+                            $fecha_ini = $data_bimestre[0]["inicio"];
+                            $fecha_fin = $data_bimestre[0]["fin"];
+                        } else {
+                            $fecha_ini = "";
+                            $fecha_fin = "";
+                        }
                     } else {
                         $fecha_ini = "";
                         $fecha_fin = "";
@@ -152,7 +158,6 @@ $bimestre_select_id = "";
                                 echo "<option value='" . $nivel["codigo"] . "' >" . $nivel["nombre"] . "</option>";
                             }
                             ?>
-
                         </select>
                     </div>
                     <div class="col-lg-2 col-md-4 col-sm-6 col-12">
@@ -188,6 +193,7 @@ $bimestre_select_id = "";
                             <thead>
                                 <tr>
                                     <th>Nro.</th>
+                                    <th>Sede</th>
                                     <th>Nivel</th>
                                     <th>Grado</th>
                                     <th>Secci&oacute;n</th>
@@ -202,18 +208,21 @@ $bimestre_select_id = "";
                                 $num = 1;
                                 $s_fecha_ini = fnc_fecha_a_YY_MM_DD($fecha_ini);
                                 $s_fecha_fin = fnc_fecha_a_YY_MM_DD($fecha_fin);
-                                $lista_reporte_semanal = fnc_lista_reporte_semanal($conexion, $sedeCodi, $bimestre_select_id, $s_fecha_ini, $s_fecha_fin, "0", "0", "0");
-                                foreach ($lista_reporte_semanal as $lista) {
-                                    $html .= "<tr>
+                                if ($bimestre_select_id !== "") {
+                                    $lista_reporte_semanal = fnc_lista_reporte_semanal($conexion, $sedeCodi, $bimestre_select_id, $s_fecha_ini, $s_fecha_fin, "0", "0", "0");
+                                    foreach ($lista_reporte_semanal as $lista) {
+                                        $html .= "<tr>
                                         <td>" . $num . "</td>
+                                        <td>" . $lista["sede"] . "</td>
                                         <td>" . $lista["nivel"] . "</td>
                                         <td >" . $lista["grado"] . "</td>
                                         <td >" . $lista["seccion"] . "</td>
                                         <td style='text-align:center'>" . $lista["cantidad_entrevistas"] . "</td>
                                         <td style='text-align:center'>" . $lista["cantidad_subentrevistas"] . "</td>
                                         <td style='text-align:center'>" . $lista["total"] . "</td>"
-                                            . "</tr>";
-                                    $num++;
+                                                . "</tr>";
+                                        $num++;
+                                    }
                                 }
                                 echo $html;
                                 ?>
@@ -228,6 +237,7 @@ $bimestre_select_id = "";
 
 <script>
     $(function () {
+        $('body').css('overflow', 'auto');
         var fechaConcar = $("#fecha1").val();
         var fechaConcar2 = $("#fecha2").val();
         var array_fecha = fechaConcar.split("/");

@@ -264,6 +264,7 @@ if ($userData[0]["sedeId"] == "1" && ($perfil == "1" || $perfil == "5")) {
 </div>
 <script>
     $(function () {
+        $('body').css('overflow', 'auto');
         /*Para la carga del excel*/
         $("#upload_formAlumnos").on('submit', function (event) {
             var Toast = Swal.mixin({
@@ -308,7 +309,7 @@ if ($userData[0]["sedeId"] == "1" && ($perfil == "1" || $perfil == "5")) {
                     },
                     success: function (data) {
                         /*$("#messageAlumnos").css("display", "block");
-                        $("#messageAlumnos").removeClass("alert alert-info-color");*/
+                         $("#messageAlumnos").removeClass("alert alert-info-color");*/
                         if (data.message === "" && data.resp === "1") {
                             $("#messageAlumnos").addClass("alert alert-success-color");
                             $("#messageAlumnos").html("Exito en la carga!");

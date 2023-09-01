@@ -181,7 +181,7 @@ $lista_sedes = fnc_lista_sedes($conexion, $sedeCodi, "");
 
 <script>
     $(function () {
-
+        $('body').css('overflow', 'auto');
         /*Modales de Administrar Menus*/
         $('#modal-nueva-sede').on('show.bs.modal', function (event) {
             var modal = $(this);
